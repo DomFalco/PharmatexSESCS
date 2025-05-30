@@ -17,5 +17,12 @@ COPY --from=builder /app/target/Progetto-1.0-SNAPSHOT.war /usr/local/tomcat/weba
 # Espone la porta per accedere all'app (default Tomcat)
 EXPOSE 8080
 
+# Imposta variabili per la connessione al DB
+ENV MYSQL_HOST=db
+ENV MYSQL_PORT=3306
+ENV MYSQL_DATABASE=Pharmatex
+ENV MYSQL_USER=root
+ENV MYSQL_PASSWORD=Password
+
 # Avvia Tomcat
 CMD ["catalina.sh","run"]
