@@ -16,7 +16,7 @@ public class ConPool {
             p.setUrl("jdbc:mysql://db:3306/Pharmatex?serverTimezone=" + TimeZone.getDefault().getID());
             p.setDriverClassName("com.mysql.cj.jdbc.Driver");
             p.setUsername("root");
-            p.setPassword("teograuso01"); //INSERIRE LA PASSWORD DI MYSQL!!!
+            p.setPassword("Password"); //INSERIRE LA PASSWORD DI MYSQL!!!
             p.setMaxActive(100);
             p.setInitialSize(10);
             p.setMinIdle(10);
