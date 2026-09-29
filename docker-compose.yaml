@@ -8,9 +8,9 @@ services:
     environment:
       - MYSQL_HOST=db
       - MYSQL_PORT=3306
-      - MYSQL_DATABASE=Pharmatex
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=Password
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - ecommerce-net
 
@@ -19,8 +19,8 @@ services:
     container_name: mysql-pharmatex
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Password
-      MYSQL_DATABASE: Pharmatex
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "3306:3306"
     volumes:
