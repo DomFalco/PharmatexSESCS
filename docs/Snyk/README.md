@@ -9,46 +9,42 @@
 
 ---
 
-# Indice
-
-## 1. Introduzione
-### 1.1 Integrazione nella pipeline CI/CD
-
-## 2. Analisi delle dipendenze Maven (`pom.xml`)
-### 2.1 Configurazione
-### 2.2 Vulnerabilità rilevate
-### 2.3 Analisi del rischio
-### 2.4 Processo di remediation
-#### 2.4.1 Aggiornamento del driver MySQL
-
-## 3. Analisi del Dockerfile
-### 3.1 Configurazione iniziale
-### 3.2 Prima scansione — 103 vulnerabilità
-### 3.3 Processo di remediation
-#### 3.3.1 Aggiornamento dei pacchetti di sistema
-##### 3.3.1.1 Analisi della CVE High residua: OpenSSL
-##### 3.3.1.2 Dettagli della vulnerabilità
-##### 3.3.1.3 Perché la CVE è rimasta irrisolta
-#### 3.3.2 Passaggio da JDK a JRE
-### 3.4 Dopo la remediation
-### 3.5 Vulnerabilità residue — Rischio accettato
-#### 3.5.1 Motivazione dell'accettazione
-### 3.6 Considerazioni finali
-
-## 4. Analisi statica del codice sorgente (Snyk Code)
-### 4.1 Configurazione
-### 4.2 Vulnerabilità rilevate
-### 4.3 Cross-Site Scripting (XSS)
-#### 4.3.1 Descrizione
-#### 4.3.2 Remediation applicata
-#### 4.3.3 Verifica
-### 4.4 Trust Boundary Violation
-#### 4.4.1 Descrizione
-#### 4.4.2 Remediation applicata
-#### 4.4.3 Verifica
-### 4.5 Use of Password Hash With Insufficient Computational Effort
-#### 4.5.1 Descrizione
-#### 4.5.2 Decisione: rischio accettato
+## Indice
+- [1. Introduzione](#1-introduzione)
+    - [1.1 Integrazione nella pipeline CI/CD](#11-integrazione-nella-pipeline-cicd)
+- [2. Analisi delle dipendenze Maven (`pom.xml`)](#2-analisi-delle-dipendenze-maven-pomxml)
+    - [2.1 Configurazione](#21-configurazione)
+    - [2.2 Vulnerabilità rilevate](#22-vulnerabilità-rilevate)
+    - [2.3 Analisi del rischio](#23-analisi-del-rischio)
+    - [2.4 Processo di remediation](#24-processo-di-remediation)
+        - [2.4.1 Aggiornamento del driver MySQL](#241-aggiornamento-del-driver-mysql)
+- [3. Analisi del Dockerfile](#3-analisi-del-dockerfile)
+    - [3.1 Configurazione iniziale](#31-configurazione-iniziale)
+    - [3.2 Prima scansione — 103 vulnerabilità](#32-prima-scansione--103-vulnerabilità)
+    - [3.3 Processo di remediation](#33-processo-di-remediation)
+        - [3.3.1 Aggiornamento dei pacchetti di sistema](#331-aggiornamento-dei-pacchetti-di-sistema)
+            - [3.3.1.1 Analisi della CVE High residua: OpenSSL](#3311-analisi-della-cve-high-residua-openssl)
+            - [3.3.1.2 Dettagli della vulnerabilità](#3312-dettagli-della-vulnerabilità)
+            - [3.3.1.3 Perché la CVE è rimasta irrisolta](#3313-perché-la-cve-è-rimasta-irrisolta)
+        - [3.3.2 Passaggio da JDK a JRE](#332-passaggio-da-jdk-a-jre)
+    - [3.4 Dopo la remediation](#34-dopo-la-remediation)
+    - [3.5 Vulnerabilità residue — Rischio accettato](#35-vulnerabilità-residue--rischio-accettato)
+        - [3.5.1 Motivazione dell'accettazione](#351-motivazione-dellaccettazione)
+    - [3.6 Considerazioni finali](#36-considerazioni-finali)
+- [4. Analisi statica del codice sorgente (Snyk Code)](#4-analisi-statica-del-codice-sorgente-snyk-code)
+    - [4.1 Configurazione](#41-configurazione)
+    - [4.2 Vulnerabilità rilevate](#42-vulnerabilità-rilevate)
+    - [4.3 Cross-Site Scripting (XSS)](#43-cross-site-scripting-xss)
+        - [4.3.1 Descrizione](#431-descrizione)
+        - [4.3.2 Remediation applicata](#432-remediation-applicata)
+        - [4.3.3 Verifica](#433-verifica)
+    - [4.4 Trust Boundary Violation](#44-trust-boundary-violation)
+        - [4.4.1 Descrizione](#441-descrizione)
+        - [4.4.2 Remediation applicata](#442-remediation-applicata)
+        - [4.4.3 Verifica](#443-verifica)
+    - [4.5 Use of Password Hash With Insufficient Computational Effort](#45-use-of-password-hash-with-insufficient-computational-effort)
+        - [4.5.1 Descrizione](#451-descrizione)
+        - [4.5.2 Decisione: rischio accettato](#452-decisione-rischio-accettato)
 
 ---
 ## 1. Introduzione
@@ -313,15 +309,15 @@ Le **3 vulnerabilità** rilevate sono state risolte introducendo opportune misur
 
 **In `FiltraggioServletMateriale.java`:**
 
-1. **Null check** — verifica esplicita che i parametri `mat` e `materiale` non siano `null`, evitando NullPointerException. 🔗 [Vedi le righe 19-21](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L19-L21)
-2. **Sanitizzazione con whitelist** — rimozione di tutti i caratteri non alfanumerici tramite `replaceAll("[^a-zA-Z0-9\\s]", "")`, creando le variabili sicure `matSicuro` e `materialeSicuro`. 🔗 [Vedi le righe 23-26](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L23-L26)
-3. **Inserimento sicuro in sessione** — uso delle variabili sanitizzate (`matSicuro`, `materialeSicuro`) in `setAttribute`, invece degli input originali. 🔗 [Vedi le righe 46-50](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L46-L50)
+1. **Null check** — verifica esplicita che i parametri `mat` e `materiale` non siano `null`, evitando NullPointerException. 🔗 [Vedi le righe 13-14](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L13-L14)
+2. **Sanitizzazione con whitelist** — rimozione di tutti i caratteri non alfanumerici tramite `replaceAll("[^a-zA-Z0-9\\s]", "")`, creando le variabili sicure `matSicuro` e `materialeSicuro`. 🔗 [Vedi le righe 20-22](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L20-L22)
+3. **Inserimento sicuro in sessione** — uso delle variabili sanitizzate (`matSicuro`, `materialeSicuro`) in `setAttribute`, invece degli input originali.🔗 [Vedi le righe 44-45](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L44-L45)
 
 **In `InizioServlet.java`:**
 
-1. **Null check e validazione di `valore`** — se `richiesta` è `null`, il parametro `valore` viene validato con regex `matches("[a-zA-Z0-9\\s]+")`. Se non conforme, `sendError(SC_BAD_REQUEST)`. 🔗 [Vedi le righe 21-43](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L21-L43)
-2. **Validazione di `richiesta`** — verifica con la stessa regex prima di qualsiasi utilizzo, con `sendError(SC_BAD_REQUEST)` se non conforme. 🔗 [Vedi le righe 45-49](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L45-L49)
-3. **Inserimento sicuro in sessione** — `setAttribute` avviene solo dopo la validazione, quindi il valore è ormai sicuro. 🔗 [Vedi le righe 64-66](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L64-L66)
+1. **Null check e validazione di `valore`** — se `richiesta` è `null`, il parametro `valore` viene validato con regex `matches("[a-zA-Z0-9\\s]+")`. Se non conforme, `sendError(SC_BAD_REQUEST)`. 🔗 [Vedi le righe 21-29](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L21-L29)
+2. **Validazione di `richiesta`** — verifica con la stessa regex prima di qualsiasi utilizzo, con `sendError(SC_BAD_REQUEST)` se non conforme. 🔗 [Vedi le righe 43-47](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L43-L47)
+3. **Inserimento sicuro in sessione** — `setAttribute` avviene solo dopo la validazione, quindi il valore è ormai sicuro. 🔗 [Vedi le righe 62-64](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L62-L64)
 
 #### 4.4.3 Verifica
 

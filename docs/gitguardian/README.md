@@ -9,22 +9,17 @@
 
 ---
 
-# Indice
+## Indice
 
-## 1. Configurazione e Integrazione
-
-## 2. Processo di Scansione e Rilevamento
-### Fase 1 — Scansione iniziale (nessun errore rilevato)
-### Fase 2 — Test di verifica (modifica temporanea della password)
-### Fase 3 — Ripristino e remediation finale
-
-## 3. Vulnerabilità Rilevata e Prioritizzazione
-
-## 4. Dettaglio della Vulnerabilità SEC-01
-
-## 5. Processo di Remediation
-
-## 6. Verifica
+- [1. Configurazione e Integrazione](#1-configurazione-e-integrazione)
+- [2. Processo di Scansione e Rilevamento](#2-processo-di-scansione-e-rilevamento)
+    - [Fase 1 — Scansione iniziale (nessun errore rilevato)](#fase-1--scansione-iniziale-nessun-errore-rilevato)
+    - [Fase 2 — Test di verifica (modifica temporanea della password)](#fase-2--test-di-verifica-modifica-temporanea-della-password)
+    - [Fase 3 — Ripristino e remediation finale](#fase-3--ripristino-e-remediation-finale)
+- [3. Vulnerabilità Rilevata e Prioritizzazione](#3-vulnerabilità-rilevata-e-prioritizzazione)
+- [4. Dettaglio della Vulnerabilità SEC-01](#4-dettaglio-della-vulnerabilità-sec-01)
+- [5. Processo di Remediation](#5-processo-di-remediation)
+- [6. Verifica](#6-verifica)
 
 ---
 
