@@ -9,7 +9,7 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Tomcat aggiornato e uso di JRE per ridurre la superficie d'attacco
-FROM tomcat:11.0.23-jre17-temurin-alpine
+FROM tomcat:11.0.23-jre17-temurin-noble
 
 # Aggiorna i pacchetti di sistema per ridurre le vulnerabilità (Snyk)
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
