@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ include file="/ParteHTML/navBar.jsp" %>
 <%@ include file="/ParteHTML/Filter.html" %>
 <html>
@@ -18,8 +19,7 @@
             x = (String) request.getAttribute("filtraggio");
         }
     %>
-    <title><%=x%>
-    </title>
+    <title><c:out value="<%=x%>"/></title>
 </head>
 <body>
 <% for (Prodotto p : prod) {
@@ -35,13 +35,15 @@
 <div class="box-container">
     <div class="box">
         <div class="image">
-            <a href="RicercaServlet?search=<%=p.getNomeProd()%>">
-                <img src="<%=directory%>">
+            <!-- RISOLTO: Usa c:out per l'attributo href (nota le virgolette singole interne) -->
+            <a href="RicercaServlet?search=<c:out value='<%=p.getNomeProd()%>'/>">
+                <!-- RISOLTO: Usa c:out per l'attributo src -->
+                <img src="<c:out value='<%=directory%>'/>">
             </a>
         </div>
         <div class="info">
-            <b style="text-align: center;">Modello:<%=p.getNomeProd()%>
-            </b><br>
+            <!-- RISOLTO: Usa c:out per il contenuto testuale -->
+            <b style="text-align: center;">Modello:<c:out value="<%=p.getNomeProd()%>"/></b><br>
             <b style="text-align: center;color: red"><%=p.getPrezzo()%> €</b>
         </div>
     </div>
