@@ -18,6 +18,7 @@
     - [2.3 Analisi del rischio](#23-analisi-del-rischio)
     - [2.4 Processo di remediation](#24-processo-di-remediation)
         - [2.4.1 Aggiornamento del driver MySQL](#241-aggiornamento-del-driver-mysql)
+        - [2.4.2 Vulnerabilità emerse dopo l'analisi iniziale](#242-vulnerabilità-emerse-dopo-lanalisi-iniziale)
 - [3. Analisi del Dockerfile](#3-analisi-del-dockerfile)
     - [3.1 Configurazione iniziale](#31-configurazione-iniziale)
     - [3.2 Prima scansione — 103 vulnerabilità](#32-prima-scansione--103-vulnerabilità)
@@ -99,6 +100,22 @@ Le tre CVE sono **High/Medium con fix disponibile** e riguardano una libreria di
 
 L'aggiornamento nel [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L54-L58) dalla versione **8.0.18** alla versione **8.0.33** di `mysql-connector-java` risolve tutte e tre le CVE (XXE → fixata dalla 8.0.27; Improper Authorization → dalla 8.0.28; DoS transitiva su protobuf → dalla 8.0.29). È stata scelta la 8.0.33 perché è l'ultima versione della serie 8.0.x mantenuta stabile, con **compatibilità garantita** con il codice esistente (`ConPool.java` utilizza la classe `com.mysql.cj.jdbc.Driver`, invariata tra le due versioni).
 
+#### 2.4.2 Vulnerabilità emerse dopo l'analisi iniziale
+
+Dopo il primo aggiornamento alla versione **8.0.33**, la pipeline CI/CD di Snyk (integrata tramite GitHub Actions) ha rilevato **due nuove vulnerabilità High** che non erano presenti nell'analisi iniziale:
+
+| ID | CWE | Descrizione | Pacchetto | Fix |
+|----|-----|-------------|-----------|-----|
+| SNYK-JAVA-COMMYSQL-6075938 | CWE-284 | Access Control Bypass | `com.mysql:mysql-connector-j@8.0.33` | 9.3.0 |
+| SNYK-JAVA-COMGOOGLEPROTOBUF-8055227 | CWE-121 | Stack-based Buffer Overflow | `com.google.protobuf:protobuf-java` (transitiva) | protobuf 4.29.0 |
+
+**Contesto:** queste vulnerabilità sono state **scoperte dopo il rilascio della 8.0.33** e non erano note al momento della prima scansione. Questo dimostra il valore del **monitoraggio continuo** offerto da Snyk: anche su dipendenze già aggiornate possono emergere nuove CVE nel tempo.
+
+**Remediation:** l'aggiornamento alla versione **9.3.0** di MySQL Connector/J risolve entrambe le vulnerabilità, poiché:
+- la 9.3.0 non presenta vulnerabilità dirette note;
+- la 9.3.0 dipende da `protobuf-java 4.29.0`, che non è affetto dalla CWE-121.
+
+**Verifica:** dopo il push e il rescan automatico, gli alert corrispondenti sono scomparsi dalla dashboard di GitHub Security.
 ---
 
 ## 3. Analisi del Dockerfile
