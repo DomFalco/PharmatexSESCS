@@ -9,6 +9,25 @@
 
 ---
 
+# Indice
+
+## 1. Configurazione e Integrazione
+
+## 2. Processo di Scansione e Rilevamento
+### Fase 1 — Scansione iniziale (nessun errore rilevato)
+### Fase 2 — Test di verifica (modifica temporanea della password)
+### Fase 3 — Ripristino e remediation finale
+
+## 3. Vulnerabilità Rilevata e Prioritizzazione
+
+## 4. Dettaglio della Vulnerabilità SEC-01
+
+## 5. Processo di Remediation
+
+## 6. Verifica
+
+---
+
 ## 1. Configurazione e Integrazione
 
 La repository `PharmatexSESCS` è stata collegata alla dashboard di GitGuardian e sottoposta a una scansione iniziale completa. Successivamente, l'integrazione è stata resa automatica tramite GitHub Actions.
@@ -68,7 +87,7 @@ La scansione iniziale (Fase 1) non ha prodotto alert. Tuttavia, l'analisi manual
 
 ## 5. Processo di Remediation
 
-1. **Rimozione dal codice sorgente.** La password è stata eliminata da `ConPool.java`, `Dockerfile` e `docker-compose.yml`.
+1. **Rimozione dal codice sorgente.** La password è stata eliminata da [`ConPool.java`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Model/ConPool.java), [`Dockerfile`](https://github.com/DomFalco/PharmatexSESCS/blob/master/Dockerfile) e [`docker-compose.yml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docker-compose.yaml).
 2. **Esternalizzazione della configurazione.** Il codice Java è stato modificato per leggere host, porta, database, utente e password tramite `System.getenv()` (`MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`), applicando il principio **fail-fast**: se `MYSQL_PASSWORD` non è impostata, l'applicazione lancia un'eccezione e non parte.
 3. **Configurazione locale sicura.** Le variabili sono fornite tramite un file `.env`, aggiunto a `.gitignore` per impedirne il commit.
 4. **Configurazione CI/CD sicura.** I valori sono stati salvati come GitHub Actions Secrets (`MYSQL_PASSWORD`, `MYSQL_USER`, `MYSQL_DATABASE`) e iniettati nei job.

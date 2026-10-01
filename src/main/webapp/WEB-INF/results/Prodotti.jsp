@@ -35,14 +35,11 @@
 <div class="box-container">
     <div class="box">
         <div class="image">
-            <!-- RISOLTO: Usa c:out per l'attributo href (nota le virgolette singole interne) -->
             <a href="RicercaServlet?search=<c:out value='<%=p.getNomeProd()%>'/>">
-                <!-- RISOLTO: Usa c:out per l'attributo src -->
                 <img src="<c:out value='<%=directory%>'/>">
             </a>
         </div>
         <div class="info">
-            <!-- RISOLTO: Usa c:out per il contenuto testuale -->
             <b style="text-align: center;">Modello:<c:out value="<%=p.getNomeProd()%>"/></b><br>
             <b style="text-align: center;color: red"><%=p.getPrezzo()%> €</b>
         </div>
