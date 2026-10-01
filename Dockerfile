@@ -8,8 +8,8 @@ WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Usa Tomcat per eseguire l'applicazione
-FROM tomcat:10.1-jdk17
+# Tomcat con JRE per ridurre la superficie d'attacco
+FROM tomcat:10.1-jre17-temurin-jammy
 
 # Aggiorna i pacchetti di sistema per ridurre le vulnerabilità (Snyk)
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
