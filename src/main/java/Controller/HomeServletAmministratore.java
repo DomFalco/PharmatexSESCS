@@ -1,9 +1,13 @@
 package Controller;
 
 import Model.*;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +16,19 @@ import java.util.ArrayList;
 public class HomeServletAmministratore extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // ===== FIX: controllo autorizzazione amministratore =====
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+            return;
+        }
+        Utente admin = (Utente) session.getAttribute("Amministratore");
+        if (admin == null || !admin.isAmministratore()) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+            return;
+        }
+        // ===== FINE FIX =====
+
         if(request.getParameter("valore")==null)
         {
             ArrayList<Prodotto> tuttiProdotti = ProdottoDAO.doRetriveAll();
@@ -48,6 +65,6 @@ public class HomeServletAmministratore extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    doPost(request,response);
+        doPost(request,response);
     }
 }
