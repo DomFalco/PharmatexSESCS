@@ -13,6 +13,9 @@ import java.util.List;
  */
 public final class JspHelper {
 
+    private static final String DEFAULT_FILTER_ATTRIBUTE = "filtra";
+    private static final String FILTRAGGIO_ATTRIBUTE = "filtraggio";
+
     private JspHelper() {
         // Classe di utilita', non istanziabile
     }
@@ -26,9 +29,8 @@ public final class JspHelper {
     @SuppressWarnings("unchecked")
     public static List<Prodotto> estraiProdotti(HttpServletRequest request) {
         String action = request.getParameter("action");
-        Object attr = (action != null)
-                ? request.getAttribute(action)
-                : request.getAttribute("filtra");
+        String attributeKey = (action != null) ? action : DEFAULT_FILTER_ATTRIBUTE;
+        Object attr = request.getAttribute(attributeKey);
         if (attr == null) {
             return new ArrayList<>();
         }
@@ -46,7 +48,7 @@ public final class JspHelper {
         if (action != null) {
             return action;
         }
-        Object filtraggio = request.getAttribute("filtraggio");
+        Object filtraggio = request.getAttribute(FILTRAGGIO_ATTRIBUTE);
         return (filtraggio == null) ? "" : filtraggio.toString();
     }
 }
