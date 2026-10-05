@@ -74,6 +74,21 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- ===== ByteBuddy aggiornato per compatibilita Java 21 (CI runner) ===== -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.15.11</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>1.15.11</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- ===== AssertJ (aggiornato per CVE-2026-24400) ===== -->
         <dependency>
             <groupId>org.assertj</groupId>
