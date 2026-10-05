@@ -90,13 +90,19 @@ class AggiuntaProdottoServletTest {
                 "Parsing non protetto: NumberFormatException documentata per " + paramName);
     }
 
-    // ====== 3. Documentazione mancanza di sanitizzazione ======
+    // ====== 3. Documentazione: input non validato passa al DAO - Parameterized ======
 
-    @Test
-    @DisplayName("Il nome prodotto con <script> non viene sanitizzato (vulnerabilità documentata)")
-    void testNomeProdottoNonSanitizzato() {
+    @ParameterizedTest(name = "Parametro ''{0}'' = ''{1}'' non viene validato")
+    @CsvSource({
+            "nomeProdotto, '<script>alert(1)</script>'",
+            "descrizione, '<img src=x onerror=alert(1)>'",
+            "quantita, -10",
+            "prezzo, -999.99"
+    })
+    @DisplayName("Input non validato passa al DAO (vulnerabilità documentata)")
+    void testInputNonValidatoPassaAlDao(String paramName, String value) {
         mockParametriValidi();
-        when(request.getParameter("nomeProdotto")).thenReturn("<script>alert(1)</script>");
+        when(request.getParameter(paramName)).thenReturn(value);
 
         try {
             servlet.service(request, response);
@@ -104,22 +110,7 @@ class AggiuntaProdottoServletTest {
             // Eccezione attesa dal DB non configurato
         }
 
-        verify(request, atLeastOnce()).getParameter("nomeProdotto");
-    }
-
-    @Test
-    @DisplayName("La descrizione con tag HTML non viene sanitizzata (vulnerabilità documentata)")
-    void testDescrizioneNonSanitizzata() {
-        mockParametriValidi();
-        when(request.getParameter("descrizione")).thenReturn("<img src=x onerror=alert(1)>");
-
-        try {
-            servlet.service(request, response);
-        } catch (Exception e) {
-            // Eccezione attesa dal DB
-        }
-
-        verify(request, atLeastOnce()).getParameter("descrizione");
+        verify(request, atLeastOnce()).getParameter(paramName);
     }
 
     // ====== 4. Documentazione mancanza controllo autorizzazione ======
@@ -138,39 +129,7 @@ class AggiuntaProdottoServletTest {
         verify(session, never()).getAttribute("Utente");
     }
 
-    // ====== 5. Documentazione mancanza range check ======
-
-    @Test
-    @DisplayName("Quantità negativa non viene validata (vulnerabilità documentata)")
-    void testQuantitaNegativaNonValidata() {
-        mockParametriValidi();
-        when(request.getParameter("quantita")).thenReturn("-10");
-
-        try {
-            servlet.service(request, response);
-        } catch (Exception e) {
-            // Eccezione attesa dal DB
-        }
-
-        verify(request, atLeastOnce()).getParameter("quantita");
-    }
-
-    @Test
-    @DisplayName("Prezzo negativo non viene validato (vulnerabilità documentata)")
-    void testPrezzoNegativoNonValidato() {
-        mockParametriValidi();
-        when(request.getParameter("prezzo")).thenReturn("-999.99");
-
-        try {
-            servlet.service(request, response);
-        } catch (Exception e) {
-            // Eccezione attesa dal DB
-        }
-
-        verify(request, atLeastOnce()).getParameter("prezzo");
-    }
-
-    // ====== 6. Lettura di tutti i 17 parametri ======
+    // ====== 5. Lettura di tutti i 17 parametri ======
 
     @Test
     @DisplayName("Tutti i 17 parametri vengono letti dalla richiesta")

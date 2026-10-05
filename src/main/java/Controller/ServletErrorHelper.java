@@ -3,6 +3,8 @@ package Controller;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Utility per inviare risposte di errore HTTP in modo sicuro.
@@ -13,12 +15,15 @@ import java.io.IOException;
  */
 public final class ServletErrorHelper {
 
+    private static final Logger LOGGER = Logger.getLogger(ServletErrorHelper.class.getName());
+
     private ServletErrorHelper() {
         // Classe di utilita', non istanziabile
     }
 
     /**
      * Invia una risposta di errore HTTP gestendo l'eventuale IOException.
+     *
      * @param response la risposta HTTP
      * @param status   il codice di stato (es. SC_FORBIDDEN, SC_BAD_REQUEST)
      * @param message  il messaggio di errore
@@ -28,7 +33,8 @@ public final class ServletErrorHelper {
             response.sendError(status, message);
         } catch (IOException e) {
             // Il client si e' disconnesso prima che la risposta fosse inviata.
-            System.err.println("Impossibile inviare la risposta di errore " + status + ": " + e.getMessage());
+            LOGGER.log(Level.FINE, "Impossibile inviare la risposta di errore {0}: {1}",
+                    new Object[]{status, e.getMessage()});
         }
     }
 }

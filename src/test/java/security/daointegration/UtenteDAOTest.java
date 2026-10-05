@@ -18,17 +18,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Test dell'area OWASP: DAO Integration.
  * Verifica le proprieta' di sicurezza di UtenteDAO tramite analisi statica
  * del codice sorgente (non e' possibile testare il DAO senza un DB configurato).
- * Obiettivi:
- * - Verificare l'uso di PreparedStatement (protezione da SQL Injection)
- * - Documentare l'uso di SHA1 nel login (CWE-916)
- * - Documentare design smell (HttpServlet, RuntimeException generiche)
  */
 @DisplayName("DAO Integration - UtenteDAO")
 class UtenteDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/UtenteDAO.java";
     private static final Pattern CONCATENAZIONE_QUERY =
-            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+            Pattern.compile("prepareStatement\\([^+)]*\\+[^+)]*\\)");
 
     private String sourceCode;
 

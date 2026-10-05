@@ -17,17 +17,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test dell'area OWASP: DAO Integration.
  * Verifica le proprieta' di sicurezza di CartaDAO tramite analisi statica
  * del codice sorgente (non e' possibile testare il DAO senza un DB).
- * Obiettivi:
- * - Verificare l'uso di PreparedStatement (protezione da SQL Injection)
- * - Documentare l'assenza di WHERE (caricamento di tutti i numeri di carta)
- * - Documentare il salvataggio di CVV in chiaro (violazione PCI DSS)
  */
 @DisplayName("DAO Integration - CartaDAO")
 class CartaDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/CartaDAO.java";
     private static final Pattern CONCATENAZIONE_QUERY =
-            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+            Pattern.compile("prepareStatement\\([^+)]*\\+[^+)]*\\)");
 
     private String sourceCode;
 

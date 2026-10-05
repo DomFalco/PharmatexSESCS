@@ -17,17 +17,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test dell'area OWASP: DAO Integration.
  * Verifica le proprieta' di sicurezza di AcquistoProdottiDAO tramite analisi
  * statica del codice sorgente (non e' possibile testare il DAO senza un DB).
- * Obiettivi:
- * - Verificare l'uso di PreparedStatement (protezione da SQL Injection)
- * - Documentare l'import inutile e l'esposizione dati senza filtro
- * - Confermare che il DAO NON estende HttpServlet (buona pratica)
  */
 @DisplayName("DAO Integration - AcquistoProdottiDAO")
 class AcquistoProdottiDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/AcquistoProdottiDAO.java";
     private static final Pattern CONCATENAZIONE_QUERY =
-            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+            Pattern.compile("prepareStatement\\([^+)]*\\+[^+)]*\\)");
 
     private String sourceCode;
 

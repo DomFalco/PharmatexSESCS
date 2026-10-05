@@ -17,17 +17,13 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test dell'area OWASP: DAO Integration.
  * Verifica le proprieta' di sicurezza di ProdottoDAO tramite analisi statica
  * del codice sorgente (non e' possibile testare il DAO senza un DB configurato).
- * Obiettivi:
- * - Verificare l'uso di PreparedStatement (protezione da SQL Injection)
- * - Verificare l'assenza di concatenazione di stringhe nelle query
- * - Documentare i problemi residui (substring, RuntimeException generiche)
  */
 @DisplayName("DAO Integration - ProdottoDAO")
 class ProdottoDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/ProdottoDAO.java";
     private static final Pattern CONCATENAZIONE_QUERY =
-            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+            Pattern.compile("prepareStatement\\([^+)]*\\+[^+)]*\\)");
 
     private String sourceCode;
 
