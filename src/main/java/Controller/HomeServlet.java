@@ -31,24 +31,21 @@ public class HomeServlet extends HttpServlet {
             dispatcher.forward(request, response);
         }
         else if (request.getParameter("valore").equals("home")) {
-            // ===== FIX: controllo autorizzazione amministratore =====
             HttpSession session = request.getSession(false);
             if (session == null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
                 return;
             }
             Utente admin = (Utente) session.getAttribute("Amministratore");
             if (admin == null || !admin.isAmministratore()) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
                 return;
             }
-            // ===== FINE FIX =====
-
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
             dispatcher.forward(request, response);
         }
         else {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
+            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
         }
     }
 

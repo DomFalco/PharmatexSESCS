@@ -9,9 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test dell'area OWASP: DAO Integration.
@@ -26,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ProdottoDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/ProdottoDAO.java";
+    private static final Pattern CONCATENAZIONE_QUERY =
+            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+
     private String sourceCode;
 
     @BeforeEach
@@ -33,10 +36,6 @@ class ProdottoDAOTest {
         byte[] bytes = Files.readAllBytes(Paths.get(SOURCE_PATH));
         sourceCode = new String(bytes, StandardCharsets.UTF_8);
     }
-
-    // =================================================================
-    // TEST DI SICUREZZA: uso di PreparedStatement
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO usa PreparedStatement in tutti i metodi")
@@ -50,7 +49,7 @@ class ProdottoDAOTest {
     @Test
     @DisplayName("Il DAO non concatena valori nelle query (protezione SQL Injection)")
     void testNessunaConcatenazioneNelleQuery() {
-        assertFalse(sourceCode.matches("(?s).*prepareStatement\\([^)]*\\+[^)]*\\).*"),
+        assertFalse(CONCATENAZIONE_QUERY.matcher(sourceCode).find(),
                 "Non deve esserci concatenazione di stringhe dentro prepareStatement()");
     }
 
@@ -74,10 +73,6 @@ class ProdottoDAOTest {
                 "Il DAO usa RETURN_GENERATED_KEYS (non necessario su UPDATE/DELETE)");
     }
 
-    // =================================================================
-    // TEST DI SICUREZZA: parametri di input
-    // =================================================================
-
     @Test
     @DisplayName("doRetriveByFilter usa substring su 'categoria' (documentazione)")
     void testSubstringInFilter() {
@@ -92,10 +87,6 @@ class ProdottoDAOTest {
         assertTrue(sourceCode.contains("public static Prodotto doRetriveBySearch"),
                 "Verifica l'esistenza del metodo doRetriveBySearch");
     }
-
-    // =================================================================
-    // TEST DI DESIGN: metodi statici
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO ha almeno 12 metodi statici")
@@ -118,10 +109,6 @@ class ProdottoDAOTest {
                 "Il DAO estende HttpServlet: design smell, dovrebbe essere una classe POJO");
     }
 
-    // =================================================================
-    // TEST: gestione delle eccezioni
-    // =================================================================
-
     @Test
     @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
     void testEccezioniWrappate() {
@@ -137,10 +124,6 @@ class ProdottoDAOTest {
         assertTrue(sourceCode.contains("try (Connection con = ConPool.getConnection())"),
                 "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
     }
-
-    // =================================================================
-    // Helper
-    // =================================================================
 
     private int countOccurrences(String text, String substring) {
         int count = 0;

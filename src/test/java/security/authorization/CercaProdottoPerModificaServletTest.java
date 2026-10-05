@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,7 +28,6 @@ class CercaProdottoPerModificaServletTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private HttpSession session;
-    // Rimosso: private RequestDispatcher dispatcher; (convertito in variabile locale)
 
     @BeforeEach
     void setUp() {
@@ -35,7 +36,6 @@ class CercaProdottoPerModificaServletTest {
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
 
-        // Aggiunto come variabile locale
         RequestDispatcher dispatcher = mock(RequestDispatcher.class);
 
         when(request.getSession(false)).thenReturn(session);
@@ -103,47 +103,32 @@ class CercaProdottoPerModificaServletTest {
     }
 
     // =================================================================
-    // TEST DI VALIDAZIONE INPUT (fix CWE-20)
+    // TEST DI VALIDAZIONE INPUT (fix CWE-20) - Parameterized
     // =================================================================
+
+    @ParameterizedTest(name = "Admin: search=''{0}'' restituisce 400")
+    @ValueSource(strings = {
+            "<script>alert(1)</script>",
+            "' OR '1'='1",
+            "cat/../etc",
+            "test;drop",
+            "@#$%"
+    })
+    @DisplayName("Admin: input malevolo su 'search' restituisce 400 Bad Request")
+    void testAdminSearchMalevoloRestituisce400(String inputMalevolo) throws Exception {
+        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
+        when(request.getParameter("search")).thenReturn(inputMalevolo);
+
+        servlet.service(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
+    }
 
     @Test
     @DisplayName("Admin: 'search' null restituisce 400 Bad Request")
     void testAdminSearchNullRestituisce400() throws Exception {
         when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
         when(request.getParameter("search")).thenReturn(null);
-
-        servlet.service(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Admin: 'search' con <script> restituisce 400")
-    void testAdminSearchScriptRestituisce400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("search")).thenReturn("<script>alert(1)</script>");
-
-        servlet.service(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Admin: 'search' con SQL injection restituisce 400")
-    void testAdminSearchSqlInjectionRestituisce400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("search")).thenReturn("' OR '1'='1");
-
-        servlet.service(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Admin: 'search' con simboli restituisce 400")
-    void testAdminSearchSimboliRestituisce400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("search")).thenReturn("cat/../etc");
 
         servlet.service(request, response);
 
@@ -166,15 +151,13 @@ class CercaProdottoPerModificaServletTest {
             // Eccezione attesa dal DB non configurato
         }
 
-        // Non deve ricevere 403 né 400
-        // NOTA: sendError() dichiara throws IOException, quindi serve 'throws Exception'
         verify(response, never()).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
         verify(response, never()).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
     @Test
     @DisplayName("Admin con input valido legge il parametro 'search'")
-    void testAdminLeggeParametroSearch() { // Rimosso 'throws Exception'
+    void testAdminLeggeParametroSearch() {
         when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
         when(request.getParameter("search")).thenReturn("Materasso");
 

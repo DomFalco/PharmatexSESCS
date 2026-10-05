@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.*;
 
 /**
@@ -25,7 +25,6 @@ class RicercaServletTest {
     private RicercaServlet servlet;
     private HttpServletRequest request;
     private HttpServletResponse response;
-    // Rimosso: private HttpSession session;
 
     @BeforeEach
     void setUp() {
@@ -33,7 +32,6 @@ class RicercaServletTest {
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
 
-        // Modificato: 'session' è ora una variabile locale
         HttpSession session = mock(HttpSession.class);
 
         when(request.getSession()).thenReturn(session);
@@ -57,7 +55,7 @@ class RicercaServletTest {
 
     @Test
     @DisplayName("Il parametro 'search' viene letto dalla richiesta")
-    void testGetParameterSearchChiamato() { // Rimosso 'throws Exception'
+    void testGetParameterSearchChiamato() {
         when(request.getParameter("search")).thenReturn("Materasso");
 
         try {
@@ -73,7 +71,7 @@ class RicercaServletTest {
 
     @Test
     @DisplayName("La sessione HTTP viene ottenuta dalla richiesta")
-    void testGetSessionChiamato() { // Rimosso 'throws Exception'
+    void testGetSessionChiamato() {
         when(request.getParameter("search")).thenReturn("Materasso");
 
         try {
@@ -89,7 +87,7 @@ class RicercaServletTest {
 
     @Test
     @DisplayName("Il parametro 'search' non viene sanitizzato (vulnerabilità documentata)")
-    void testInputNonSanitizzato() { // Rimosso 'throws Exception'
+    void testInputNonSanitizzato() {
         String inputMalevolo = "<script>alert(1)</script>";
         when(request.getParameter("search")).thenReturn(inputMalevolo);
 
@@ -99,7 +97,6 @@ class RicercaServletTest {
             // Eccezione attesa dal DB
         }
 
-        // Documenta che il parametro originale passa al DAO senza sanitizzazione
         verify(request, atLeastOnce()).getParameter("search");
     }
 
@@ -110,13 +107,15 @@ class RicercaServletTest {
     void testInputConCaratteriSpecialiNonCausaNPE() {
         when(request.getParameter("search")).thenReturn("caffè/è&bello#1");
 
-        try {
-            servlet.service(request, response);
-        } catch (NullPointerException e) {
-            fail("Input non null non deve causare NPE");
-        } catch (Exception e) {
-            // Eccezione attesa dal DB non configurato
-        }
+        assertDoesNotThrow(() -> {
+            try {
+                servlet.service(request, response);
+            } catch (NullPointerException e) {
+                throw e;
+            } catch (Exception e) {
+                // Eccezione attesa dal DB non configurato: ignorata
+            }
+        }, "Input non null non deve causare NPE");
     }
 
     // ====== 6. La Servlet non gestisce le eccezioni del DB ======
@@ -126,8 +125,6 @@ class RicercaServletTest {
     void testEccezioneDbPropagata() {
         when(request.getParameter("search")).thenReturn("Materasso");
 
-        // Verifica che l'eccezione del DB venga propagata (documentando
-        // la mancanza di gestione degli errori in RicercaServlet)
         assertThrows(Exception.class, () -> servlet.service(request, response),
                 "Il Servlet non gestisce le eccezioni del DAO: il crash si propaga al client");
     }

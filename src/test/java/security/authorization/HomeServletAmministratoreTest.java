@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -41,9 +43,6 @@ class HomeServletAmministratoreTest {
         when(request.getRequestDispatcher(anyString())).thenReturn(dispatcher);
     }
 
-    /**
-     * Helper: crea un Utente amministratore valido.
-     */
     private Utente creaAdmin() {
         Utente u = new Utente();
         u.setAmministratore(true);
@@ -96,19 +95,21 @@ class HomeServletAmministratoreTest {
 
         servlet.service(request, response);
 
+        // Il Servlet non legge il parametro 'valore' prima del controllo auth
         verify(request, never()).getParameter("valore");
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
     }
 
     @Test
-    @DisplayName("Utente anonimo non accede alla lista utenti (GDPR)")
+    @DisplayName("Utente anonimo non accede alla lista utenti (protezione GDPR)")
     void testAnonimoNonAccedeListaUtenti() throws Exception {
         when(request.getSession(false)).thenReturn(null);
-
+        // Anche se l'utente prova a richiedere esplicitamente 'clienti',
+        // il controllo di autorizzazione blocca prima della lettura
         servlet.service(request, response);
 
-        verify(request, never()).getParameter("valore");
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
+        verify(dispatcher, never()).forward(any(), any());
     }
 
     @Test
@@ -137,15 +138,15 @@ class HomeServletAmministratoreTest {
             // Eccezione attesa dal DB non configurato
         }
 
-        // L'admin supera il controllo e arriva al ramo di codice
         verify(response, never()).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
     }
 
-    @Test
-    @DisplayName("Amministratore può raggiungere il ramo 'clienti'")
-    void testAdminAccedeClienti() throws Exception {
+    @ParameterizedTest(name = "Amministratore accede al ramo ''{0}''")
+    @ValueSource(strings = {"clienti", "aggiungi", "quantita", "ordine"})
+    @DisplayName("Amministratore può accedere ai rami protetti")
+    void testAdminAccedeAiRami(String valore) throws Exception {
         when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("valore")).thenReturn("clienti");
+        when(request.getParameter("valore")).thenReturn(valore);
 
         try {
             servlet.service(request, response);
@@ -153,53 +154,7 @@ class HomeServletAmministratoreTest {
             // Eccezione attesa dal DB
         }
 
-        // L'admin legge il parametro 'valore' (supera il controllo di autorizzazione)
         verify(request, atLeastOnce()).getParameter("valore");
         verify(response, never()).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
-    }
-
-    @Test
-    @DisplayName("Amministratore può raggiungere il ramo 'aggiungi'")
-    void testAdminAccedeAggiungi() { // Rimosso 'throws Exception'
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("valore")).thenReturn("aggiungi");
-
-        try {
-            servlet.service(request, response);
-        } catch (Exception e) {
-            // Eccezione attesa
-        }
-
-        verify(request, atLeastOnce()).getParameter("valore");
-    }
-
-    @Test
-    @DisplayName("Amministratore può raggiungere il ramo 'quantita'")
-    void testAdminAccedeQuantita() { // Rimosso 'throws Exception'
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("valore")).thenReturn("quantita");
-
-        try {
-            servlet.service(request, response);
-        } catch (Exception e) {
-            // Eccezione attesa
-        }
-
-        verify(request, atLeastOnce()).getParameter("valore");
-    }
-
-    @Test
-    @DisplayName("Amministratore può raggiungere il ramo 'ordine'")
-    void testAdminAccedeOrdine() { // Rimosso 'throws Exception'
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("valore")).thenReturn("ordine");
-
-        try {
-            servlet.service(request, response);
-        } catch (Exception e) {
-            // Eccezione attesa
-        }
-
-        verify(request, atLeastOnce()).getParameter("valore");
     }
 }

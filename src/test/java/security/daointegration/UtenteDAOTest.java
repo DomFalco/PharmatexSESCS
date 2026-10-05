@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,6 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UtenteDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/UtenteDAO.java";
+    private static final Pattern CONCATENAZIONE_QUERY =
+            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+
     private String sourceCode;
 
     @BeforeEach
@@ -33,10 +37,6 @@ class UtenteDAOTest {
         byte[] bytes = Files.readAllBytes(Paths.get(SOURCE_PATH));
         sourceCode = new String(bytes, StandardCharsets.UTF_8);
     }
-
-    // =================================================================
-    // TEST DI SICUREZZA: uso di PreparedStatement
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO usa PreparedStatement in tutti i 6 metodi")
@@ -50,7 +50,7 @@ class UtenteDAOTest {
     @Test
     @DisplayName("Il DAO non concatena valori nelle query (protezione SQL Injection)")
     void testNessunaConcatenazioneNelleQuery() {
-        assertFalse(sourceCode.matches("(?s).*prepareStatement\\([^)]*\\+[^)]*\\).*"),
+        assertFalse(CONCATENAZIONE_QUERY.matcher(sourceCode).find(),
                 "Non deve esserci concatenazione di stringhe dentro prepareStatement()");
     }
 
@@ -63,10 +63,6 @@ class UtenteDAOTest {
         assertTrue(numSetString >= 15, "Dovrebbero esserci almeno 15 ps.setString()");
         assertTrue(numSetBoolean >= 2, "Dovrebbero esserci almeno 2 ps.setBoolean()");
     }
-
-    // =================================================================
-    // DOCUMENTAZIONE: SHA1 nel login (CWE-916)
-    // =================================================================
 
     @Test
     @DisplayName("doLogin usa SHA1(?) nel database (vulnerabilita' documentata, CWE-916)")
@@ -83,15 +79,9 @@ class UtenteDAOTest {
                 "La query di login confronta passwordEmail con SHA1 della password inserita");
     }
 
-    // =================================================================
-    // TEST DI COMPORTAMENTO (atteso)
-    // =================================================================
-
     @Test
     @DisplayName("doLogin restituisce null se l'utente non esiste")
     void testDoLoginRestituisceNullSeNonTrovato() {
-        // Il codice: if (rs.next()) { ... return utente; } return null;
-        // Verifica che ci sia il "return null" dopo il blocco if
         assertTrue(sourceCode.contains("return null;"),
                 "doLogin deve restituire null se l'utente non viene trovato");
     }
@@ -107,14 +97,9 @@ class UtenteDAOTest {
     @Test
     @DisplayName("controlloEmail restituisce false se l'email non esiste")
     void testControlloEmailRestituisceFalse() {
-        // Il codice: if (rs.next()) return true; // fuori dal try: return false;
         assertTrue(sourceCode.contains("public static boolean controlloEmail"),
                 "Verifica l'esistenza del metodo controlloEmail");
     }
-
-    // =================================================================
-    // TEST DI DESIGN: metodi statici
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO ha almeno 6 metodi statici")
@@ -137,10 +122,6 @@ class UtenteDAOTest {
                 "Il DAO estende HttpServlet: design smell, dovrebbe essere una classe POJO");
     }
 
-    // =================================================================
-    // TEST: gestione delle eccezioni
-    // =================================================================
-
     @Test
     @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
     void testEccezioniWrappate() {
@@ -157,25 +138,14 @@ class UtenteDAOTest {
                 "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
     }
 
-    // =================================================================
-    // DOCUMENTAZIONE: esposizione password hashata
-    // =================================================================
-
     @Test
     @DisplayName("doLogin e doRetriveUtente espongono la password hashata (documentazione)")
     void testEsposizionePasswordHashata() {
-        // Il DAO setta la password sull'oggetto Utente:
-        // utente.setPassword(rs.getString(2));
-        // Questo espone l'hash al chiamante (potenziale data leak nei log o nelle risposte)
         int occurrences = countOccurrences(sourceCode, "setPassword(rs.getString(2))");
         assertTrue(occurrences >= 2,
                 "Il DAO espone la password hashata sull'oggetto Utente: " +
                         "considerare di non restituirla mai al chiamante");
     }
-
-    // =================================================================
-    // Helper
-    // =================================================================
 
     private int countOccurrences(String text, String substring) {
         int count = 0;

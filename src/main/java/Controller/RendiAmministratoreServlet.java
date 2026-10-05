@@ -2,13 +2,9 @@ package Controller;
 
 import Model.Utente;
 import Model.UtenteDAO;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,30 +13,32 @@ import java.util.ArrayList;
 public class RendiAmministratoreServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPost(request,response);
+        doPost(request, response);
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+            ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
             return;
         }
         Utente admin = (Utente) session.getAttribute("Amministratore");
         if (admin == null || !admin.isAmministratore()) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+            ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
             return;
         }
+
         String action = request.getParameter("action");
         if (action == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' mancante.");
+            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' mancante.");
             return;
         }
+
         if (action.startsWith("amministratore")) {
             String val = action.substring("amministratore".length());
             if (val.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
+                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
                 return;
             }
             UtenteDAO.rendiAmministratore(val);
@@ -52,7 +50,7 @@ public class RendiAmministratoreServlet extends HttpServlet {
         else if (action.startsWith("rimuovipermessi")) {
             String val = action.substring("rimuovipermessi".length());
             if (val.isEmpty()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
+                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
                 return;
             }
             UtenteDAO.rimuoviAmministratore(val);
@@ -62,7 +60,7 @@ public class RendiAmministratoreServlet extends HttpServlet {
             dispatcher.forward(request, response);
         }
         else {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
+            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
         }
     }
 }

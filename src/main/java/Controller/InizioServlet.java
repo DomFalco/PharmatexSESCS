@@ -18,13 +18,11 @@ public class InizioServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String richiesta = request.getParameter("action");
 
-        // 1. GESTIONE DEI PARAMETRI NULLI E VALIDAZIONE
         if (richiesta == null) {
             String valore = request.getParameter("valore");
             if (valore != null) {
-                // Validazione base anche per 'valore' (solo lettere, numeri e spazi)
                 if (!valore.matches("[a-zA-Z0-9\\s]+")) {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'valore' non valido.");
+                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'valore' non valido.");
                     return;
                 }
 
@@ -35,18 +33,16 @@ public class InizioServlet extends HttpServlet {
                 dispatcher.forward(request, response);
                 return;
             } else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
+                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
                 return;
             }
         }
 
-        // 2. VALIDAZIONE DI 'RICHIESTA'
         if (!richiesta.matches("[a-zA-Z0-9\\s]+")) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' non valido.");
+            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' non valido.");
             return;
         }
 
-        // 3. GESTIONE DELLE PAGINE STATICHE (Login e Contatti)
         if (richiesta.equals("login")) {
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Login.jsp");
             dispatcher.forward(request, response);
@@ -59,9 +55,8 @@ public class InizioServlet extends HttpServlet {
             return;
         }
 
-        // 4. LOGICA PER LA CATEGORIA
         HttpSession session = request.getSession();
-        session.setAttribute("filtri", richiesta); // Ora è sicuro salvarlo in sessione
+        session.setAttribute("filtri", richiesta);
 
         ArrayList<Prodotto> prodottiCategoria = ProdottoDAO.doRetriveByCategoria(richiesta);
         request.setAttribute(richiesta, prodottiCategoria);

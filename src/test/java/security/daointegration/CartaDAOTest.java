@@ -9,9 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test dell'area OWASP: DAO Integration.
@@ -26,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CartaDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/CartaDAO.java";
+    private static final Pattern CONCATENAZIONE_QUERY =
+            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+
     private String sourceCode;
 
     @BeforeEach
@@ -33,10 +36,6 @@ class CartaDAOTest {
         byte[] bytes = Files.readAllBytes(Paths.get(SOURCE_PATH));
         sourceCode = new String(bytes, StandardCharsets.UTF_8);
     }
-
-    // =================================================================
-    // TEST DI SICUREZZA: uso di PreparedStatement
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO usa PreparedStatement per SELECT e INSERT")
@@ -50,7 +49,7 @@ class CartaDAOTest {
     @Test
     @DisplayName("Il DAO non concatena valori nelle query (protezione SQL Injection)")
     void testNessunaConcatenazioneNelleQuery() {
-        assertFalse(sourceCode.matches("(?s).*prepareStatement\\([^)]*\\+[^)]*\\).*"),
+        assertFalse(CONCATENAZIONE_QUERY.matcher(sourceCode).find(),
                 "Non deve esserci concatenazione di stringhe dentro prepareStatement()");
     }
 
@@ -60,10 +59,6 @@ class CartaDAOTest {
         assertTrue(sourceCode.contains("(?,?,?,?,?)"),
                 "La INSERT deve usare 5 placeholder per i parametri della carta");
     }
-
-    // =================================================================
-    // DOCUMENTAZIONE: problemi gravi di privacy e sicurezza
-    // =================================================================
 
     @Test
     @DisplayName("La SELECT non ha WHERE (vulnerabilita' documentata: carica tutte le carte)")
@@ -93,10 +88,6 @@ class CartaDAOTest {
                         "Violazione PCI DSS: richiederebbe cifratura o tokenizzazione.");
     }
 
-    // =================================================================
-    // DOCUMENTAZIONE: problemi di efficienza e design
-    // =================================================================
-
     @Test
     @DisplayName("Il check di esistenza carica tutti i numeri carta in una ArrayList (documentazione)")
     void testCheckEsistenzaInMemoria() {
@@ -123,10 +114,6 @@ class CartaDAOTest {
                 "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
     }
 
-    // =================================================================
-    // TEST: gestione delle eccezioni
-    // =================================================================
-
     @Test
     @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
     void testEccezioniWrappate() {
@@ -135,10 +122,6 @@ class CartaDAOTest {
                 "Il DAO wrappa SQLException in RuntimeException: " +
                         "perde il tipo specifico dell'eccezione");
     }
-
-    // =================================================================
-    // TEST DI DESIGN: metodi statici e no HttpServlet
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO ha almeno 1 metodo statico")
@@ -160,10 +143,6 @@ class CartaDAOTest {
                         Model.CartaDAO.class),
                 "CartaDAO non estende HttpServlet: buona pratica");
     }
-
-    // =================================================================
-    // Helper
-    // =================================================================
 
     private int countOccurrences(String text, String substring) {
         int count = 0;

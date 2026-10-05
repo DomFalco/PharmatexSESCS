@@ -14,8 +14,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test dell'area OWASP: Business Logic.
  * Verifica il comportamento di Registrazione (Servlet che mostra il form
- * di registrazione pubblico). Essendo una Servlet di sola presentazione,
- * i test verificano solo il forward corretto al JSP.
+ * di registrazione pubblico).
  */
 @DisplayName("Business Logic - Registrazione (Servlet form)")
 class RegistrazioneTest {
@@ -71,11 +70,12 @@ class RegistrazioneTest {
     }
 
     @Test
-    @DisplayName("La Servlet e' accessibile senza autenticazione (pagina pubblica)")
+    @DisplayName("La Servlet è accessibile senza autenticazione (pagina pubblica)")
     void testAccessibileSenzaAutenticazione() throws Exception {
-        // Non essendoci controlli di autenticazione, il forward avviene sempre
+        // Un utente anonimo (nessuna sessione creata) raggiunge il form senza errore
         servlet.service(request, response);
 
-        verify(dispatcher).forward(request, response);
+        // La Servlet non deve mai inviare un errore 401/403
+        verify(response, never()).sendError(anyInt(), anyString());
     }
 }

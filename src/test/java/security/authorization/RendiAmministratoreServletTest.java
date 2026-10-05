@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,7 +30,6 @@ class RendiAmministratoreServletTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private HttpSession session;
-    // Rimosso: private RequestDispatcher dispatcher; (convertito in variabile locale)
 
     @BeforeEach
     void setUp() {
@@ -37,7 +38,6 @@ class RendiAmministratoreServletTest {
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
 
-        // Aggiunto come variabile locale
         RequestDispatcher dispatcher = mock(RequestDispatcher.class);
 
         when(request.getSession(false)).thenReturn(session);
@@ -105,47 +105,32 @@ class RendiAmministratoreServletTest {
     }
 
     // =================================================================
-    // TEST DI VALIDAZIONE INPUT (post-fix)
+    // TEST DI VALIDAZIONE INPUT (post-fix) - Parameterized
     // =================================================================
+
+    @ParameterizedTest(name = "Admin: azione ''{0}'' restituisce 400")
+    @ValueSource(strings = {
+            "azione_bizzarra",
+            "superamministratoreX",
+            "finto_amministratoreX",
+            "amministratore",
+            "rimuovipermessi"
+    })
+    @DisplayName("Admin: azione non valida o senza email restituisce 400")
+    void testAdminAzioneNonValidaRestituisce400(String action) throws Exception {
+        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
+        when(request.getParameter("action")).thenReturn(action);
+
+        servlet.service(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
+    }
 
     @Test
     @DisplayName("Admin: parametro 'action' null restituisce 400")
     void testAdminActionNullRestituisce400() throws Exception {
         when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
         when(request.getParameter("action")).thenReturn(null);
-
-        servlet.service(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Admin: azione sconosciuta restituisce 400")
-    void testAdminAzioneSconosciutaRestituisce400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("action")).thenReturn("azione_bizzarra");
-
-        servlet.service(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Admin: 'amministratore' senza email restituisce 400")
-    void testAdminAmministratoreSenzaEmailRestituisce400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("action")).thenReturn("amministratore");
-
-        servlet.service(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Admin: 'rimuovipermessi' senza email restituisce 400")
-    void testAdminRimuoviPermessiSenzaEmailRestituisce400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("action")).thenReturn("rimuovipermessi");
 
         servlet.service(request, response);
 
@@ -168,7 +153,6 @@ class RendiAmministratoreServletTest {
             // Eccezione attesa dal DB non configurato
         }
 
-        // L'admin supera il controllo e non riceve 403
         verify(response, never()).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
         verify(response, never()).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
@@ -186,34 +170,5 @@ class RendiAmministratoreServletTest {
         }
 
         verify(response, never()).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
-    }
-
-    // =================================================================
-    // TEST DI SICUREZZA: matching permissivo
-    // =================================================================
-
-    @Test
-    @DisplayName("'superamministratore' NON viene interpretato come 'amministratore'")
-    void testMatchingPermissivoBloccato() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        // Con il vecchio codice, "superamministratoreX" matchava "amministratore"
-        // Con startsWith("amministratore"), NON matcha più
-        when(request.getParameter("action")).thenReturn("superamministratoreX");
-
-        servlet.service(request, response);
-
-        // Deve essere riconosciuto come azione sconosciuta
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("'finto_amministratore' NON viene interpretato come valido")
-    void testStringaConAmministratoreNelMezzoBloccata() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(creaAdmin());
-        when(request.getParameter("action")).thenReturn("finto_amministratoreX");
-
-        servlet.service(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 }

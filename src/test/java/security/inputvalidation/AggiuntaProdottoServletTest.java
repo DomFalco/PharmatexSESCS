@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -15,10 +17,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Test dell'area OWASP: Input Validation.
- * Verifica il comportamento di AggiuntaProdottoServlet rispetto ai 17 parametri
- * accettati per l'aggiunta di un nuovo prodotto.
- * NOTA: i test DOCUMENTANO la mancanza di validazione e sanitizzazione del codice
- * attuale. La Servlet passa i valori direttamente al DAO senza controlli.
+ * Verifica il comportamento di AggiuntaProdottoServlet rispetto ai 17 parametri.
  */
 @DisplayName("Input Validation - AggiuntaProdottoServlet")
 class AggiuntaProdottoServletTest {
@@ -26,7 +25,7 @@ class AggiuntaProdottoServletTest {
     private AggiuntaProdottoServlet servlet;
     private HttpServletRequest request;
     private HttpServletResponse response;
-    private HttpSession session;          // <-- campo (usato in testNessunControlloAutorizzazione)
+    private HttpSession session;
 
     @BeforeEach
     void setUp() {
@@ -35,7 +34,6 @@ class AggiuntaProdottoServletTest {
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
 
-        // dispatcher è usato solo qui, quindi variabile locale
         RequestDispatcher dispatcher = mock(RequestDispatcher.class);
 
         when(request.getSession()).thenReturn(session);
@@ -44,9 +42,6 @@ class AggiuntaProdottoServletTest {
         when(request.getRequestDispatcher(anyString())).thenReturn(dispatcher);
     }
 
-    /**
-     * Helper: configura i 17 parametri con valori validi.
-     */
     private void mockParametriValidi() {
         when(request.getParameter("idProdotto")).thenReturn("PROD001");
         when(request.getParameter("nomeCategoria")).thenReturn("Materasso");
@@ -71,53 +66,28 @@ class AggiuntaProdottoServletTest {
     @Test
     @DisplayName("Parametri stringa null non vengono validati (vulnerabilità documentata)")
     void testParametriStringaNullNonValidati() {
-        // idProdotto restituisce null
         when(request.getParameter("idProdotto")).thenReturn(null);
 
         assertThrows(Exception.class, () -> servlet.service(request, response),
                 "Il codice non gestisce parametri stringa null: NPE documentata");
     }
 
-    // ====== 2. Documentazione NumberFormatException ======
+    // ====== 2. Documentazione NumberFormatException - Parameterized ======
 
-    @Test
-    @DisplayName("Larghezza non numerica causa NumberFormatException (vulnerabilità documentata)")
-    void testLarghezzaNonNumericaCausaNumberFormatException() {
+    @ParameterizedTest(name = "Parametro ''{0}'' = ''{1}'' causa NumberFormatException")
+    @CsvSource({
+            "larghezza, abc",
+            "prezzo, abc",
+            "quantita, abc",
+            "prezzo, '10; DROP TABLE Prodotto;'"
+    })
+    @DisplayName("Input non numerico causa NumberFormatException (vulnerabilità documentata)")
+    void testInputNonNumericoCausaNumberFormatException(String paramName, String value) {
         mockParametriValidi();
-        when(request.getParameter("larghezza")).thenReturn("abc");
+        when(request.getParameter(paramName)).thenReturn(value);
 
         assertThrows(NumberFormatException.class, () -> servlet.service(request, response),
-                "Double.parseDouble senza try/catch: NumberFormatException documentata");
-    }
-
-    @Test
-    @DisplayName("Prezzo non numerico causa NumberFormatException (vulnerabilità documentata)")
-    void testPrezzoNonNumericoCausaNumberFormatException() {
-        mockParametriValidi();
-        when(request.getParameter("prezzo")).thenReturn("abc");
-
-        assertThrows(NumberFormatException.class, () -> servlet.service(request, response),
-                "Double.parseDouble senza try/catch: NumberFormatException documentata");
-    }
-
-    @Test
-    @DisplayName("Quantità non numerica causa NumberFormatException (vulnerabilità documentata)")
-    void testQuantitaNonNumericaCausaNumberFormatException() {
-        mockParametriValidi();
-        when(request.getParameter("quantita")).thenReturn("abc");
-
-        assertThrows(NumberFormatException.class, () -> servlet.service(request, response),
-                "Integer.parseInt senza try/catch: NumberFormatException documentata");
-    }
-
-    @Test
-    @DisplayName("Input malevolo su prezzo causa NumberFormatException")
-    void testInputMalevoloSuPrezzoCausaNumberFormatException() {
-        mockParametriValidi();
-        when(request.getParameter("prezzo")).thenReturn("10; DROP TABLE Prodotto;");
-
-        assertThrows(NumberFormatException.class, () -> servlet.service(request, response),
-                "Input non numerico (SQL injection) deve essere rifiutato dal parsing");
+                "Parsing non protetto: NumberFormatException documentata per " + paramName);
     }
 
     // ====== 3. Documentazione mancanza di sanitizzazione ======
@@ -126,8 +96,7 @@ class AggiuntaProdottoServletTest {
     @DisplayName("Il nome prodotto con <script> non viene sanitizzato (vulnerabilità documentata)")
     void testNomeProdottoNonSanitizzato() {
         mockParametriValidi();
-        String inputMalevolo = "<script>alert(1)</script>";
-        when(request.getParameter("nomeProdotto")).thenReturn(inputMalevolo);
+        when(request.getParameter("nomeProdotto")).thenReturn("<script>alert(1)</script>");
 
         try {
             servlet.service(request, response);
@@ -135,7 +104,6 @@ class AggiuntaProdottoServletTest {
             // Eccezione attesa dal DB non configurato
         }
 
-        // Il Servlet NON sanitizza il nome: il valore passa al DAO così com'è
         verify(request, atLeastOnce()).getParameter("nomeProdotto");
     }
 
@@ -161,16 +129,12 @@ class AggiuntaProdottoServletTest {
     void testNessunControlloAutorizzazione() {
         mockParametriValidi();
 
-        // La Servlet NON verifica che l'utente sia amministratore:
-        // chiunque (anche non loggato) può invocare questa Servlet
         try {
             servlet.service(request, response);
         } catch (Exception e) {
             // Eccezione attesa dal DB
         }
 
-        // Verifichiamo che NON venga mai chiamato getSession().getAttribute("Utente")
-        // per controllare l'autorizzazione
         verify(session, never()).getAttribute("Utente");
     }
 
@@ -188,7 +152,6 @@ class AggiuntaProdottoServletTest {
             // Eccezione attesa dal DB
         }
 
-        // Il parsing di "-10" va a buon fine: il valore passa al DAO
         verify(request, atLeastOnce()).getParameter("quantita");
     }
 
@@ -220,7 +183,6 @@ class AggiuntaProdottoServletTest {
             // Eccezione attesa dal DB
         }
 
-        // Verifica che i parametri principali siano stati letti
         verify(request, atLeastOnce()).getParameter("idProdotto");
         verify(request, atLeastOnce()).getParameter("nomeCategoria");
         verify(request, atLeastOnce()).getParameter("nomeProdotto");

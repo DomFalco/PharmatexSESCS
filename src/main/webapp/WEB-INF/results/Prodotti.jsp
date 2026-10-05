@@ -1,28 +1,15 @@
-<%@ page import="Model.Prodotto" %>
-<%@ page import="java.util.List" %>
-<%@ page import="java.util.ArrayList" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="Controller.JspHelper" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ include file="/ParteHTML/navBar.jsp" %>
 <%@ include file="/ParteHTML/Filter.html" %>
 <html>
 <head>
-    <link rel="stylesheet" href="/ParteCSS/CategorieProdotti.css">
-    <%
-        String x;
-        ArrayList<Prodotto> prod = new ArrayList<Prodotto>();
-        if (request.getParameter("action") != null) {
-            prod = (ArrayList<Prodotto>) request.getAttribute(request.getParameter("action"));
-            x = request.getParameter("action");
-        } else {
-            prod = (ArrayList<Prodotto>) request.getAttribute("filtra");
-            x = (String) request.getAttribute("filtraggio");
-        }
-    %>
-    <title><c:out value="<%=x%>"/></title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/ParteCSS/CategorieProdotti.css">
+    <title><c:out value="<%=JspHelper.estraiTitolo(request)%>"/></title>
 </head>
 <body>
-<% for (Prodotto p : prod) {
+<% for (Model.Prodotto p : JspHelper.estraiProdotti(request)) {
     String val = p.getIdProdotto().substring(3);
     int y = Integer.parseInt(val);
     String directory = "immagini/" + p.getIdProdotto() + ".jpg";
@@ -36,7 +23,7 @@
     <div class="box">
         <div class="image">
             <a href="RicercaServlet?search=<c:out value='<%=p.getNomeProd()%>'/>">
-                <img src="<c:out value='<%=directory%>'/>">
+                <img src="<c:out value='<%=directory%>'/>" alt="<c:out value='<%=p.getNomeProd()%>'/>">
             </a>
         </div>
         <div class="info">

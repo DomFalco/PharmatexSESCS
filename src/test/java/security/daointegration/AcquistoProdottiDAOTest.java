@@ -9,9 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test dell'area OWASP: DAO Integration.
@@ -26,6 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AcquistoProdottiDAOTest {
 
     private static final String SOURCE_PATH = "src/main/java/Model/AcquistoProdottiDAO.java";
+    private static final Pattern CONCATENAZIONE_QUERY =
+            Pattern.compile("prepareStatement\\([^)]*\\+[^)]*\\)");
+
     private String sourceCode;
 
     @BeforeEach
@@ -33,10 +36,6 @@ class AcquistoProdottiDAOTest {
         byte[] bytes = Files.readAllBytes(Paths.get(SOURCE_PATH));
         sourceCode = new String(bytes, StandardCharsets.UTF_8);
     }
-
-    // =================================================================
-    // TEST DI SICUREZZA: uso di PreparedStatement
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO usa PreparedStatement in tutti i 3 metodi")
@@ -50,7 +49,7 @@ class AcquistoProdottiDAOTest {
     @Test
     @DisplayName("Il DAO non concatena valori nelle query (protezione SQL Injection)")
     void testNessunaConcatenazioneNelleQuery() {
-        assertFalse(sourceCode.matches("(?s).*prepareStatement\\([^)]*\\+[^)]*\\).*"),
+        assertFalse(CONCATENAZIONE_QUERY.matcher(sourceCode).find(),
                 "Non deve esserci concatenazione di stringhe dentro prepareStatement()");
     }
 
@@ -72,10 +71,6 @@ class AcquistoProdottiDAOTest {
                         "(protezione IDOR: un utente non deve vedere gli acquisti di altri)");
     }
 
-    // =================================================================
-    // TEST DI COMPORTAMENTO
-    // =================================================================
-
     @Test
     @DisplayName("acquistaProdotto esegue una INSERT con 3 parametri")
     void testAcquistaProdottoInsert() {
@@ -96,10 +91,6 @@ class AcquistoProdottiDAOTest {
                 "La query deve usare la tabella Cliente");
     }
 
-    // =================================================================
-    // DOCUMENTAZIONE: problemi di design
-    // =================================================================
-
     @Test
     @DisplayName("Il DAO importa ProtectionDomain ma non lo usa (code smell)")
     void testImportInutile() {
@@ -111,8 +102,6 @@ class AcquistoProdottiDAOTest {
     @Test
     @DisplayName("doRetriveAcquisto non filtra per utente (documentazione)")
     void testDoRetriveAcquistoSenzaFiltro() {
-        // Il metodo doRetriveAcquisto() non ha WHERE: restituisce TUTTI gli acquisti
-        // E' pensato per l'admin (dovrebbe essere protetto a monte)
         assertFalse(sourceCode.contains("doRetriveAcquisto.*WHERE"),
                 "doRetriveAcquisto non filtra: dovrebbe essere invocato solo da admin");
     }
@@ -120,17 +109,10 @@ class AcquistoProdottiDAOTest {
     @Test
     @DisplayName("doRetriveAcquistoUtente non valida 'email' null (documentazione)")
     void testDoRetriveAcquistoUtenteSenzaNullCheck() {
-        // Il metodo passa 'email' a ps.setString senza controllo null.
-        // Se email e' null, setString(1, null) e' OK per JDBC, ma la query
-        // non restituira' righe -> comportamento silenzioso.
         assertFalse(sourceCode.contains("if (email == null)"),
                 "doRetriveAcquistoUtente non valida email null: " +
                         "se il chiamante passa null, il metodo restituisce lista vuota silenziosamente");
     }
-
-    // =================================================================
-    // TEST DI DESIGN: metodi statici e no HttpServlet
-    // =================================================================
 
     @Test
     @DisplayName("Il DAO ha almeno 3 metodi statici")
@@ -154,10 +136,6 @@ class AcquistoProdottiDAOTest {
                         "(a differenza di ProdottoDAO e UtenteDAO)");
     }
 
-    // =================================================================
-    // TEST: gestione delle eccezioni
-    // =================================================================
-
     @Test
     @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
     void testEccezioniWrappate() {
@@ -173,10 +151,6 @@ class AcquistoProdottiDAOTest {
         assertTrue(sourceCode.contains("try (Connection con = ConPool.getConnection())"),
                 "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
     }
-
-    // =================================================================
-    // Helper
-    // =================================================================
 
     private int countOccurrences(String text, String substring) {
         int count = 0;

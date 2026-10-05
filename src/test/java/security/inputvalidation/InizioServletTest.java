@@ -8,16 +8,16 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
  * Test dell'area OWASP: Input Validation.
- * Verifica che InizioServlet:
- * - Rifiuti input con caratteri speciali (regex [a-zA-Z0-9\s]+)
- * - Gestisca correttamente il routing (login, contatti)
- * - Non produca errori 400 per input validi
+ * Verifica che InizioServlet rifiuti input con caratteri speciali,
+ * gestisca il routing e non produca errori 400 per input validi.
  */
 @DisplayName("Input Validation - InizioServlet")
 class InizioServletTest {
@@ -26,7 +26,6 @@ class InizioServletTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private RequestDispatcher dispatcher;
-    // Rimosso: private HttpSession session; (convertito in variabile locale)
 
     @BeforeEach
     void setUp() {
@@ -35,38 +34,24 @@ class InizioServletTest {
         response = mock(HttpServletResponse.class);
         dispatcher = mock(RequestDispatcher.class);
 
-        // Aggiunto come variabile locale
         HttpSession session = mock(HttpSession.class);
 
         when(request.getSession()).thenReturn(session);
     }
 
-    // ====== 1. Validazione del parametro 'action' ======
+    // ====== 1. Validazione del parametro 'action' - Parameterized ======
 
-    @Test
-    @DisplayName("Action con <script> restituisce 400 Bad Request")
-    void testActionConScriptRestituisce400() throws Exception {
-        when(request.getParameter("action")).thenReturn("<script>alert(1)</script>");
-
-        servlet.doGet(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Action con SQL injection restituisce 400 Bad Request")
-    void testActionSqlInjectionRestituisce400() throws Exception {
-        when(request.getParameter("action")).thenReturn("' OR '1'='1");
-
-        servlet.doGet(request, response);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("Action con simboli (parentesi, slash) restituisce 400")
-    void testActionConSimboliRestituisce400() throws Exception {
-        when(request.getParameter("action")).thenReturn("cat/../etc/passwd");
+    @ParameterizedTest(name = "action=''{0}'' restituisce 400")
+    @ValueSource(strings = {
+            "<script>alert(1)</script>",
+            "' OR '1'='1",
+            "cat/../etc/passwd",
+            "test;drop",
+            "a<b>c"
+    })
+    @DisplayName("Action con caratteri malevoli restituisce 400 Bad Request")
+    void testActionMalevolaRestituisce400(String action) throws Exception {
+        when(request.getParameter("action")).thenReturn(action);
 
         servlet.doGet(request, response);
 
@@ -131,15 +116,12 @@ class InizioServletTest {
         when(request.getParameter("action")).thenReturn("Elettronica");
         when(request.getRequestDispatcher(anyString())).thenReturn(dispatcher);
 
-        // Prova a eseguire. Se il DB non è configurato, verrà lanciata un'eccezione.
-        // Ci interessa solo verificare che la validazione sia passata.
         try {
             servlet.doGet(request, response);
         } catch (Exception e) {
-            // Eccezione attesa dal DB (es. IllegalStateException per MYSQL_PASSWORD mancante)
+            // Eccezione attesa dal DB non configurato
         }
 
-        // Verifica chiave: la validazione NON deve aver prodotto un 400
         verify(response, never()).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
