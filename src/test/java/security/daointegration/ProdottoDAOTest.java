@@ -105,20 +105,35 @@ class ProdottoDAOTest {
                 "Il DAO estende HttpServlet: design smell, dovrebbe essere una classe POJO");
     }
 
+    /**
+     * Aggiornato: dopo il refactoring, le eccezioni SQLException sono wrappate
+     * in DataAccessException (eccezione custom piu' specifica di RuntimeException).
+     * Questo migliora la semantica dell'eccezione propagata.
+     */
     @Test
-    @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
+    @DisplayName("Le eccezioni SQLException sono wrappate in DataAccessException (custom)")
     void testEccezioniWrappate() {
-        int occurrences = countOccurrences(sourceCode, "throw new RuntimeException(e)");
+        int occurrences = countOccurrences(sourceCode, "throw new DataAccessException");
         assertTrue(occurrences >= 10,
-                "Il DAO wrappa SQLException in RuntimeException: " +
-                        "perde il tipo specifico dell'eccezione");
+                "Il DAO wrappa SQLException in DataAccessException: " +
+                        "eccezione custom piu' specifica di RuntimeException (trovate: " +
+                        occurrences + ")");
     }
 
+    /**
+     * Aggiornato: dopo il refactoring, la Connection e il PreparedStatement
+     * sono entrambi dentro il try-with-resources. Il pattern cercato e' quindi
+     * "try (Connection con = ConPool.getConnection()" (seguito da ";" o ","
+     * a seconda del metodo).
+     */
     @Test
-    @DisplayName("Il DAO usa try-with-resources per la Connection")
+    @DisplayName("Il DAO usa try-with-resources per la Connection in tutti i metodi")
     void testTryWithResources() {
-        assertTrue(sourceCode.contains("try (Connection con = ConPool.getConnection())"),
-                "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
+        int occurrences = countOccurrences(sourceCode,
+                "try (Connection con = ConPool.getConnection()");
+        assertTrue(occurrences >= 12,
+                "Il DAO dovrebbe usare try-with-resources in tutti i 12 metodi " +
+                        "(trovati: " + occurrences + ")");
     }
 
     private int countOccurrences(String text, String substring) {
