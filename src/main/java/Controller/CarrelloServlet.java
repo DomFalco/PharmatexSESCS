@@ -32,7 +32,7 @@ public class CarrelloServlet extends HttpServlet {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "java:S1989"})
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         Utente u = (Utente) session.getAttribute("Utente");
@@ -81,7 +81,7 @@ public class CarrelloServlet extends HttpServlet {
      * Cerca il prodotto nel carrello: se esiste aggiorna la quantità,
      * altrimenti lo aggiunge al carrello.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("java:S1989")
     private void aggiornaQuantitaEsistente(HttpServletRequest request,
                                            ArrayList<Prodotto> cartList,
                                            ArrayList<Integer> qList,

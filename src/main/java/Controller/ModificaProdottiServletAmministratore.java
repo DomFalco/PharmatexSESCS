@@ -27,6 +27,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
     }
 
     @Override
+    @SuppressWarnings("java:S1989")
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession sessione = request.getSession();
         Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);

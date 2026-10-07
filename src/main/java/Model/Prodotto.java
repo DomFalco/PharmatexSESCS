@@ -1,6 +1,10 @@
 package Model;
 
-public class Prodotto {
+import java.io.Serializable;
+
+public class Prodotto implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String idProdotto, nomeProd, descrizione, tipoMaterialeMaterasso, tipoLetto, coloreLetto,
             materialeRete, rivestimentoDivano, coloreDivano, tipoStoffaCuscino, materialeCuscino, formaCuscino, nomeCategoria;
     private double larghezza, lunghezza, prezzo;
@@ -133,7 +137,6 @@ public class Prodotto {
     public void setQuantita(int quantita) {
         this.quantita = quantita;
     }
-
 
     @Override
     public String toString() {

@@ -1,11 +1,14 @@
 package Model;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class Utente {
+public class Utente implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String dataDiNascita, email, password, nome, cognome, numeroTelefono, codiceFiscale, via, citta, cap, provincia, nazione;
     private boolean amministratore;
 
@@ -120,6 +123,3 @@ public class Utente {
         this.amministratore = amministratore;
     }
 }
-
-
-

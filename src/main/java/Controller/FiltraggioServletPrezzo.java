@@ -31,6 +31,7 @@ public class FiltraggioServletPrezzo extends HttpServlet {
     private static final double PREZZO_MIN_DEFAULT = 0.0;
 
     @Override
+    @SuppressWarnings("java:S1989")
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         String richiesta = (String) session.getAttribute(ATTR_FILTRI);

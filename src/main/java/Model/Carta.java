@@ -1,6 +1,10 @@
 package Model;
 
-public class Carta {
+import java.io.Serializable;
+
+public class Carta implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     String numeroCarta, nomeIntestario, dataScadenza;
     String CVV;
     Utente u;

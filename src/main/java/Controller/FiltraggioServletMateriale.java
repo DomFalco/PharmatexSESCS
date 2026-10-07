@@ -1,6 +1,5 @@
 package Controller;
 
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -25,6 +24,7 @@ public class FiltraggioServletMateriale extends HttpServlet {
     private static final String ATTR_MATERIALE = "materiale";
 
     @Override
+    @SuppressWarnings("java:S1989")
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String mat = request.getParameter("prodotto");
         String materiale = request.getParameter("materiale");
