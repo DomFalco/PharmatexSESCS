@@ -87,12 +87,16 @@ class AcquistoProdottiDAOTest {
                 "La query deve usare la tabella Cliente");
     }
 
+    /**
+     * Test aggiornato dopo fix: il DAO non importa piu' ProtectionDomain.
+     * In precedenza questo era un code smell documentato (import inutile).
+     * Ora verifichiamo che il fix sia stato applicato.
+     */
     @Test
-    @DisplayName("Il DAO importa ProtectionDomain ma non lo usa (code smell)")
-    void testImportInutile() {
-        assertTrue(sourceCode.contains("import java.security.ProtectionDomain"),
-                "Il DAO importa ProtectionDomain: import inutile (code smell). " +
-                        "Fix suggerito: rimuovere l'import.");
+    @DisplayName("Il DAO non importa ProtectionDomain (fix applicato)")
+    void testNessunImportInutile() {
+        assertFalse(sourceCode.contains("import java.security.ProtectionDomain"),
+                "Il DAO non deve importare ProtectionDomain: import inutile rimosso");
     }
 
     @Test
@@ -132,20 +136,31 @@ class AcquistoProdottiDAOTest {
                         "(a differenza di ProdottoDAO e UtenteDAO)");
     }
 
+    /**
+     * Test aggiornato dopo refactoring: le eccezioni SQLException sono ora
+     * wrappate in DataAccessException (custom) invece di RuntimeException generica.
+     */
     @Test
-    @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
+    @DisplayName("Le eccezioni SQLException sono wrappate in DataAccessException (custom)")
     void testEccezioniWrappate() {
-        int occurrences = countOccurrences(sourceCode, "throw new RuntimeException(e)");
+        int occurrences = countOccurrences(sourceCode, "throw new DataAccessException");
         assertTrue(occurrences >= 3,
-                "Il DAO wrappa SQLException in RuntimeException: " +
-                        "perde il tipo specifico dell'eccezione");
+                "Il DAO wrappa SQLException in DataAccessException: " +
+                        "eccezione custom piu' specifica di RuntimeException. Trovate: " + occurrences);
     }
 
+    /**
+     * Test aggiornato dopo refactoring: PreparedStatement e ResultSet sono
+     * ora dentro il try-with-resources (oltre alla Connection).
+     */
     @Test
-    @DisplayName("Il DAO usa try-with-resources per la Connection")
+    @DisplayName("Il DAO usa try-with-resources per Connection e PreparedStatement")
     void testTryWithResources() {
-        assertTrue(sourceCode.contains("try (Connection con = ConPool.getConnection())"),
-                "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
+        int occurrences = countOccurrences(sourceCode,
+                "try (Connection con = ConPool.getConnection();");
+        assertTrue(occurrences >= 3,
+                "Il DAO dovrebbe usare try-with-resources per Connection e PreparedStatement " +
+                        "in tutti i 3 metodi. Trovati: " + occurrences);
     }
 
     private int countOccurrences(String text, String substring) {
