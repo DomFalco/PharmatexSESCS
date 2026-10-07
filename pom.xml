@@ -16,20 +16,6 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <junit.version>5.8.1</junit.version>
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-
-        <!-- ============================================================
-             Esclusioni coverage SonarQube.
-
-             ConPool.java: configurazione del pool JDBC. Il branch
-             configureForProduction() e' eseguibile solo con un DB MySQL
-             reale e quindi non puo' essere coperto dai test H2. La classe
-             rimane comunque coperta da ConPoolTest (analisi statica) per
-             le verifiche di sicurezza: nessuna password hardcoded, uso
-             corretto di System.getenv(), fail-fast su MYSQL_PASSWORD.
-             ============================================================ -->
-        <sonar.coverage.exclusions>
-            src/main/java/Model/ConPool.java
-        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
