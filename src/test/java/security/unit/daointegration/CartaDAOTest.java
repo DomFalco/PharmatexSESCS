@@ -96,27 +96,35 @@ class CartaDAOTest {
     @Test
     @DisplayName("Nessun else se la carta esiste gia' (silent skip documentato)")
     void testNessunElseSeCartaEsiste() {
-        assertTrue(sourceCode.contains("if(f==0)"),
-                "Il DAO usa 'if(f==0)' per decidere se inserire: se la carta esiste, " +
+        // Aggiornato dopo refactoring: 'int f' sostituito con 'boolean esiste'
+        assertTrue(sourceCode.contains("boolean esiste"),
+                "Il DAO usa 'boolean esiste' per decidere se inserire: se la carta esiste, " +
                         "non fa nulla silenziosamente (il chiamante non riceve feedback)");
-        assertFalse(sourceCode.contains("else"),
+        assertTrue(sourceCode.contains("if (!esiste)"),
                 "Manca un ramo else: se la carta esiste, il DAO non informa il chiamante");
+        assertFalse(sourceCode.contains("else {"),
+                "Manca un ramo else esplicito: se la carta esiste, il DAO non informa il chiamante");
     }
 
     @Test
-    @DisplayName("Il DAO usa try-with-resources per la Connection")
+    @DisplayName("Il DAO usa try-with-resources per Connection e PreparedStatement")
     void testTryWithResources() {
-        assertTrue(sourceCode.contains("try (Connection con = ConPool.getConnection())"),
-                "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
+        // Aggiornato dopo refactoring: PreparedStatement ora è nel try-with-resources
+        int occurrences = countOccurrences(sourceCode,
+                "try (Connection con = ConPool.getConnection();");
+        assertTrue(occurrences >= 2,
+                "Il DAO dovrebbe usare try-with-resources per Connection e PreparedStatement " +
+                        "in entrambi i blocchi (SELECT e INSERT). Trovati: " + occurrences);
     }
 
     @Test
-    @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
+    @DisplayName("Le eccezioni SQLException sono wrappate in DataAccessException (custom)")
     void testEccezioniWrappate() {
-        int occurrences = countOccurrences(sourceCode, "throw new RuntimeException(e)");
-        assertTrue(occurrences >= 1,
-                "Il DAO wrappa SQLException in RuntimeException: " +
-                        "perde il tipo specifico dell'eccezione");
+        // Aggiornato dopo refactoring: RuntimeException → DataAccessException
+        int occurrences = countOccurrences(sourceCode, "throw new DataAccessException");
+        assertTrue(occurrences >= 2,
+                "Il DAO wrappa SQLException in DataAccessException: " +
+                        "eccezione custom più specifica di RuntimeException. Trovate: " + occurrences);
     }
 
     @Test

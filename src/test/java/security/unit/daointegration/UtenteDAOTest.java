@@ -119,19 +119,24 @@ class UtenteDAOTest {
     }
 
     @Test
-    @DisplayName("Le eccezioni SQLException sono wrappate in RuntimeException (documentazione)")
+    @DisplayName("Le eccezioni SQLException sono wrappate in DataAccessException (custom)")
     void testEccezioniWrappate() {
-        int occurrences = countOccurrences(sourceCode, "throw new RuntimeException(e)");
+        // Aggiornato dopo refactoring: RuntimeException → DataAccessException
+        int occurrences = countOccurrences(sourceCode, "throw new DataAccessException");
         assertTrue(occurrences >= 5,
-                "Il DAO wrappa SQLException in RuntimeException: " +
-                        "perde il tipo specifico dell'eccezione");
+                "Il DAO wrappa SQLException in DataAccessException: " +
+                        "eccezione custom più specifica di RuntimeException. Trovate: " + occurrences);
     }
 
     @Test
-    @DisplayName("Il DAO usa try-with-resources per la Connection")
+    @DisplayName("Il DAO usa try-with-resources per Connection e PreparedStatement")
     void testTryWithResources() {
-        assertTrue(sourceCode.contains("try (Connection con = ConPool.getConnection())"),
-                "Il DAO dovrebbe usare try-with-resources per gestire la chiusura della connessione");
+        // Aggiornato dopo refactoring: PreparedStatement ora è nel try-with-resources
+        int occurrences = countOccurrences(sourceCode,
+                "try (Connection con = ConPool.getConnection();");
+        assertTrue(occurrences >= 6,
+                "Il DAO dovrebbe usare try-with-resources per Connection e PreparedStatement " +
+                        "in tutti i 6 metodi. Trovati: " + occurrences);
     }
 
     @Test
