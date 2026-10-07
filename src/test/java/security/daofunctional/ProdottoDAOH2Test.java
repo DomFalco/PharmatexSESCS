@@ -167,6 +167,64 @@ class ProdottoDAOH2Test extends BaseH2Test {
     }
 
     // ==================================================================
+    // Test dei metodi di filtro per materiale
+    // ==================================================================
+
+    @Test
+    @DisplayName("doRetriveMaterialeMaterasso filtra per tipo di materiale del materasso")
+    void testDoRetriveMaterialeMaterasso() throws Exception {
+        executeSql(insertProdottoCompleto("P0001", "Materasso", "Nuvola",
+                400.0, 5, "Memory", null, null));
+        executeSql(insertProdottoCompleto("P0002", "Materasso", "Roma",
+                239.0, 5, "Lattice", null, null));
+        executeSql(insertProdottoCompleto("P0003", "Materasso", "Giglio",
+                350.0, 5, "Memory", null, null));
+
+        ArrayList<Prodotto> result = ProdottoDAO.doRetriveMaterialeMaterasso("Memory");
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Prodotto::getIdProdotto)
+                .containsExactlyInAnyOrder("P0001", "P0003");
+    }
+
+    @Test
+    @DisplayName("doRetriveMaterialeRete filtra per materiale della rete")
+    void testDoRetriveMaterialeRete() throws Exception {
+        executeSql(insertProdottoCompleto("R0001", "Rete", "Faggio",
+                570.0, 5, null, "Faggio", null));
+        executeSql(insertProdottoCompleto("R0002", "Rete", "Tecna",
+                530.0, 5, null, "Ferro", null));
+        executeSql(insertProdottoCompleto("R0003", "Rete", "GoldSoft",
+                329.0, 5, null, "Faggio", null));
+
+        ArrayList<Prodotto> result = ProdottoDAO.doRetriveMaterialeRete("Faggio");
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Prodotto::getIdProdotto)
+                .containsExactlyInAnyOrder("R0001", "R0003");
+    }
+
+    @Test
+    @DisplayName("doRetriveMaterialeCuscino filtra per materiale del cuscino")
+    void testDoRetriveMaterialeCuscino() throws Exception {
+        executeSql(insertProdottoCompleto("C0001", "Cuscino", "Greta",
+                40.0, 5, null, null, "Memory"));
+        executeSql(insertProdottoCompleto("C0002", "Cuscino", "Guanciale",
+                30.0, 5, null, null, "Poliestere"));
+        executeSql(insertProdottoCompleto("C0003", "Cuscino", "Salute",
+                40.0, 5, null, null, "Memory"));
+
+        ArrayList<Prodotto> result = ProdottoDAO.doRetriveMaterialeCuscino("Memory");
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Prodotto::getIdProdotto)
+                .containsExactlyInAnyOrder("C0001", "C0003");
+    }
+
+    // ==================================================================
     // Test di sicurezza (SQL Injection a runtime)
     // ==================================================================
 
@@ -190,5 +248,24 @@ class ProdottoDAOH2Test extends BaseH2Test {
                 + "prezzo, quantita) VALUES ('"
                 + id + "', '" + categoria + "', '" + nome + "', "
                 + "'Descrizione di test', " + prezzo + ", " + quantita + ")";
+    }
+
+    // ==================================================================
+    // Helper: INSERT di un prodotto con i campi materiale
+    // ==================================================================
+
+    private String insertProdottoCompleto(String id, String categoria, String nome,
+                                          double prezzo, int quantita,
+                                          String materialeMaterasso,
+                                          String materialeRete,
+                                          String materialeCuscino) {
+        return "INSERT INTO Prodotto (idProdotto, nomeCategoria, nomeProd, descrizione, "
+                + "prezzo, quantita, tipoMaterialeMaterasso, materialeRete, materialeCuscino) VALUES ("
+                + "'" + id + "', '" + categoria + "', '" + nome + "', "
+                + "'Descrizione di test', " + prezzo + ", " + quantita + ", "
+                + (materialeMaterasso == null ? "NULL" : "'" + materialeMaterasso + "'") + ", "
+                + (materialeRete == null ? "NULL" : "'" + materialeRete + "'") + ", "
+                + (materialeCuscino == null ? "NULL" : "'" + materialeCuscino + "'")
+                + ")";
     }
 }
