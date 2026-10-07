@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Test funzionali dello AcquistoProdottiDAO su H2 in-memory.
@@ -41,12 +42,9 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
         executeSql(insertProdotto("P0001", "Materasso", "Nuvola", 400.0, 5));
 
         // Il cliente non esiste -> la FK emailCliente fallisce -> RuntimeException
-        try {
-            AcquistoProdottiDAO.acquistaProdotto("nessuno@test.com", "P0001", 1);
-            org.junit.jupiter.api.Assertions.fail("Attesa RuntimeException per FK violata");
-        } catch (RuntimeException expected) {
-            // Comportamento atteso: eccezione propagata
-        }
+        assertThatThrownBy(() ->
+                AcquistoProdottiDAO.acquistaProdotto("nessuno@test.com", "P0001", 1))
+                .isInstanceOf(RuntimeException.class);
     }
 
     // ==================================================================
@@ -56,7 +54,6 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("doRetriveAcquistoUtente restituisce solo gli acquisti dell'utente specificato")
     void testDoRetriveAcquistoUtente() throws Exception {
-        // Due clienti, due prodotti, acquisti diversi
         executeSql(insertCliente("mario@test.com"));
         executeSql(insertCliente("luigi@test.com"));
         executeSql(insertProdotto("P0001", "Materasso", "Nuvola", 400.0, 5));
@@ -115,7 +112,7 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
     }
 
     // ==================================================================
-    // Test di integrità dei dati restituiti
+    // Test di integrita' dei dati restituiti
     // ==================================================================
 
     @Test

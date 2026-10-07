@@ -62,24 +62,19 @@ class ProdottoDAOH2Test extends BaseH2Test {
      * Prima del fix: doRetriveBySearch("nuvola") restituiva null perche' il
      * pattern non era uppercasato lato Java, nonostante la query usasse
      * upper(nomeProd). Il bug e' stato scoperto SOLO grazie a questo test
-     * funzionale su H2; ne' SonarQube ne' l'analisi statica potevano rilevarlo.
-     * Dopo il fix: la query usa "upper(nomeProd) LIKE upper(?)", quindi la
-     * ricerca e' case-insensitive in entrambe le direzioni.
+     * funzionale su H2.
      */
     @Test
     @DisplayName("FIX SEC-DAO-01: doRetriveBySearch e' case-insensitive (fix applicato)")
     void testDoRetriveBySearch_CaseInsensitive() throws Exception {
         executeSql(insertProdotto("P0001", "Materasso", "Nuvola", 400.0, 5));
 
-        // Input lowercase
         Prodotto lowercase = ProdottoDAO.doRetriveBySearch("nuvola");
         assertThat(lowercase.getIdProdotto()).isEqualTo("P0001");
 
-        // Input uppercase
         Prodotto uppercase = ProdottoDAO.doRetriveBySearch("NUVOLA");
         assertThat(uppercase.getIdProdotto()).isEqualTo("P0001");
 
-        // Input mixed-case
         Prodotto mixedcase = ProdottoDAO.doRetriveBySearch("NuVoLa");
         assertThat(mixedcase.getIdProdotto()).isEqualTo("P0001");
     }
@@ -91,7 +86,6 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdotto("P0002", "Materasso", "Roma",   239.0, 5));
         executeSql(insertProdotto("P0003", "Materasso", "Giglio", 350.0, 5));
 
-        // Filtro: prezzo tra 250 e 450 -> solo P0001 (400) e P0003 (350)
         ArrayList<Prodotto> result = ProdottoDAO.doRetriveByFilter("Materasso", 450.0, 250.0);
 
         assertThat(result).hasSize(2);
@@ -118,7 +112,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
 
     @Test
     @DisplayName("aggiuntaProdotto inserisce correttamente un nuovo prodotto")
-    void testAggiuntaProdotto() throws Exception {
+    void testAggiuntaProdotto() {
         Prodotto p = new Prodotto();
         p.setIdProdotto("P0099");
         p.setNomeCategoria("Cuscino");
@@ -181,11 +175,8 @@ class ProdottoDAOH2Test extends BaseH2Test {
     void testSqlInjectionNeutralizzata() throws Exception {
         executeSql(insertProdotto("P0001", "Materasso", "Nuvola", 400.0, 5));
 
-        // Payload classico: se la query fosse concatenata, restituirebbe P0001
         Prodotto result = ProdottoDAO.doRetriveBySearch("' OR '1'='1");
 
-        // Con PreparedStatement, il payload e' trattato come stringa letterale:
-        // nessun prodotto ha nomeProd = "' OR '1'='1%", quindi il risultato e' vuoto
         assertThat(result.getIdProdotto()).isNull();
     }
 

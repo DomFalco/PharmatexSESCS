@@ -112,9 +112,6 @@ public class ProdottoDAO extends HttpServlet {
     public static Prodotto doRetriveBySearch(String nome) {
         Prodotto p = new Prodotto();
         try (Connection con = ConPool.getConnection()) {
-            // FIX: aggiunto upper() anche sul parametro per rendere la ricerca case-insensitive.
-            // Prima: "WHERE upper(nomeProd) LIKE ?"  -> il pattern non veniva uppercasato -> case-sensitive
-            // Dopo:  "WHERE upper(nomeProd) LIKE upper(?)" -> case-insensitive
             PreparedStatement ps =
                     con.prepareStatement("SELECT idProdotto, nomeCategoria,nomeProd,descrizione,larghezza, lunghezza,prezzo, quantita, tipoMaterialeMaterasso,coloreLetto, materialeRete, rivestimentoDivano, coloreDivano, tipoStoffaCuscino, materialeCuscino, formaCuscino FROM Prodotto WHERE upper(nomeProd) LIKE upper(?)");
             ps.setString(1, nome.concat("%"));
@@ -143,30 +140,30 @@ public class ProdottoDAO extends HttpServlet {
         }
     }
 
-    public static void doUpdateQuantita(int q,String idProdotto) {
-        try (Connection con = ConPool.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(
-                    "UPDATE Prodotto SET quantita=? WHERE idProdotto=?",
-                    Statement.RETURN_GENERATED_KEYS);
+    public static void doUpdateQuantita(int q, String idProdotto) {
+        try (Connection con = ConPool.getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "UPDATE Prodotto SET quantita=? WHERE idProdotto=?",
+                     Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, q);
             ps.setString(2, idProdotto);
             if (ps.executeUpdate() != 1) {
-                throw new RuntimeException("INSERT error.");
+                throw new RuntimeException("UPDATE error.");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static void doSetNewPrezzo(double prezzo,String idProdotto) {
-        try (Connection con = ConPool.getConnection()) {
-            PreparedStatement ps = con.prepareStatement(
-                    "UPDATE Prodotto SET prezzo=? WHERE idProdotto=?",
-                    Statement.RETURN_GENERATED_KEYS);
+    public static void doSetNewPrezzo(double prezzo, String idProdotto) {
+        try (Connection con = ConPool.getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "UPDATE Prodotto SET prezzo=? WHERE idProdotto=?",
+                     Statement.RETURN_GENERATED_KEYS)) {
             ps.setDouble(1, prezzo);
             ps.setString(2, idProdotto);
             if (ps.executeUpdate() != 1) {
-                throw new RuntimeException("INSERT error.");
+                throw new RuntimeException("UPDATE error.");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -304,25 +301,26 @@ public class ProdottoDAO extends HttpServlet {
         }
     }
 
-    public static void cancellaProdotto(String idProdotto){
-        try (Connection con = ConPool.getConnection()) {
-            PreparedStatement ps =
-                    con.prepareStatement("DELETE FROM Prodotto WHERE idProdotto=?",
-                            Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1,idProdotto);
+    public static void cancellaProdotto(String idProdotto) {
+        try (Connection con = ConPool.getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "DELETE FROM Prodotto WHERE idProdotto=?",
+                     Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, idProdotto);
             if (ps.executeUpdate() != 1) {
-                throw new RuntimeException("INSERT error.");
+                throw new RuntimeException("DELETE error.");
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
 
     public static void aggiuntaProdotto(Prodotto p) {
-        try (Connection con = ConPool.getConnection()) {
-            PreparedStatement ps = con.prepareStatement("INSERT INTO Prodotto (idProdotto,nomeCategoria,nomeProd,descrizione,larghezza,lunghezza,prezzo,quantita,tipoMaterialeMaterasso ,coloreLetto ,materialeRete,rivestimentoDivano,coloreDivano,tipoStoffaCuscino,materialeCuscino,formaCuscino) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    Statement.RETURN_GENERATED_KEYS);
+        try (Connection con = ConPool.getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "INSERT INTO Prodotto (idProdotto,nomeCategoria,nomeProd,descrizione,larghezza,lunghezza,prezzo,quantita,tipoMaterialeMaterasso ,coloreLetto ,materialeRete,rivestimentoDivano,coloreDivano,tipoStoffaCuscino,materialeCuscino,formaCuscino) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                     Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, p.getIdProdotto());
             ps.setString(2, p.getNomeCategoria());
@@ -339,8 +337,7 @@ public class ProdottoDAO extends HttpServlet {
             ps.setString(13, p.getColoreDivano());
             ps.setString(14, p.getTipoStoffaCuscino());
             ps.setString(15, p.getMaterialeCuscino());
-            ps.setString(16,p.getFormaCuscino());
-
+            ps.setString(16, p.getFormaCuscino());
 
             if (ps.executeUpdate() != 1)
                 throw new RuntimeException("Errore nel definire il prodotto");
