@@ -60,12 +60,16 @@ public class ConPool {
     }
 
     private static void configureForProduction(PoolProperties p) {
-        String host = getEnvOrDefault("MYSQL_HOST", "localhost");
-        String port = getEnvOrDefault("MYSQL_PORT", "3306");
-        String database = getEnvOrDefault("MYSQL_DATABASE", "ecommerce");
-        String user = getEnvOrDefault("MYSQL_USER", "root");
+        String host = System.getenv("MYSQL_HOST");
+        String port = System.getenv("MYSQL_PORT");
+        String database = System.getenv("MYSQL_DATABASE");
+        String user = System.getenv("MYSQL_USER");
         String password = System.getenv("MYSQL_PASSWORD");
 
+        if (host == null) host = "localhost";
+        if (port == null) port = "3306";
+        if (database == null) database = "ecommerce";
+        if (user == null) user = "root";
         if (password == null) {
             throw new IllegalStateException("MYSQL_PASSWORD environment variable not set.");
         }
@@ -85,10 +89,5 @@ public class ConPool {
         p.setMinIdle(10);
         p.setRemoveAbandonedTimeout(60);
         p.setRemoveAbandoned(true);
-    }
-
-    private static String getEnvOrDefault(String name, String defaultValue) {
-        String value = System.getenv(name);
-        return value != null ? value : defaultValue;
     }
 }
