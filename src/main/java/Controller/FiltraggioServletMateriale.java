@@ -1,47 +1,75 @@
 package Controller;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 @WebServlet("/FiltraggioServletMateriale")
 public class FiltraggioServletMateriale extends HttpServlet {
+
+    // ===== Costanti =====
+    private static final String OPTION_SELEZIONARE = "<option>Selezionare...</option>";
+
+    private static final String CATEGORIA_MATERASSO = "Materasso";
+    private static final String CATEGORIA_RETE = "Rete";
+    private static final String CATEGORIA_CUSCINO = "Cuscino";
+
+    private static final String ATTR_MAT = "mat";
+    private static final String ATTR_MATERIALE = "materiale";
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String mat = request.getParameter("prodotto");
         String materiale = request.getParameter("materiale");
 
-        // 1. CONTROLLO NULL (Evita crash se i parametri non vengono inviati)
+        // 1. CONTROLLO NULL (evita crash se i parametri non vengono inviati)
         if (mat == null) mat = "";
         if (materiale == null) materiale = "";
 
-        // 2. SANITIZZAZIONE (Risolve il Trust Boundary Violation per Snyk)
+        // 2. SANITIZZAZIONE (risolve il Trust Boundary Violation per Snyk)
         String matSicuro = mat.replaceAll("[^a-zA-Z0-9\\s]", "");
         String materialeSicuro = materiale.replaceAll("[^a-zA-Z0-9\\s]", "");
 
-        // 3. LOGICA DI RISPOSTA HTML (Usiamo le variabili sicure per i confronti)
-        if (matSicuro.equalsIgnoreCase("Materasso")) {
-            response.getWriter().append("<option>Selezionare...</option>");
-            response.getWriter().append("<option>Memory</option>");
-            response.getWriter().append("<option>Molla</option>");
-            response.getWriter().append("<option>Lana</option>");
-            response.getWriter().append("<option>Lattice</option>");
-        } else if (matSicuro.equalsIgnoreCase("Rete")) {
-            response.getWriter().append("<option>Selezionare...</option>");
-            response.getWriter().append("<option>Faggio</option>");
-            response.getWriter().append("<option>Ferro</option>");
-        } else if (matSicuro.equalsIgnoreCase("Cuscino")) {
-            response.getWriter().append("<option>Selezionare...</option>");
-            response.getWriter().append("<option>Memory</option>");
-            response.getWriter().append("<option>Basic</option>");
-            response.getWriter().append("<option>Fibre sintetiche</option>");
+        // 3. LOGICA DI RISPOSTA HTML (usa le variabili sicure per i confronti)
+        PrintWriter out = response.getWriter();
+
+        if (matSicuro.equalsIgnoreCase(CATEGORIA_MATERASSO)) {
+            scriviOption(out, OPTION_SELEZIONARE,
+                    "<option>Memory</option>",
+                    "<option>Molla</option>",
+                    "<option>Lana</option>",
+                    "<option>Lattice</option>");
+        } else if (matSicuro.equalsIgnoreCase(CATEGORIA_RETE)) {
+            scriviOption(out, OPTION_SELEZIONARE,
+                    "<option>Faggio</option>",
+                    "<option>Ferro</option>");
+        } else if (matSicuro.equalsIgnoreCase(CATEGORIA_CUSCINO)) {
+            scriviOption(out, OPTION_SELEZIONARE,
+                    "<option>Memory</option>",
+                    "<option>Basic</option>",
+                    "<option>Fibre sintetiche</option>");
         }
 
         // 4. INSERIMENTO SICURO NELLA SESSIONE
         HttpSession session = request.getSession();
-        session.setAttribute("mat", matSicuro);
-        session.setAttribute("materiale", materialeSicuro);
+        session.setAttribute(ATTR_MAT, matSicuro);
+        session.setAttribute(ATTR_MATERIALE, materialeSicuro);
+    }
+
+    /**
+     * Scrive una lista di option HTML sul writer di risposta.
+     * Il primo elemento è tipicamente il placeholder "Selezionare...".
+     */
+    private void scriviOption(PrintWriter out, String... option) {
+        for (String o : option) {
+            out.append(o);
+        }
     }
 }

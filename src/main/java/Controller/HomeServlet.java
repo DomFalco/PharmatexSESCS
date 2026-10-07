@@ -13,17 +13,18 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @WebServlet("/HomePage")
 public class HomeServlet extends HttpServlet {
+
+    private static final int MIN_VAL = 5;
+    private static final int MAX_VAL = 48;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         if (request.getParameter("valore") == null) {
-            int min_val = 5;
-            int max_val = 48;
-            Random rand = new Random();
-            int randomNum = min_val + rand.nextInt((max_val - min_val) + 1);
+            int randomNum = ThreadLocalRandom.current().nextInt(MIN_VAL, MAX_VAL + 1);
             request.setAttribute("Valore", randomNum);
             ArrayList<Prodotto> prodotti = ProdottoDAO.doRetriveAll();
             request.setAttribute("prodotti", prodotti);

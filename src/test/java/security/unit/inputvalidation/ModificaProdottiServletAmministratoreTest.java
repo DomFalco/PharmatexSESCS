@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -27,6 +28,7 @@ class ModificaProdottiServletAmministratoreTest {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private HttpSession session;
+    private RequestDispatcher dispatcher;
 
     @BeforeEach
     void setUp() {
@@ -34,8 +36,7 @@ class ModificaProdottiServletAmministratoreTest {
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         session = mock(HttpSession.class);
-
-        RequestDispatcher dispatcher = mock(RequestDispatcher.class);
+        dispatcher = mock(RequestDispatcher.class);
 
         when(request.getSession()).thenReturn(session);
         when(request.getMethod()).thenReturn("POST");
@@ -188,9 +189,18 @@ class ModificaProdottiServletAmministratoreTest {
 
     // ====== 7. Nessun ramo eseguito ======
 
+    /**
+     * Test del "silent drop": quando nuovoPrezzo="" e quantitaTotale="",
+     * nessuno dei 3 rami della Servlet viene eseguito.
+     *
+     * Aggiornato dopo refactoring: la Servlet legge i parametri una sola
+     * volta (in variabile locale), quindi verifichiamo:
+     *   - il parametro è stato letto almeno 1 volta
+     *   - NESSUN forward è stato eseguito (silent drop)
+     */
     @Test
     @DisplayName("Nessun ramo eseguito se entrambi i parametri sono vuoti (bug documentato)")
-    void testNessunRamoEseguitoConParametriVuoti() {
+    void testNessunRamoEseguitoConParametriVuoti() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(creaProdottoValido());
         when(request.getParameter("nuovoPrezzo")).thenReturn("");
         when(request.getParameter("quantitaTotale")).thenReturn("");
@@ -201,6 +211,9 @@ class ModificaProdottiServletAmministratoreTest {
             // Possibili eccezioni
         }
 
-        verify(request, atLeast(2)).getParameter("nuovoPrezzo");
+        verify(request, atLeastOnce()).getParameter("nuovoPrezzo");
+        verify(request, atLeastOnce()).getParameter("quantitaTotale");
+        // Silent drop: nessun forward eseguito
+        verify(dispatcher, never()).forward(any(), any());
     }
 }

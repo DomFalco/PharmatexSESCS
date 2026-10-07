@@ -13,7 +13,9 @@ public class UtenteDAO extends HttpServlet {
         Utente utente = new Utente();
         try (Connection con = ConPool.getConnection();
              PreparedStatement ps = con.prepareStatement(
-                     "SELECT * FROM Cliente WHERE email = ? AND passwordEmail = SHA1(?)")) {
+                     "SELECT email, passwordEmail, nome, cognome, dataDiNascita, numeroTelefono, "
+                             + "codiceFiscale, via, citta, cap, provincia, nazione, amministratore "
+                             + "FROM Cliente WHERE email = ? AND passwordEmail = SHA1(?)")) {
             ps.setString(1, email);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
@@ -87,7 +89,10 @@ public class UtenteDAO extends HttpServlet {
     public static ArrayList<Utente> doRetriveUtente() {
         ArrayList<Utente> u = new ArrayList<Utente>();
         try (Connection con = ConPool.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT * FROM Cliente");
+             PreparedStatement ps = con.prepareStatement(
+                     "SELECT email, passwordEmail, nome, cognome, dataDiNascita, numeroTelefono, "
+                             + "codiceFiscale, via, citta, cap, provincia, nazione, amministratore "
+                             + "FROM Cliente");
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Utente utente = new Utente();

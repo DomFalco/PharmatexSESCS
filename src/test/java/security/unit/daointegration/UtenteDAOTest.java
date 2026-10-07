@@ -121,17 +121,15 @@ class UtenteDAOTest {
     @Test
     @DisplayName("Le eccezioni SQLException sono wrappate in DataAccessException (custom)")
     void testEccezioniWrappate() {
-        // Aggiornato dopo refactoring: RuntimeException → DataAccessException
         int occurrences = countOccurrences(sourceCode, "throw new DataAccessException");
         assertTrue(occurrences >= 5,
                 "Il DAO wrappa SQLException in DataAccessException: " +
-                        "eccezione custom più specifica di RuntimeException. Trovate: " + occurrences);
+                        "eccezione custom piu' specifica di RuntimeException. Trovate: " + occurrences);
     }
 
     @Test
     @DisplayName("Il DAO usa try-with-resources per Connection e PreparedStatement")
     void testTryWithResources() {
-        // Aggiornato dopo refactoring: PreparedStatement ora è nel try-with-resources
         int occurrences = countOccurrences(sourceCode,
                 "try (Connection con = ConPool.getConnection();");
         assertTrue(occurrences >= 6,
@@ -146,6 +144,15 @@ class UtenteDAOTest {
         assertTrue(occurrences >= 2,
                 "Il DAO espone la password hashata sull'oggetto Utente: " +
                         "considerare di non restituirla mai al chiamante");
+    }
+
+    @Test
+    @DisplayName("Il DAO non usa SELECT * (fragilita' dello schema)")
+    void testNessunSelectStar() {
+        assertFalse(sourceCode.contains("SELECT *"),
+                "Il DAO non deve usare SELECT *: " +
+                        "un cambio di schema DB potrebbe rompere le query. " +
+                        "Usare la lista esplicita delle colonne.");
     }
 
     private int countOccurrences(String text, String substring) {
