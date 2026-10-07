@@ -61,11 +61,12 @@ class FiltraggioServletMaterialeH2Test extends BaseServletH2Test {
 
         invokeService(new FiltraggioServletMateriale());
 
-        String html = responseBody.toString();
-        assertThat(html).contains("<option>Memory</option>");
-        assertThat(html).contains("<option>Molla</option>");
-        assertThat(html).contains("<option>Lana</option>");
-        assertThat(html).contains("<option>Lattice</option>");
+        assertThat(responseBody.toString())
+                .contains(
+                        "<option>Memory</option>",
+                        "<option>Molla</option>",
+                        "<option>Lana</option>",
+                        "<option>Lattice</option>");
     }
 
     @Test
@@ -91,9 +92,10 @@ class FiltraggioServletMaterialeH2Test extends BaseServletH2Test {
 
         invokeService(new FiltraggioServletMateriale());
 
-        String html = responseBody.toString();
-        assertThat(html).contains("<option>Faggio</option>");
-        assertThat(html).contains("<option>Ferro</option>");
+        assertThat(responseBody.toString())
+                .contains(
+                        "<option>Faggio</option>",
+                        "<option>Ferro</option>");
     }
 
     // ==================================================================
@@ -108,10 +110,11 @@ class FiltraggioServletMaterialeH2Test extends BaseServletH2Test {
 
         invokeService(new FiltraggioServletMateriale());
 
-        String html = responseBody.toString();
-        assertThat(html).contains("<option>Memory</option>");
-        assertThat(html).contains("<option>Basic</option>");
-        assertThat(html).contains("<option>Fibre sintetiche</option>");
+        assertThat(responseBody.toString())
+                .contains(
+                        "<option>Memory</option>",
+                        "<option>Basic</option>",
+                        "<option>Fibre sintetiche</option>");
     }
 
     // ==================================================================
