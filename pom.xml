@@ -111,6 +111,15 @@
             <version>1.23.2</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- ===== H2 in-memory per test funzionali DAO ===== -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

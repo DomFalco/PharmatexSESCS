@@ -112,8 +112,11 @@ public class ProdottoDAO extends HttpServlet {
     public static Prodotto doRetriveBySearch(String nome) {
         Prodotto p = new Prodotto();
         try (Connection con = ConPool.getConnection()) {
+            // FIX: aggiunto upper() anche sul parametro per rendere la ricerca case-insensitive.
+            // Prima: "WHERE upper(nomeProd) LIKE ?"  -> il pattern non veniva uppercasato -> case-sensitive
+            // Dopo:  "WHERE upper(nomeProd) LIKE upper(?)" -> case-insensitive
             PreparedStatement ps =
-                    con.prepareStatement("SELECT idProdotto, nomeCategoria,nomeProd,descrizione,larghezza, lunghezza,prezzo, quantita, tipoMaterialeMaterasso,coloreLetto, materialeRete, rivestimentoDivano, coloreDivano, tipoStoffaCuscino, materialeCuscino, formaCuscino FROM Prodotto WHERE upper(nomeProd) LIKE ?");
+                    con.prepareStatement("SELECT idProdotto, nomeCategoria,nomeProd,descrizione,larghezza, lunghezza,prezzo, quantita, tipoMaterialeMaterasso,coloreLetto, materialeRete, rivestimentoDivano, coloreDivano, tipoStoffaCuscino, materialeCuscino, formaCuscino FROM Prodotto WHERE upper(nomeProd) LIKE upper(?)");
             ps.setString(1, nome.concat("%"));
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
