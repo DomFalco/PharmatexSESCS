@@ -5,13 +5,15 @@ import Model.AcquistoProdottiDAO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test funzionali dello AcquistoProdottiDAO su H2 in-memory.
- *
  * Il DAO gestisce la tabella "Acquistare" (relazione N:N tra Cliente e Prodotto)
  * e fornisce query di join per recuperare gli acquisti con i dati del cliente.
  */
@@ -142,10 +144,10 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
     // ==================================================================
 
     private int countAcquisti() throws Exception {
-        try (java.sql.Connection conn = Model.ConPool.getConnection();
-             java.sql.PreparedStatement ps = conn.prepareStatement(
+        try (Connection conn = Model.ConPool.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
                      "SELECT COUNT(*) FROM Acquistare");
-             java.sql.ResultSet rs = ps.executeQuery()) {
+             ResultSet rs = ps.executeQuery()) {
             rs.next();
             return rs.getInt(1);
         }

@@ -113,7 +113,6 @@ class CartaDAOH2Test extends BaseH2Test {
 
     private int countCarte() throws Exception {
         try (java.sql.Connection conn = Model.ConPool.getConnection();
-             //noinspection SqlNoDataSourceInspection,SqlResolve
              java.sql.PreparedStatement ps = conn.prepareStatement(
                      "SELECT COUNT(*) FROM CartaDiCredito");
              java.sql.ResultSet rs = ps.executeQuery()) {
@@ -129,7 +128,7 @@ class CartaDAOH2Test extends BaseH2Test {
             return rs.next() ? rs.getString(1) : null;
         }
     }
-    //noinspection SameParameterValue
+
     private String insertCliente(String email) {
         return "INSERT INTO Cliente (email, passwordEmail, nome, cognome, "
                 + "dataDiNascita, numeroTelefono, codiceFiscale, via, citta, cap, "

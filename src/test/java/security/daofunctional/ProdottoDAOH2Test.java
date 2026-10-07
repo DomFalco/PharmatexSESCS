@@ -11,7 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test funzionali del ProdottoDAO su H2 in-memory.
- *
  * Verificano il comportamento runtime delle query SQL, cosa che l'analisi
  * statica del sorgente non puo' fare. Ogni test popola il DB con dati
  * controllati, chiama il metodo del DAO e verifica il risultato.
@@ -60,12 +59,10 @@ class ProdottoDAOH2Test extends BaseH2Test {
 
     /**
      * Verifica del fix SEC-DAO-01.
-     *
      * Prima del fix: doRetriveBySearch("nuvola") restituiva null perche' il
      * pattern non era uppercasato lato Java, nonostante la query usasse
      * upper(nomeProd). Il bug e' stato scoperto SOLO grazie a questo test
      * funzionale su H2; ne' SonarQube ne' l'analisi statica potevano rilevarlo.
-     *
      * Dopo il fix: la query usa "upper(nomeProd) LIKE upper(?)", quindi la
      * ricerca e' case-insensitive in entrambe le direzioni.
      */
