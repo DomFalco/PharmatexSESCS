@@ -63,12 +63,10 @@ class HomeServletH2Test extends BaseServletH2Test {
 
         invokeService(new HomeServlet());
 
-        // Verifica attributo "Valore" (random 5..48)
         verify(request).setAttribute(eq("Valore"), argThat(o -> {
             int v = (int) o;
             return v >= 5 && v <= 48;
         }));
-        // Verifica attributo "prodotti" (2 prodotti)
         verify(request).setAttribute(eq("prodotti"), argThat(o -> {
             @SuppressWarnings("unchecked")
             ArrayList<Prodotto> list = (ArrayList<Prodotto>) o;
@@ -101,7 +99,6 @@ class HomeServletH2Test extends BaseServletH2Test {
 
         invokeService(new HomeServlet());
 
-        // Nessun controllo di sessione in questo ramo
         verify(response, never()).sendError(anyInt(), anyString());
         verify(dispatcher).forward(request, response);
     }
@@ -168,8 +165,7 @@ class HomeServletH2Test extends BaseServletH2Test {
 
         invokeService(new HomeServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Azione non riconosciuta."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
     }
 
     // ==================================================================

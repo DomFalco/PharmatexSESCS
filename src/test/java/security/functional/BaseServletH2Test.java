@@ -4,9 +4,9 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.mockito.Mockito;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Classe base per i test funzionali delle Servlet con H2 in-memory.
@@ -14,9 +14,9 @@ import static org.mockito.Mockito.mock;
  * Servlet API (request, response, session, dispatcher).
  * I test che ereditano possono:
  *  - popolare il DB con executeSql(...)
- *  - configurare i mock con Mockito.when(...)
+ *  - configurare i mock con when(...)
  *  - invocare la Servlet con service(...) (metodo pubblico di HttpServlet)
- *  - verificare il comportamento con Mockito.verify(...)
+ *  - verificare il comportamento con verify(...)
  */
 public abstract class BaseServletH2Test extends BaseH2Test {
 
@@ -36,10 +36,10 @@ public abstract class BaseServletH2Test extends BaseH2Test {
         dispatcher = mock(RequestDispatcher.class);
 
         // Configurazione base comune a tutte le Servlet
-        Mockito.when(request.getSession()).thenReturn(session);
-        Mockito.when(request.getSession(false)).thenReturn(session);
-        Mockito.when(request.getMethod()).thenReturn("POST");
-        Mockito.when(request.getProtocol()).thenReturn("HTTP/1.1");
-        Mockito.when(request.getContextPath()).thenReturn("/PharmatexSESCS");
+        when(request.getSession()).thenReturn(session);
+        when(request.getSession(false)).thenReturn(session);
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getProtocol()).thenReturn("HTTP/1.1");
+        when(request.getContextPath()).thenReturn("/PharmatexSESCS");
     }
 }

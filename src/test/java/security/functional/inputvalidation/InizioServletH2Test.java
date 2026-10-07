@@ -56,7 +56,6 @@ class InizioServletH2Test extends BaseServletH2Test {
 
         invokeService(new InizioServlet());
 
-        // Solo 2 prodotti hanno categoria "Materasso"
         verify(request).setAttribute(eq("CategorieProdotti"), argThat(o -> {
             @SuppressWarnings("unchecked")
             ArrayList<Prodotto> list = (ArrayList<Prodotto>) o;
@@ -74,8 +73,7 @@ class InizioServletH2Test extends BaseServletH2Test {
 
         invokeService(new InizioServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Parametri mancanti."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
     }
 
     @Test
@@ -86,8 +84,8 @@ class InizioServletH2Test extends BaseServletH2Test {
 
         invokeService(new InizioServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Parametro 'valore' non valido."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST,
+                "Parametro 'valore' non valido.");
     }
 
     // ==================================================================
@@ -131,9 +129,7 @@ class InizioServletH2Test extends BaseServletH2Test {
 
         invokeService(new InizioServlet());
 
-        // Salva categoria in sessione
         verify(session).setAttribute("filtri", "Materasso");
-        // Attributo dinamico: nome = categoria, valore = lista prodotti
         verify(request).setAttribute(eq("Materasso"), argThat(o -> {
             @SuppressWarnings("unchecked")
             ArrayList<Prodotto> list = (ArrayList<Prodotto>) o;
@@ -165,8 +161,8 @@ class InizioServletH2Test extends BaseServletH2Test {
 
         invokeService(new InizioServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Parametro 'action' non valido."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST,
+                "Parametro 'action' non valido.");
     }
 
     // ==================================================================

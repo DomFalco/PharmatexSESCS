@@ -101,8 +101,8 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
 
         invokeService(new DatiPagamentoServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN),
-                eq("Accesso negato: utente non autenticato."));
+        verify(response).sendError(HttpServletResponse.SC_FORBIDDEN,
+                "Accesso negato: utente non autenticato.");
     }
 
     // ==================================================================
@@ -118,7 +118,7 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
 
         invokeService(new DatiPagamentoServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), eq("Carrello vuoto."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
     }
 
     @Test
@@ -130,7 +130,7 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
 
         invokeService(new DatiPagamentoServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), eq("Carrello vuoto."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
     }
 
     @Test
@@ -142,7 +142,7 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
 
         invokeService(new DatiPagamentoServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), eq("Carrello vuoto."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
     }
 
     // ==================================================================
@@ -163,13 +163,9 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
 
         invokeService(new DatiPagamentoServlet());
 
-        // Verifica INSERT in Acquistare
         assertThat(countAcquisti("mario@test.com", "P0001")).isEqualTo(1);
-        // Verifica UPDATE quantita (10 - 3 = 7)
         assertThat(getQuantitaProdotto("P0001")).isEqualTo(7);
-        // Verifica carta inserita
         assertThat(countCarte("1234567890123456")).isEqualTo(1);
-        // Verifica forward
         verify(dispatcher).forward(request, response);
     }
 
@@ -217,10 +213,8 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
 
         invokeService(new DatiPagamentoServlet());
 
-        // Il carrello è stato svuotato (le stesse liste sono state clear()-ate)
         assertThat(cartList).isEmpty();
         assertThat(qList).isEmpty();
-        // E rimesse in sessione (sempre le stesse reference)
         verify(session, atLeastOnce()).setAttribute(eq("cart-list"), any());
         verify(session, atLeastOnce()).setAttribute(eq("quantitaArticoli"), any());
     }
@@ -263,15 +257,7 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
 
     /**
      * FINDING (documentato): qList.size() < cart_list.size() → IndexOutOfBoundsException.
-     *
-     * Il loop scorre cart_list con `for (int i = 0; i < cart_list.size(); i++)`
-     * e accede a `qList.get(i)`. Se qList ha meno elementi di cart_list,
-     * si ottiene una IndexOutOfBoundsException non gestita.
-     *
-     * Conseguenza: la Servlet risponde con 500 (Internal Server Error) invece
-     * di un 400 con messaggio "Dati carrello incoerenti".
-     *
-     * Fix suggerito: validare `cart_list.size() == qList.size()` prima del loop.
+     * ...
      */
     @Test
     @DisplayName("FINDING: qList più corta di cart_list → IndexOutOfBoundsException (500)")
@@ -282,13 +268,13 @@ class DatiPagamentoServletH2Test extends BaseServletH2Test {
         setDatiCarta();
 
         when(session.getAttribute("Utente")).thenReturn(utente());
-        // 2 prodotti ma solo 1 quantita
         when(session.getAttribute("cart-list")).thenReturn(
                 carrello(prodotto("P0001", 10), prodotto("P0002", 5)));
         when(session.getAttribute("quantitaArticoli")).thenReturn(quantita(2));
         when(request.getRequestDispatcher("HomePage")).thenReturn(dispatcher);
+        DatiPagamentoServlet servlet = new DatiPagamentoServlet();
 
-        assertThatThrownBy(() -> invokeService(new DatiPagamentoServlet()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(IndexOutOfBoundsException.class);
     }
 

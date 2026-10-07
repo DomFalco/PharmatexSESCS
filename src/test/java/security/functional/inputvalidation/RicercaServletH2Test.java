@@ -98,8 +98,9 @@ class RicercaServletH2Test extends BaseServletH2Test {
     @DisplayName("FINDING CWE-476: input null → NullPointerException")
     void testInputNull_BugDocumentato() {
         when(request.getParameter("search")).thenReturn(null);
+        RicercaServlet servlet = new RicercaServlet();
 
-        assertThatThrownBy(() -> invokeService(new RicercaServlet()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NullPointerException.class);
     }
 

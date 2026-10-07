@@ -66,9 +66,7 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
 
         invokeService(new ModificaProdottiServletAmministratore());
 
-        // Prezzo aggiornato a 350
         assertThat(getPrezzo("P0001")).isEqualTo(350.0);
-        // Quantita INCREMENTALE: 5 + 3 = 8
         assertThat(getQuantita("P0001")).isEqualTo(8);
         verify(dispatcher).forward(request, response);
     }
@@ -89,7 +87,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         invokeService(new ModificaProdottiServletAmministratore());
 
         assertThat(getPrezzo("P0001")).isEqualTo(299.99);
-        // Quantita invariata
         assertThat(getQuantita("P0001")).isEqualTo(5);
         verify(dispatcher).forward(request, response);
     }
@@ -109,9 +106,7 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
 
         invokeService(new ModificaProdottiServletAmministratore());
 
-        // Prezzo invariato
         assertThat(getPrezzo("P0001")).isEqualTo(400.0);
-        // Quantita: 5 + 10 = 15
         assertThat(getQuantita("P0001")).isEqualTo(15);
         verify(dispatcher).forward(request, response);
     }
@@ -134,7 +129,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
     @DisplayName("FINDING CWE-862: nessun controllo autorizzazione (utente anonimo puo' modificare)")
     void testNessunControlloAutorizzazione_BugDocumentato() throws Exception {
         executeSql(insertProdotto("P0001", "Nuvola", 400.0, 5));
-        // Nessun attributo "Amministratore" in sessione
         when(session.getAttribute("Amministratore")).thenReturn(null);
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn("999.99");
@@ -143,7 +137,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
 
         invokeService(new ModificaProdottiServletAmministratore());
 
-        // Il prezzo E' STATO modificato NONOSTANTE l'assenza di autenticazione
         assertThat(getPrezzo("P0001")).isEqualTo(999.99);
         verify(response, never()).sendError(eq(403), anyString());
     }
@@ -165,8 +158,9 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn(null);
         when(request.getParameter("quantitaTotale")).thenReturn("3");
+        ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(new ModificaProdottiServletAmministratore()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -187,8 +181,9 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(null);
         when(request.getParameter("nuovoPrezzo")).thenReturn("350.0");
         when(request.getParameter("quantitaTotale")).thenReturn("3");
+        ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(new ModificaProdottiServletAmministratore()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -202,8 +197,9 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn("abc");
         when(request.getParameter("quantitaTotale")).thenReturn("3");
+        ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(new ModificaProdottiServletAmministratore()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NumberFormatException.class);
     }
 
@@ -213,8 +209,9 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn("");
         when(request.getParameter("quantitaTotale")).thenReturn("dieci");
+        ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(new ModificaProdottiServletAmministratore()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NumberFormatException.class);
     }
 
@@ -246,7 +243,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
 
         invokeService(new ModificaProdottiServletAmministratore());
 
-        // Nessun forward, nessun errore
         verify(dispatcher, never()).forward(any(), any());
         verify(response, never()).sendError(anyInt(), anyString());
     }

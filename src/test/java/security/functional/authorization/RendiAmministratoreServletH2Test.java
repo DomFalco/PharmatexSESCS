@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import security.functional.BaseServletH2Test;
 
 import java.sql.Connection;
@@ -105,40 +107,20 @@ class RendiAmministratoreServletH2Test extends BaseServletH2Test {
         verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    @Test
-    @DisplayName("Action='amministratore' senza email → 400")
-    void testActionPromozioneSenzaEmailRiceve400() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+            "amministratore,   Email utente mancante.",
+            "rimuovipermessi,  Email utente mancante.",
+            "xyz,              Azione non riconosciuta."
+    })
+    @DisplayName("Action non valida → 400 con messaggio specifico")
+    void testActionNonValidaRiceve400(String action, String expectedMessage) throws Exception {
         when(session.getAttribute("Amministratore")).thenReturn(admin());
-        when(request.getParameter("action")).thenReturn("amministratore");
+        when(request.getParameter("action")).thenReturn(action);
 
         invokeService(new RendiAmministratoreServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Email utente mancante."));
-    }
-
-    @Test
-    @DisplayName("Action='rimuovipermessi' senza email → 400")
-    void testActionRimozioneSenzaEmailRiceve400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(admin());
-        when(request.getParameter("action")).thenReturn("rimuovipermessi");
-
-        invokeService(new RendiAmministratoreServlet());
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Email utente mancante."));
-    }
-
-    @Test
-    @DisplayName("Action non riconosciuta → 400")
-    void testActionNonRiconosciutaRiceve400() throws Exception {
-        when(session.getAttribute("Amministratore")).thenReturn(admin());
-        when(request.getParameter("action")).thenReturn("xyz");
-
-        invokeService(new RendiAmministratoreServlet());
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Azione non riconosciuta."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, expectedMessage);
     }
 
     // ==================================================================
@@ -206,8 +188,9 @@ class RendiAmministratoreServletH2Test extends BaseServletH2Test {
     void testPromozioneEmailInesistente_BugDocumentato() {
         when(session.getAttribute("Amministratore")).thenReturn(admin());
         when(request.getParameter("action")).thenReturn("amministratorenessuno@test.com");
+        RendiAmministratoreServlet servlet = new RendiAmministratoreServlet();
 
-        assertThatThrownBy(() -> invokeService(new RendiAmministratoreServlet()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("UPDATE error");
     }

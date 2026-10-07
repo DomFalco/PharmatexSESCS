@@ -115,12 +115,15 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
 
         invokeService(new RegistrazioneServlet());
 
-        // La password salvata NON deve essere "password123" in chiaro
         String passwordInDb = queryString(
                 "SELECT passwordEmail FROM Cliente WHERE email = 'mario@test.com'");
-        assertThat(passwordInDb).isNotEqualTo("password123");
-        // Deve essere un hash SHA-1 (40 caratteri esadecimali)
-        assertThat(passwordInDb).hasSize(40).matches("[0-9a-f]{40}");
+
+        // La password salvata NON deve essere "password123" in chiaro
+        // e deve essere un hash SHA-1 (40 caratteri esadecimali)
+        assertThat(passwordInDb)
+                .isNotEqualTo("password123")
+                .hasSize(40)
+                .matches("[0-9a-f]{40}");
     }
 
     // ==================================================================

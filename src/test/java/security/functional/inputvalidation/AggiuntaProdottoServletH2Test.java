@@ -7,6 +7,8 @@ import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import security.functional.BaseServletH2Test;
 
 import java.sql.Connection;
@@ -145,55 +147,33 @@ class AggiuntaProdottoServletH2Test extends BaseServletH2Test {
     }
 
     // ==================================================================
-    // FINDING 2: NumberFormatException su larghezza/lunghezza/prezzo
+    // FINDING 2 e 3: NumberFormatException su input non numerici
     // ==================================================================
 
     /**
-     * FINDING (documentato): NumberFormatException non gestita su double.
+     * FINDING (documentato): NumberFormatException non gestita.
      *
-     * La Servlet usa Double.parseDouble() senza try/catch. Se l'utente invia
-     * un valore non numerico (es. "abc") per larghezza, lunghezza o prezzo,
-     * la Servlet lancia NumberFormatException → 500 Internal Server Error.
+     * La Servlet usa Double.parseDouble() / Integer.parseInt() senza
+     * try/catch. Se l'utente invia un valore non numerico per larghezza,
+     * lunghezza, prezzo o quantita, la Servlet lancia NumberFormatException
+     * → 500 Internal Server Error.
      *
      * Fix suggerito: validare i parametri prima del parsing, oppure gestire
      * l'eccezione e restituire 400 con messaggio "Formato numerico non valido".
      */
-    @Test
-    @DisplayName("FINDING: larghezza non numerica → NumberFormatException")
-    void testLarghezzaNonNumerica_BugDocumentato() {
+    @ParameterizedTest
+    @CsvSource({
+            "larghezza, abc",
+            "prezzo,    quaranta",
+            "quantita,  dieci"
+    })
+    @DisplayName("FINDING: parametro non numerico → NumberFormatException")
+    void testParametroNonNumerico_BugDocumentato(String parametro, String valoreNonNumerico) {
         setParametriValidi();
-        when(request.getParameter("larghezza")).thenReturn("abc");
+        when(request.getParameter(parametro)).thenReturn(valoreNonNumerico);
+        AggiuntaProdottoServlet servlet = new AggiuntaProdottoServlet();
 
-        assertThatThrownBy(() -> invokeService(new AggiuntaProdottoServlet()))
-                .isInstanceOf(NumberFormatException.class);
-    }
-
-    @Test
-    @DisplayName("FINDING: prezzo non numerico → NumberFormatException")
-    void testPrezzoNonNumerico_BugDocumentato() {
-        setParametriValidi();
-        when(request.getParameter("prezzo")).thenReturn("quaranta");
-
-        assertThatThrownBy(() -> invokeService(new AggiuntaProdottoServlet()))
-                .isInstanceOf(NumberFormatException.class);
-    }
-
-    // ==================================================================
-    // FINDING 3: NumberFormatException su quantita
-    // ==================================================================
-
-    /**
-     * FINDING (documentato): NumberFormatException non gestita su int.
-     *
-     * Simile al FINDING 2: Integer.parseInt() su "abc" lancia eccezione.
-     */
-    @Test
-    @DisplayName("FINDING: quantita non numerica → NumberFormatException")
-    void testQuantitaNonNumerica_BugDocumentato() {
-        setParametriValidi();
-        when(request.getParameter("quantita")).thenReturn("dieci");
-
-        assertThatThrownBy(() -> invokeService(new AggiuntaProdottoServlet()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NumberFormatException.class);
     }
 
@@ -217,8 +197,9 @@ class AggiuntaProdottoServletH2Test extends BaseServletH2Test {
     void testIdProdottoNull_BugDocumentato() {
         setParametriValidi();
         when(request.getParameter("idProdotto")).thenReturn(null);
+        AggiuntaProdottoServlet servlet = new AggiuntaProdottoServlet();
 
-        assertThatThrownBy(() -> invokeService(new AggiuntaProdottoServlet()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(RuntimeException.class);
     }
 

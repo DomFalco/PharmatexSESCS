@@ -7,6 +7,8 @@ import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import security.functional.BaseServletH2Test;
 
 import java.util.ArrayList;
@@ -45,34 +47,30 @@ class MaterialeServletH2Test extends BaseServletH2Test {
     // Sessione mancante / attributi null → RicercaErrata.jsp
     // ==================================================================
 
-    @Test
-    @DisplayName("Sessione null → forward a RicercaErrata.jsp")
-    void testSessioneNullRicercaErrata() throws Exception {
-        when(request.getSession(false)).thenReturn(null);
-        when(request.getRequestDispatcher("/WEB-INF/results/RicercaErrata.jsp")).thenReturn(dispatcher);
-
-        invokeService(new MaterialeServlet());
-
-        verify(dispatcher).forward(request, response);
-    }
-
-    @Test
-    @DisplayName("mat null → forward a RicercaErrata.jsp")
-    void testMatNullRicercaErrata() throws Exception {
-        when(session.getAttribute("mat")).thenReturn(null);
-        when(session.getAttribute("materiale")).thenReturn("Memory");
-        when(request.getRequestDispatcher("/WEB-INF/results/RicercaErrata.jsp")).thenReturn(dispatcher);
-
-        invokeService(new MaterialeServlet());
-
-        verify(dispatcher).forward(request, response);
-    }
-
-    @Test
-    @DisplayName("materiale null → forward a RicercaErrata.jsp")
-    void testMaterialeNullRicercaErrata() throws Exception {
-        when(session.getAttribute("mat")).thenReturn("materasso");
-        when(session.getAttribute("materiale")).thenReturn(null);
+    /**
+     * Unifica 3 test strutturalmente identici:
+     * - sessione null
+     * - attributo "mat" null
+     * - attributo "materiale" null
+     *
+     * In tutti e 3 i casi la Servlet deve fare forward a RicercaErrata.jsp.
+     */
+    @ParameterizedTest
+    @CsvSource({
+            "true,  false, false",   // sessione null
+            "false, true,  false",   // mat null
+            "false, false, true"     // materiale null
+    })
+    @DisplayName("Sessione/attributi mancanti → forward a RicercaErrata.jsp")
+    void testAttributiMancantiRicercaErrata(String sessioneNull, String matNull, String materialeNull) throws Exception {
+        if (Boolean.parseBoolean(sessioneNull)) {
+            when(request.getSession(false)).thenReturn(null);
+        } else {
+            when(session.getAttribute("mat")).thenReturn(
+                    Boolean.parseBoolean(matNull) ? null : "materasso");
+            when(session.getAttribute("materiale")).thenReturn(
+                    Boolean.parseBoolean(materialeNull) ? null : "Memory");
+        }
         when(request.getRequestDispatcher("/WEB-INF/results/RicercaErrata.jsp")).thenReturn(dispatcher);
 
         invokeService(new MaterialeServlet());

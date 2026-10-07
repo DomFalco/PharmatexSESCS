@@ -108,8 +108,8 @@ class RimuoviProdottoServletH2Test extends BaseServletH2Test {
 
         invokeService(new RimuoviProdottoServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Nessun prodotto selezionato per la rimozione."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST,
+                "Nessun prodotto selezionato per la rimozione.");
     }
 
     @Test
@@ -122,8 +122,8 @@ class RimuoviProdottoServletH2Test extends BaseServletH2Test {
 
         invokeService(new RimuoviProdottoServlet());
 
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
-                eq("Nessun prodotto selezionato per la rimozione."));
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST,
+                "Nessun prodotto selezionato per la rimozione.");
     }
 
     // ==================================================================
@@ -142,10 +142,8 @@ class RimuoviProdottoServletH2Test extends BaseServletH2Test {
 
         invokeService(new RimuoviProdottoServlet());
 
-        // P0001 eliminato, P0002 ancora presente
         assertThat(countProdotti("P0001")).isZero();
         assertThat(countProdotti("P0002")).isEqualTo(1);
-        // Attributo tuttiProdotti contiene solo P0002
         verify(request).setAttribute(eq("tuttiProdotti"), argThat(o -> {
             java.util.ArrayList<?> list = (java.util.ArrayList<?>) o;
             return list.size() == 1;
@@ -177,26 +175,16 @@ class RimuoviProdottoServletH2Test extends BaseServletH2Test {
 
     /**
      * FINDING (documentato): prodotto in sessione ma non nel DB → 500.
-     *
-     * Se il prodotto salvato in sessione ("idModificaPrezzo") non esiste più
-     * nel database (es. cancellato da un altro admin, o id manomesso), la
-     * chiamata a ProdottoDAO.cancellaProdotto lancia RuntimeException
-     * ("DELETE error.") perché executeUpdate() ritorna 0.
-     *
-     * La Servlet non gestisce questa eccezione, quindi risponde con 500
-     * (Internal Server Error) invece di un 404 più appropriato.
-     *
-     * Fix suggerito: gestire l'eccezione e restituire SC_NOT_FOUND con un
-     * messaggio "Prodotto non trovato".
+     * ...
      */
     @Test
     @DisplayName("FINDING: prodotto in sessione ma non nel DB → RuntimeException (500)")
     void testProdottoNonNelDb_BugDocumentato() {
-        // DB vuoto, ma in sessione c'è un prodotto con id inesistente
         when(session.getAttribute("Amministratore")).thenReturn(admin());
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P9999"));
+        RimuoviProdottoServlet servlet = new RimuoviProdottoServlet();
 
-        assertThatThrownBy(() -> invokeService(new RimuoviProdottoServlet()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("DELETE error");
     }

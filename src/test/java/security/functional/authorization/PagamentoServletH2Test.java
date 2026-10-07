@@ -117,8 +117,8 @@ class PagamentoServletH2Test extends BaseServletH2Test {
         invokeService(new PagamentoServlet());
 
         // L'admin riceve 403 "utente non autenticato" (bug)
-        verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN),
-                eq("Accesso negato: utente non autenticato."));
+        verify(response).sendError(HttpServletResponse.SC_FORBIDDEN,
+                "Accesso negato: utente non autenticato.");
     }
 
     // ==================================================================

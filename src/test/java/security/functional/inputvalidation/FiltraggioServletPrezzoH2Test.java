@@ -52,13 +52,11 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
         when(session.getAttribute("filtri")).thenReturn("Materasso");
         when(request.getParameter("prezzomin")).thenReturn("");
         when(request.getParameter("prezzomax")).thenReturn("");
-        // Configuriamo ENTRAMBI i dispatcher perche' la Servlet ne chiama due (bug)
         when(request.getRequestDispatcher("/WEB-INF/results/RicercaErrata.jsp")).thenReturn(dispatcher);
         when(request.getRequestDispatcher("/WEB-INF/results/Prodotti.jsp")).thenReturn(dispatcher);
 
         invokeService(new FiltraggioServletPrezzo());
 
-        // Il primo forward e' a RicercaErrata.jsp
         verify(dispatcher, atLeastOnce()).forward(request, response);
     }
 
@@ -87,7 +85,6 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
 
         invokeService(new FiltraggioServletPrezzo());
 
-        // Verifica il bug: il dispatcher viene chiamato DUE volte (doppio forward)
         verify(dispatcher, times(2)).forward(request, response);
     }
 
@@ -109,7 +106,6 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
 
         invokeService(new FiltraggioServletPrezzo());
 
-        // Solo P0001 (400) e P0003 (350) hanno prezzo >= 100
         verify(request).setAttribute(eq("filtra"), argThat(o -> {
             @SuppressWarnings("unchecked")
             ArrayList<Prodotto> list = (ArrayList<Prodotto>) o;
@@ -136,7 +132,6 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
 
         invokeService(new FiltraggioServletPrezzo());
 
-        // Solo P0002 (80) e P0003 (150) hanno prezzo <= 200
         verify(request).setAttribute(eq("filtra"), argThat(o -> {
             @SuppressWarnings("unchecked")
             ArrayList<Prodotto> list = (ArrayList<Prodotto>) o;
@@ -164,7 +159,6 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
 
         invokeService(new FiltraggioServletPrezzo());
 
-        // P0001 (400) e P0003 (250) nel range [100, 400]
         verify(request).setAttribute(eq("filtra"), argThat(o -> {
             @SuppressWarnings("unchecked")
             ArrayList<Prodotto> list = (ArrayList<Prodotto>) o;
@@ -209,8 +203,9 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
         when(session.getAttribute("filtri")).thenReturn("Materasso");
         when(request.getParameter("prezzomin")).thenReturn(null);
         when(request.getParameter("prezzomax")).thenReturn("500");
+        FiltraggioServletPrezzo servlet = new FiltraggioServletPrezzo();
 
-        assertThatThrownBy(() -> invokeService(new FiltraggioServletPrezzo()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NullPointerException.class);
     }
 
@@ -229,8 +224,9 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
         when(session.getAttribute("filtri")).thenReturn("Materasso");
         when(request.getParameter("prezzomin")).thenReturn("abc");
         when(request.getParameter("prezzomax")).thenReturn("500");
+        FiltraggioServletPrezzo servlet = new FiltraggioServletPrezzo();
 
-        assertThatThrownBy(() -> invokeService(new FiltraggioServletPrezzo()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NumberFormatException.class);
     }
 
@@ -240,8 +236,9 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
         when(session.getAttribute("filtri")).thenReturn("Materasso");
         when(request.getParameter("prezzomin")).thenReturn("");
         when(request.getParameter("prezzomax")).thenReturn("quattrocento");
+        FiltraggioServletPrezzo servlet = new FiltraggioServletPrezzo();
 
-        assertThatThrownBy(() -> invokeService(new FiltraggioServletPrezzo()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NumberFormatException.class);
     }
 
@@ -262,8 +259,9 @@ class FiltraggioServletPrezzoH2Test extends BaseServletH2Test {
         when(session.getAttribute("filtri")).thenReturn(null);
         when(request.getParameter("prezzomin")).thenReturn("100");
         when(request.getParameter("prezzomax")).thenReturn("500");
+        FiltraggioServletPrezzo servlet = new FiltraggioServletPrezzo();
 
-        assertThatThrownBy(() -> invokeService(new FiltraggioServletPrezzo()))
+        assertThatThrownBy(() -> invokeService(servlet))
                 .isInstanceOf(NullPointerException.class);
     }
 
