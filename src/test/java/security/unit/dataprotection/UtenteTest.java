@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Verifica il comportamento del metodo {setPassword}
  */
 @DisplayName("Data Protection - Hashing password (CWE-916)")
-class PasswordHashingTest {
+class UtenteTest {
 
     private Utente utente;
 
