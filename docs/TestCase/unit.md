@@ -204,7 +204,7 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 
 ### 3.3 Vulnerabilità documentate
 
-- **CWE-916** ([Use of Password Hash With Insufficient Computational Effort](https://cwe.mitre.org/data/definitions/916.html)): SHA-1 senza salt per l'hashing delle password in `Utente.java`. **Rischio accettato** (vedi report Snyk Code).
+- **CWE-916** ([Use of Password Hash With Insufficient Computational Effort](https://cwe.mitre.org/data/definitions/916.html)): SHA-1 senza salt per l'hashing delle password in `Utente.java`. **Rischio accettato** [`snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md).
 - **Fix GitGuardian**: credenziali DB lette da variabili d'ambiente con fail-fast se `MYSQL_PASSWORD` non è impostata.
 
 ---
