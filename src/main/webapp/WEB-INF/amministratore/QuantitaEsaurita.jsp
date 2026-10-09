@@ -8,20 +8,20 @@
     <%
         ArrayList<Prodotto> prodEsauriti = (ArrayList<Prodotto>) request.getAttribute("prodottiEsauriti");
     %>
-   <link rel="stylesheet" type="text/css" href="ParteCSS/CategorieProdotti.css">
+    <link rel="stylesheet" type="text/css" href="ParteCSS/CategorieProdotti.css">
 </head>
 <body>
 <% if(prodEsauriti.size()==0){%>
-    <h1>Nessun prodotto esaurito</h1>
+<h1>Nessun prodotto esaurito</h1>
 <%}
     for (int i =0;i<prodEsauriti.size();i++) {
-    String val = prodEsauriti.get(i).getIdProdotto().substring(3);
-    int x = Integer.parseInt(val);
-    String directory = "immagini/" + prodEsauriti.get(i).getIdProdotto() + ".jpg";
-    if(x>54)
-    {
-        directory = "immagini/fotoNonDisponibile.jpg";
-    }
+        String val = prodEsauriti.get(i).getIdProdotto().substring(3);
+        int x = Integer.parseInt(val);
+        String directory = "immagini/" + prodEsauriti.get(i).getIdProdotto() + ".jpg";
+        if(x>54)
+        {
+            directory = "immagini/fotoNonDisponibile.jpg";
+        }
 %>
 <div class="box-container">
     <div class="box">
@@ -32,7 +32,7 @@
         </div>
         <div class="info">
             <p><%=prodEsauriti.get(i).getNomeProd()%></p>
-            <p>Prezzo:<%=prodEsauriti.get(i).getPrezzo()%></p>
+            <p>Prezzo:<%=String.format(java.util.Locale.ITALY, "%.2f", prodEsauriti.get(i).getPrezzo())%>€</p>
             <p style="color: red">Prodotto Esaurito</p>
         </div>
     </div>

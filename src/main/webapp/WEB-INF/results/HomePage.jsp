@@ -200,7 +200,7 @@
         <div class="info">
             <b style="text-align: center;">Modello:<%=prod.get(n).getNomeProd()%>
             </b><br>
-            <b style="text-align: center;color: red"><%=prod.get(n).getPrezzo()%>&#8364;</b>
+            <b style="text-align: center;color: red"><%=String.format(java.util.Locale.ITALY, "%.2f", prod.get(n).getPrezzo())%>&#8364;</b>
         </div>
     </div>
 </div>

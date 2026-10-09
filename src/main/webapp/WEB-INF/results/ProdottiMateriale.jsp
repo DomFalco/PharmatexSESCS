@@ -11,10 +11,10 @@
     %>
     <%if(prod.get(0).getIdProdotto().charAt(0)=='M')
     { %>
-        <title>Materassi</title>
+    <title>Materassi</title>
     <% }
     else if(prod.get(0).getIdProdotto().charAt(0)=='R'){ %>
-        <title>Reti</title>
+    <title>Reti</title>
     <% }
     else { %>
     <title>Cuscini</title>
@@ -75,7 +75,7 @@
         <div class="info">
             <b style="text-align: center;">Modello:<%=p.getNomeProd()%>
             </b><br>
-            <b style="text-align: center;color: red"><%=p.getPrezzo()%> €</b>
+            <b style="text-align: center;color: red"><%=String.format(java.util.Locale.ITALY, "%.2f", p.getPrezzo())%> €</b>
         </div>
     </div>
 </div>

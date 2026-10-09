@@ -26,13 +26,13 @@
 <% if(riepilogoProdotti!=null && riepilogoProdotti.size()>0)
 {
     for (int i =0;i<riepilogoProdotti.size();i++) {
-    String val = riepilogoProdotti.get(i).getIdProdotto().substring(3);
-    int x = Integer.parseInt(val);
-    String directory = "immagini/" + riepilogoProdotti.get(i).getIdProdotto() + ".jpg";
-    if(x>54)
-    {
-        directory = "immagini/fotoNonDisponibile.jpg";
-    }%>
+        String val = riepilogoProdotti.get(i).getIdProdotto().substring(3);
+        int x = Integer.parseInt(val);
+        String directory = "immagini/" + riepilogoProdotti.get(i).getIdProdotto() + ".jpg";
+        if(x>54)
+        {
+            directory = "immagini/fotoNonDisponibile.jpg";
+        }%>
 <div class="box-container">
     <div class="box">
         <div class="image">
@@ -40,7 +40,7 @@
         </div>
         <div class="info">
             <p>Nome Prodotto: <%=riepilogoProdotti.get(i).getNomeProd()%></p>
-            <p>Prezzo: <%=riepilogoProdotti.get(i).getPrezzo()%></p>
+            <p>Prezzo: <%=String.format(java.util.Locale.ITALY, "%.2f", riepilogoProdotti.get(i).getPrezzo())%>€</p>
             <p>Quantià ordinata: <%=riepilogoProdotti.get(i).getQuantitaAcquistata()%></p>
             <p>Via:  <%=riepilogoProdotti.get(i).getVia()%></p>
             <p>Città: <%=riepilogoProdotti.get(i).getCitta()%></p>

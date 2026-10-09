@@ -29,7 +29,7 @@
         </div>
         <div class="info">
             <p><%=tuttiProdotti.get(i).getNomeProd()%></p>
-            <p>Prezzo:<%=tuttiProdotti.get(i).getPrezzo()%></p>
+            <p>Prezzo:<%=String.format(java.util.Locale.ITALY, "%.2f", tuttiProdotti.get(i).getPrezzo())%>€</p>
             <% if(tuttiProdotti.get(i).getQuantita()!=0)
             {%>
             <p>In magazzino:<%=tuttiProdotti.get(i).getQuantita()%></p>

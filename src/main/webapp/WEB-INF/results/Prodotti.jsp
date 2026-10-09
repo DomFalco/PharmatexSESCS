@@ -28,7 +28,7 @@
         </div>
         <div class="info">
             <b style="text-align: center;">Modello:<c:out value="<%=p.getNomeProd()%>"/></b><br>
-            <b style="text-align: center;color: red"><%=p.getPrezzo()%> €</b>
+            <b style="text-align: center;color: red"><%=String.format(java.util.Locale.ITALY, "%.2f", p.getPrezzo())%> €</b>
         </div>
     </div>
 </div>

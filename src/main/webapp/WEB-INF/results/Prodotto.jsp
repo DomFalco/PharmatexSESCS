@@ -78,7 +78,7 @@
             <th>
                 <h1>Modello:<%=p.getNomeProd()%>
                 </h1>
-                <h2><%=p.getPrezzo()%>€</h2>
+                <h2><%=String.format(java.util.Locale.ITALY, "%.2f", p.getPrezzo())%>€</h2>
             </th>
         </tr>
         <% if (p.getQuantita() == 0) {%>
@@ -90,12 +90,12 @@
             <form action="CarrelloServlet">
                 <label>Seleziona quantità:</label>
                 <select name="quantita" id="quantita">
-                <% for(int i=1;i<=p.getQuantita();i++)
-                {
-                    if(p.getQuantita()!=0)
+                    <% for(int i=1;i<=p.getQuantita();i++)
+                    {
+                        if(p.getQuantita()!=0)
                         {%>
                     <option value="<%=i%>"><%=i%></option>
-                        <%}%>
+                    <%}%>
                     <%}%>
                 </select>
                 <button class="cart" type="submit"><i class="fa fa-shopping-cart"></i></button>
