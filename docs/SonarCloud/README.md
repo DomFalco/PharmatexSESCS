@@ -104,6 +104,8 @@ L'analisi SonarCloud persegue i seguenti obiettivi:
 5. **Alimentare la pipeline DevSecOps** con analisi automatica ad ogni push
 6. **Ridurre progressivamente** le issue Blocker e High sul codice legacy
 
+**Nota:** la dashboard SonarCloud del progetto è consultabile qui: [sonarcloud.io](https://sonarcloud.io/project/overview?id=DomFalco_PharmatexSESCS)
+
 ---
 
 ## 2. Configurazione
