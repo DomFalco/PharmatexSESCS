@@ -1,7 +1,5 @@
 # Security Test Suite — PharmatexSESCS
 
-**Progetto:** PharmatexSESCS — E-commerce di prodotti per il riposo  
-**Corso:** Software Engineering for Secure Cloud Systems  
 **Data:** 07/10/2026
 
 ---

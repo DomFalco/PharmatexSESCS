@@ -1,14 +1,13 @@
 # SonarCloud — Code Quality, Code Coverage & SAST
 
 **Strumento:** SonarCloud (SonarSource)  
+**Tool:** SonarScanner for Maven 4.0.0.4121
 **Tipi di analisi:**
 - **SonarCloud SAST** — analisi statica del codice sorgente (vulnerabilità, bug, security hotspot)
 - **SonarCloud Quality** — analisi della qualità del codice (code smell, duplicazioni, manutenibilità)
 - **SonarCloud Coverage** — misurazione della code coverage tramite integrazione con JaCoCo
 
-**Data di integrazione:** 05/10/2026  
-**Ultimo aggiornamento:** 07/10/2026  
-**Quality Gate finale (New Code):** PASSED
+**Ultimo aggiornamento:** 07/10/2026
 
 ---
 
@@ -17,6 +16,7 @@
 - [1. Introduzione](#1-introduzione)
     - [1.1 Flusso metodologico adottato](#11-flusso-metodologico-adottato)
     - [1.2 Integrazione nella pipeline CI/CD](#12-integrazione-nella-pipeline-cicd)
+    - [1.3 Obiettivi dell'analisi](#13-obiettivi-dellanalisi)
 - [2. Configurazione](#2-configurazione)
     - [2.1 Dipendenze aggiunte al `pom.xml`](#21-dipendenze-aggiunte-al-pomxml)
     - [2.2 Plugin Maven](#22-plugin-maven)
@@ -30,6 +30,7 @@
     - [4.4 Test H2 sui DAO — 21 issue](#44-test-h2-sui-dao--21-issue)
     - [4.5 Test H2 sulle Servlet](#45-test-h2-sulle-servlet)
     - [4.6 Fix finali — 20 issue](#46-fix-finali--20-issue)
+    - [4.7 Changelog delle iterazioni](#47-changelog-delle-iterazioni)
 - [5. Issue risolte sul New Code — Riepilogo](#5-issue-risolte-sul-new-code--riepilogo)
 - [6. Issue risolte sull'Overall Code — Riepilogo](#6-issue-risolte-sulloverall-code--riepilogo)
     - [6.1 Contesto: intervento sul codice legacy](#61-contesto-intervento-sul-codice-legacy)
@@ -46,9 +47,13 @@
     - [8.1 Perimetro delle issue residue](#81-perimetro-delle-issue-residue)
     - [8.2 Categorie di debito tecnico](#82-categorie-di-debito-tecnico)
     - [8.3 Motivazione dell'accettazione](#83-motivazione-dellaccettazione)
-- [9. Considerazioni](#9-considerazioni)
-    - [9.1 Punti di forza](#91-punti-di-forza)
-    - [9.2 Trade-off documentati](#92-trade-off-documentati)
+- [9. Confronto con Snyk e GitGuardian](#9-confronto-con-snyk-e-gitguardian)
+    - [9.1 Ruolo dei tre tool nella pipeline](#91-ruolo-dei-tre-tool-nella-pipeline)
+    - [9.2 Finding condivisi tra i tool](#92-finding-condivisi-tra-i-tool)
+    - [9.3 Coverage complementare](#93-coverage-complementare)
+- [10. Considerazioni](#10-considerazioni)
+    - [10.1 Punti di forza](#101-punti-di-forza)
+    - [10.2 Trade-off documentati](#102-trade-off-documentati)
 
 ---
 
@@ -88,6 +93,17 @@ SonarCloud è stato integrato tramite GitHub Actions. Ad ogni push sui branch `m
 
 Il Quality Gate valuta **solo il New Code**. Durante la sessione sono state risolte anche issue sull'**Overall Code** (codice legacy) per ridurre il debito tecnico.
 
+### 1.3 Obiettivi dell'analisi
+
+L'analisi SonarCloud persegue i seguenti obiettivi:
+
+1. **Bloccare il merge** di codice con Blocker di reliability (resource leak)
+2. **Garantire coverage ≥ 80%** sulle nuove righe di codice (New Code)
+3. **Prevenire regressioni** su bug, vulnerabilità e code smell
+4. **Monitorare il debito tecnico** sull'Overall Code
+5. **Alimentare la pipeline DevSecOps** con analisi automatica ad ogni push
+6. **Ridurre progressivamente** le issue Blocker e High sul codice legacy
+
 ---
 
 ## 2. Configurazione
@@ -113,7 +129,58 @@ Il Quality Gate valuta **solo il New Code**. Durante la sessione sono state riso
 
 ### 2.3 Workflow GitHub Actions
 
-File [`.github/workflows/sonarcloud.yml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/.github/workflows/sonarcloud.yml): checkout con `fetch-depth: 0`, JDK 21, `mvn -B clean verify`, Sonar scan.
+File [`.github/workflows/sonarcloud.yml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/.github/workflows/sonarcloud.yml):
+
+```yaml
+name: SonarCloud Analysis
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  sonarcloud:
+    name: SonarCloud Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Build e test con Maven
+        run: mvn -B clean verify
+
+      - name: SonarCloud Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }} \
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }} \
+            -Dsonar.host.url=https://sonarcloud.io
+```
 
 ### 2.4 Quality Gate "Sonar way"
 
@@ -172,7 +239,7 @@ File [`.github/workflows/sonarcloud.yml`](https://github.com/DomFalco/PharmatexS
 | SEC-SONAR-02 | CWE-1333 | Regex backtracking | `CartaDAOTest` | Medium | 3 |
 | SEC-SONAR-03 | CWE-1333 | Regex backtracking | `ProdottoDAOTest` | Medium | 3 |
 | SEC-SONAR-04 | CWE-1333 | Regex backtracking | `UtenteDAOTest` | Medium | 3 |
-| SEC-SONAR-05÷13 | CWE-248 | `sendError` IOException | 9 Servlet | Low | 1 |
+| SEC-SONAR-05–13 | CWE-248 | `sendError` IOException | 9 Servlet | Low | 1 |
 | SEC-SONAR-14 | CWE-1066 | Commenti dead code | `UtenteDAOTest` | Low | 2 |
 | SEC-SONAR-15 | CWE-1066 | Commenti dead code | `RicercaServletTest` | Low | 2 |
 | SEC-SONAR-16 | CWE-1076 | `try/catch/fail` | `RicercaServletTest` | Low | 2 |
@@ -180,7 +247,7 @@ File [`.github/workflows/sonarcloud.yml`](https://github.com/DomFalco/PharmatexS
 | SEC-SONAR-18 | CWE-1042 | Literal duplicato | `MaterialeServlet` | High | 2 |
 | SEC-SONAR-19 | CWE-1041 | Test identico | `HomeServletAmministratoreTest` | Medium | 4 |
 | SEC-SONAR-20 | CWE-1041 | Test identico | `RegistrazioneTest` | Medium | 4 |
-| SEC-SONAR-21÷26 | CWE-1041 | Parameterized test | 6 file | Medium | 5 |
+| SEC-SONAR-21–26 | CWE-1041 | Parameterized test | 6 file | Medium | 5 |
 
 ### 4.2 Batch di remediation
 
@@ -202,7 +269,7 @@ File [`.github/workflows/sonarcloud.yml`](https://github.com/DomFalco/PharmatexS
 
 | Issue | File | Fix |
 |-------|------|-----|
-| SEC-SONAR-01÷04 | 4 DAO test | Pattern precompilato + `matcher().find()`; `[^)]*` → `[^+)]*` |
+| SEC-SONAR-01–04 | 4 DAO test | Pattern precompilato + `matcher().find()`; `[^)]*` → `[^+)]*` |
 
 #### Batch 4 — Test duplicati (2 issue)
 
@@ -307,11 +374,11 @@ L'estensione dei test H2 alle Servlet che interagiscono con il DB ha portato a:
 
 | File | Metodo | Issue risolte |
 |------|--------|:-------------:|
-| `CarrelloServlet.java` | `doPost` | H2-ISSUE-04 ÷ 08 |
+| `CarrelloServlet.java` | `doPost` | H2-ISSUE-04–08 |
 | `CarrelloServlet.java` | `aggiornaQuantitaEsistente` | (inclusa in doPost) |
 | `FiltraggioServletMateriale.java` | `doGet` | H2-ISSUE-09 |
-| `FiltraggioServletPrezzo.java` | `doGet` | H2-ISSUE-10 ÷ 13 |
-| `ModificaProdottiServletAmministratore.java` | `doPost` | H2-ISSUE-14 ÷ 20 |
+| `FiltraggioServletPrezzo.java` | `doGet` | H2-ISSUE-10–13 |
+| `ModificaProdottiServletAmministratore.java` | `doPost` | H2-ISSUE-14–20 |
 
 **Motivazione:** falsi positivi — SonarQube non riconosce che le eccezioni sono gestite dal container Tomcat.
 
@@ -330,6 +397,19 @@ Aggiunti test H2 per le Servlet non ancora coperte.
 **Risultato:** Coverage sul New Code da **77.44%** a **84.76%**.
 
 **Stato Quality Gate finale:** **PASSED** (New Issues 0, Coverage 84.76%, Duplications 0.64%, Security Rating A, Reliability Rating A).
+
+### 4.7 Changelog delle iterazioni
+
+| Data | Iterazione | Impatto |
+|:---|:---|:---|
+| **05/10/2026** | Baseline — prima scansione | Quality Gate FAILED (46 issue, Security Rating B) |
+| **05-06/10/2026** | 6 batch di remediation | New Issues: 46 → 0 |
+| **07/10/2026** | Test H2 DAO | Coverage: 86.59% → 87.9%, +21 issue |
+| **07/10/2026** | Test H2 Servlet | Coverage: 87.9% → 77.44% (failed) |
+| **07/10/2026** | Fix finali Serializable + S1989 | Quality Gate **PASSED**, Coverage 84.76% |
+| **07/10/2026** | Intervento Overall Code | Blocker 14, High 16, Medium 15, Low 23 risolte |
+
+**Risultato finale:** Quality Gate PASSED, 0 New Issues, Reliability Rating Overall E → C.
 
 ---
 
@@ -355,6 +435,8 @@ Questa sezione riassume **tutte le issue risolte sul New Code** durante la sessi
 | Low | S5853 | Join assertions in AssertJ | `FiltraggioServletMaterialeH2Test` | 3 |
 | Low | S1989 | `@SuppressWarnings` su eccezioni propagate | 4 Servlet | 16 |
 | **TOTALE NEW CODE** | | | | **~108** |
+
+**Nota:** le issue sul New Code sono state risolte **esclusivamente** su file `.java` (codice Java di produzione e test).
 
 ---
 
@@ -603,7 +685,7 @@ Delle **270 issue storiche** rilevate sull'Overall Code, **80 sono state risolte
 | **TOTALE** | **190** | — | — |
 
 **Nota importante:** le issue residue sui file `.java` sono **unicamente** relative a:
-- **SHA-1 in `Utente.java`** (1 issue High, documentata come CWE-916 accettato) documentata in [`snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md)
+- **SHA-1 in `Utente.java`** (1 issue High, documentata come CWE-916 accettato) — vedi [`snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md)
 - **Random in `HomeServlet.java`** (1 issue High, già risolta con `ThreadLocalRandom` nel New Code)
 - Poche altre issue Medium/Low di design (convenzioni di naming, `RuntimeException` residui)
 
@@ -629,9 +711,60 @@ Delle **270 issue storiche** rilevate sull'Overall Code, **80 sono state risolte
 
 ---
 
-## 9. Considerazioni
+## 9. Confronto con Snyk e GitGuardian
 
-### 9.1 Punti di forza
+SonarCloud è uno dei **tre tool di sicurezza** integrati nella pipeline del progetto. Ogni tool copre un aspetto diverso e complementare: SonarCloud per la qualità del codice e la coverage, Snyk per le dipendenze e l'analisi statica del codice (SAST), GitGuardian per il rilevamento di segreti hardcoded.
+
+### 9.1 Ruolo dei tre tool nella pipeline
+
+| Tool | Focus | Frequenza | Bloccante |
+|:---|:---|:---:|:---:|
+| **SonarCloud (SAST)** | Qualità codice, coverage, security hotspot, code smell | Ogni push/PR | Sì |
+| **Snyk Code + Open Source** | Vulnerabilità CWE, dipendenze Maven, Dockerfile, licenze | Ogni push/PR | Configurabile |
+| **GitGuardian** | Secret scanning (credenziali, API key, token) | Opzionale | No |
+
+### 9.2 Finding condivisi tra i tool
+
+Alcuni finding sono stati rilevati da più tool, altri solo da uno. La tabella riassume la sovrapposizione:
+
+| Finding | CWE | SonarCloud | Snyk | GitGuardian |
+|:---|:---:|:---:|:---:|:---:|
+| SHA-1 weak hash in `Utente.java` | CWE-916 | ✅ | ✅ | — |
+| Credenziali DB hardcoded (storico) | CWE-798 | — | — | ✅ |
+| SQL Injection (fixato con `PreparedStatement`) | CWE-89 | ✅ | ✅ | — |
+| `SELECT *` (fixato) | — | ✅ | ✅ | — |
+| XSS in `Prodotti.jsp` | CWE-79 | — | ✅ | — |
+| Trust Boundary Violation | CWE-501 | — | ✅ | — |
+| Resource leak su `PreparedStatement` (Blocker) | CWE-404 | ✅ | — | — |
+| MySQL Connector/J vulnerabile (CVE) | CWE-611, CWE-285 | — | ✅ | — |
+| Dockerfile: 103 CVE ereditate dalle immagini base | Varia | — | ✅ | — |
+
+**Analisi:** ogni tool ha rilevato finding che gli altri non vedevano. L'**overlapping** è minimo (SHA-1 rilevato da entrambi), mentre la copertura complessiva è massimizzata dalla combinazione dei tre approcci.
+
+### 9.3 Coverage complementare
+
+| Tool | Cosa copre che gli altri non vedono |
+|:---|:---|
+| **SonarCloud** | Coverage JaCoCo, duplicazioni, code smell, debito tecnico, reliability rating |
+| **Snyk Open Source** | Vulnerabilità nelle dipendenze Maven (CVE), immagini Docker, licenze |
+| **Snyk Code** | SAST su codice Java/JSP (XSS, Trust Boundary, weak crypto) |
+| **GitGuardian** | Secret storici nei commit (anche dopo `git rm`), token hardcoded |
+
+**Conclusione:** i tre tool **non sono ridondanti**. La loro combinazione fornisce una copertura di sicurezza **completa e stratificata**, come dimostrato dal fatto che ogni tool ha trovato vulnerabilità che gli altri non hanno rilevato:
+
+- **SonarCloud** ha trovato i 14 Blocker di resource leak + 46 issue di qualità sul New Code
+- **Snyk** ha trovato la XSS in `Prodotti.jsp` e le vulnerabilità nelle dipendenze Maven
+- **GitGuardian** ha individuato le credenziali hardcoded in `ConPool.java`
+
+> 📄 **Documentazione di dettaglio:**
+> - Snyk (dipendenze + SAST): [`docs/Snyk/Snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md)
+> - GitGuardian (secret scanning): [`docs/GitGuardian/GitGuardian.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/GitGuardian/README.md)
+
+---
+
+## 10. Considerazioni
+
+### 10.1 Punti di forza
 
 - **Coverage alta (84.76%)**: la suite di 481 test copre quasi tutto il codice nuovo
 - **Zero issue residue sul New Code**
@@ -641,8 +774,9 @@ Delle **270 issue storiche** rilevate sull'Overall Code, **80 sono state risolte
 - **Security Rating New Code: A**
 - **Duplicazioni sotto soglia (0.64%)**
 - **Bug reali scoperti grazie ai test H2**: SEC-DAO-01 (case-sensitivity), SEC-IV-03 (doppio forward)
+- **Pipeline DevSecOps completa**: SonarCloud + Snyk + GitGuardian
 
-### 9.2 Trade-off documentati
+### 10.2 Trade-off documentati
 
 1. **Duplicazione check autorizzazione (0.64%)**: accettata per non introdurre 7 nuove issue Sonar
 2. **Debito tecnico residuo (190 issue)**: tutte Medium/Low, relative a file `.jsp`, `.htm` e `.css`

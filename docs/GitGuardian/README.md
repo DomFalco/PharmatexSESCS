@@ -1,11 +1,10 @@
 # GitGuardian — Secret Scanning
 
 **Strumento:** GitGuardian (ggshield)
+
 **Tipo di analisi:** Rilevamento di segreti hardcoded (password, API key, token) nel codice sorgente e nella cronologia Git.
 
 **Data di integrazione:** 28/09/2026
-
-**Stato:** Completato
 
 ---
 
