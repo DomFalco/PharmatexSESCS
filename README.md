@@ -338,7 +338,7 @@ Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test
 > 📄 **Report dettagliati:**
 > - **Test unitari e analisi statica:** [`docs/TestCase/unit.md`](docs/TestCase/unit.md)
 > - **Test funzionali H2:** [`docs/TestCase/functional.md`](docs/TestCase/functional.md)
-> - **Hub panoramica:** [`docs/TestCase/security-test.md`](docs/TestCase/security-test.md)
+> - **Hub panoramica:** [`docs/TestCase/security-tests.md`](docs/TestCase/security-tests.md)
 
 ### 5.4 SonarCloud — Qualità e Coverage
 
