@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   scanning:
-    name: Secret Scanning
+    name: GitGuardian Scan
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
