@@ -1,10 +1,7 @@
 name: Snyk Security Scan
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_call:
 
 permissions:
   contents: read
@@ -15,6 +12,8 @@ jobs:
   snyk-sca:
     name: Snyk SCA (pom.xml)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
@@ -29,7 +28,7 @@ jobs:
 
       - name: Carica risultati SARIF su GitHub Security
         if: always() && hashFiles('snyk-sca.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-sca.sarif
           category: snyk-sca
@@ -38,6 +37,8 @@ jobs:
   snyk-code:
     name: Snyk Code (SAST)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
@@ -53,7 +54,7 @@ jobs:
 
       - name: Carica risultati SARIF su GitHub Security
         if: always() && hashFiles('snyk-code.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-code.sarif
           category: snyk-code
@@ -62,6 +63,8 @@ jobs:
   snyk-container:
     name: Snyk Container (Dockerfile)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
@@ -80,7 +83,7 @@ jobs:
 
       - name: Carica risultati SARIF su GitHub Security
         if: always() && hashFiles('snyk-container.sarif') != ''
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: snyk-container.sarif
           category: snyk-container

@@ -1,8 +1,11 @@
 name: Docker Build & Push
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [ main, master ]
+  push:
     tags: [ 'v*' ]
   pull_request:
     branches: [ main, master ]
@@ -13,13 +16,25 @@ env:
 
 jobs:
   build-and-push:
+    name: Build & Push Docker image
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Esegue solo se:
+    # - il workflow CI è passato con successo (workflow_run)
+    # - oppure è un push di tag (v*) o una PR
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+
     permissions:
       contents: read
 
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
+        with:
+          # Se è un workflow_run, usa lo SHA del commit che ha passato il CI
+          # Altrimenti usa il default (github.sha)
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3

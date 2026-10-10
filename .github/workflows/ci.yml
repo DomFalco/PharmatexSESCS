@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------- JOB 1: Secret scanning (GitGuardian) ----------
+  secrets:
+    name: Secret Scanning
+    uses: ./.github/workflows/gitguardian.yml
+    secrets: inherit
+
+  # ---------- JOB 2: Test suite (481 test) ----------
+  test:
+    name: Test Suite
+    needs: secrets
+    uses: ./.github/workflows/test.yml
+    secrets: inherit
+
+  # ---------- JOB 3: SAST + Coverage (SonarCloud) ----------
+  sast:
+    name: SAST (SonarCloud)
+    needs: test
+    uses: ./.github/workflows/sonarcloud.yml
+    secrets: inherit
+
+  # ---------- JOB 4: SCA + SAST + Container (Snyk) ----------
+  sca:
+    name: SCA (Snyk)
+    needs: test
+    uses: ./.github/workflows/snyk.yml
+    secrets: inherit
