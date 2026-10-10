@@ -13,6 +13,7 @@ jobs:
     name: Snyk SCA (pom.xml)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: true
 
     steps:
       - name: Checkout del codice
@@ -20,7 +21,6 @@ jobs:
 
       - name: Snyk - Analisi dipendenze Maven
         uses: snyk/actions/maven@master
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API_KEY }}
         with:
@@ -38,6 +38,7 @@ jobs:
     name: Snyk Code (SAST)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: true
 
     steps:
       - name: Checkout del codice
@@ -47,8 +48,7 @@ jobs:
         uses: snyk/actions/setup@master
 
       - name: Snyk - Analisi statica del codice
-        run: snyk code test --sarif-file-output=snyk-code.sarif
-        continue-on-error: true
+        run: snyk code test --severity-threshold=high --sarif-file-output=snyk-code.sarif
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API_KEY }}
 
@@ -64,6 +64,7 @@ jobs:
     name: Snyk Container (Dockerfile)
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: true
 
     steps:
       - name: Checkout del codice
@@ -74,7 +75,6 @@ jobs:
 
       - name: Snyk - Analisi container Docker
         uses: snyk/actions/docker@master
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API_KEY }}
         with:

@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 jobs:
-  # ---------- JOB 1: Secret scanning ----------
+  # ---------- JOB 1: GitGuardian scanning ----------
   secrets:
-    name: Secret Scanning
+    name: GitGuardian
     uses: ./.github/workflows/gitguardian.yml
     secrets: inherit
     permissions:
