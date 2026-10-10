@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [ main, master ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
@@ -11,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  # ---------- JOB 1: Secret scanning (GitGuardian) ----------
+  # ---------- JOB 1: Secret scanning ----------
   secrets:
     name: Secret Scanning
     uses: ./.github/workflows/gitguardian.yml
@@ -20,7 +21,7 @@ jobs:
       contents: read
       security-events: write
 
-  # ---------- JOB 2: Test suite (481 test) ----------
+  # ---------- JOB 2: Test suite ----------
   test:
     name: Test Suite
     needs: secrets
@@ -29,7 +30,7 @@ jobs:
     permissions:
       contents: read
 
-  # ---------- JOB 3: SAST + Coverage (SonarCloud) ----------
+  # ---------- JOB 3: SAST (SonarCloud) ----------
   sast:
     name: SAST (SonarCloud)
     needs: test
@@ -40,7 +41,7 @@ jobs:
       pull-requests: write
       security-events: write
 
-  # ---------- JOB 4: SCA + SAST + Container (Snyk) ----------
+  # ---------- JOB 4: SCA (Snyk) ----------
   sca:
     name: SCA (Snyk)
     needs: test
@@ -49,3 +50,17 @@ jobs:
     permissions:
       contents: read
       security-events: write
+
+  # ---------- JOB 5: Docker Build & Push ----------
+  docker-publish:
+    name: Docker Build & Push
+    needs: [sast, sca]
+    if: |
+      github.event_name != 'pull_request' && 
+      (github.ref == 'refs/heads/master' || 
+       github.ref == 'refs/heads/main' || 
+       startsWith(github.ref, 'refs/tags/v'))
+    uses: ./.github/workflows/docker-publish.yml
+    secrets: inherit
+    permissions:
+      contents: read
