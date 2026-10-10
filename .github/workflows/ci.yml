@@ -16,6 +16,9 @@ jobs:
     name: Secret Scanning
     uses: ./.github/workflows/gitguardian.yml
     secrets: inherit
+    permissions:
+      contents: read
+      security-events: write
 
   # ---------- JOB 2: Test suite (481 test) ----------
   test:
@@ -23,6 +26,8 @@ jobs:
     needs: secrets
     uses: ./.github/workflows/test.yml
     secrets: inherit
+    permissions:
+      contents: read
 
   # ---------- JOB 3: SAST + Coverage (SonarCloud) ----------
   sast:
@@ -30,6 +35,10 @@ jobs:
     needs: test
     uses: ./.github/workflows/sonarcloud.yml
     secrets: inherit
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
 
   # ---------- JOB 4: SCA + SAST + Container (Snyk) ----------
   sca:
@@ -37,3 +46,6 @@ jobs:
     needs: test
     uses: ./.github/workflows/snyk.yml
     secrets: inherit
+    permissions:
+      contents: read
+      security-events: write
