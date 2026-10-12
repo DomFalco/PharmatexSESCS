@@ -75,7 +75,7 @@ La scansione iniziale (Fase 1) non ha prodotto alert. Tuttavia, l'analisi manual
 
 **Impatto.** Chiunque avesse accesso alla repository (o alla sua cronologia Git) avrebbe potuto leggere la password e ottenere accesso completo al database, con possibilità di lettura, modifica e cancellazione dei dati.
 
-**Nota sul rilevamento (falso negativo).** Il valore originale era una stringa a bassa entropia e presente nelle liste di esclusione di GitGuardian, che per policy ignora password comuni o con entropia di Shannon inferiore a 2. Questo spiega perché la scansione iniziale non ha generato alert. La vulnerabilità è stata confermata tramite **code review manuale**, dimostrando che i tool automatici non sostituiscono l'analisi umana.
+**Nota sul rilevamento (falso negativo).** Il valore originale era una stringa a bassa entropia e presente nelle liste di esclusione di GitGuardian, che per policy ignora password comuni. Questo spiega perché la scansione iniziale non ha generato alert. La vulnerabilità è stata confermata tramite **code review manuale**, dimostrando che i tool automatici non sostituiscono l'analisi umana.
 
 ---
 

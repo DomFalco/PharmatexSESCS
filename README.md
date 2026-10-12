@@ -63,6 +63,7 @@
     - [2.1 Architettura](#21-architettura)
     - [2.2 Ruoli](#22-ruoli)
     - [2.3 Matrice di Accesso RBAC](#23-matrice-di-accesso-rbac)
+    - [2.4 Architettura e Struttura](#24-architettura-e-struttura)
 3. [API Reference](#3-api-reference)
 4. [Metodologia e Flusso di Lavoro](#4-metodologia-e-flusso-di-lavoro)
 5. [Sicurezza](#5-sicurezza)
@@ -213,6 +214,147 @@ MySQL 8
 | Gestione utenti | ❌ | ❌ | ✅ |
 | Dashboard admin | ❌ | ❌ | ✅ |
 
+### 2.4 Architettura e Struttura
+
+Il progetto segue un'architettura **MVC (Model-View-Controller)** con separazione netta tra logica di business, presentazione e accesso ai dati, secondo lo standard **Jakarta EE (Servlet + JSP)**.
+
+#### Struttura delle directory
+
+```
+PharmatexSESCS/src/
+├── main/
+│   ├── java/
+│   │   ├── Controller/              # Servlet (Controller HTTP)
+│   │   │   ├── AggiuntaProdottoServlet.java
+│   │   │   ├── CarrelloServlet.java
+│   │   │   ├── CercaProdottoPerModificaServlet.java
+│   │   │   ├── DatiPagamentoServlet.java
+│   │   │   ├── FiltraggioServletMateriale.java
+│   │   │   ├── FiltraggioServletPrezzo.java
+│   │   │   ├── HomeServlet.java
+│   │   │   ├── HomeServletAmministratore.java
+│   │   │   ├── InizioServlet.java
+│   │   │   ├── LoginServlet.java
+│   │   │   ├── MaterialeServlet.java
+│   │   │   ├── ModificaProdottiServletAmministratore.java
+│   │   │   ├── PagamentoServlet.java
+│   │   │   ├── Registrazione.java
+│   │   │   ├── RegistrazioneServlet.java
+│   │   │   ├── RendiAmministratoreServlet.java
+│   │   │   ├── RicercaServlet.java
+│   │   │   ├── RimuoviProdottoServlet.java
+│   │   │   ├── ServletErrorHelper.java    # Utility: gestione errori HTTP
+│   │   │   └── JspHelper.java             # Utility: estrazione dati per JSP
+│   │   │
+│   │   └── Model/                    # Bean + DAO + Utility
+│   │       ├── Utente.java           # Bean
+│   │       ├── UtenteDAO.java        # DAO
+│   │       ├── Prodotto.java         # Bean
+│   │       ├── ProdottoDAO.java      # DAO
+│   │       ├── Carta.java            # Bean
+│   │       ├── CartaDAO.java         # DAO
+│   │       ├── AcquistoProdotti.java # Bean
+│   │       ├── AcquistoProdottiDAO.java # DAO
+│   │       ├── ConPool.java          # Connection pool (fail-fast)
+│   │       └── DataAccessException.java # Eccezione custom
+│   │
+│   └── webapp/                       # View (JSP)
+│       ├── immagini/                 # Immagini prodotti e UI
+│       ├── ParteCSS/                 # Fogli di stile
+│       ├── ParteHTML/                # Frammenti comuni
+│       │   ├── navBar.jsp
+│       │   ├── navBarAmministratore.jsp
+│       │   └── Filter.html
+│       ├── WEB-INF/                  # Protetto da accesso diretto
+│       │   ├── results/              # JSP di output
+│       │   └── amministratore/       # JSP solo per admin
+│
+└── test/
+    └── java/
+        └── security/                 # Suite di test di sicurezza
+            ├── unit/                 # Test unitari + analisi statica
+            │   ├── authorization/
+            │   ├── businesslogic/
+            │   ├── daointegration/   # Analisi statica del sorgente
+            │   ├── dataprotection/
+            │   └── inputvalidation/
+            │
+            └── functional/           # Test funzionali H2
+                ├── BaseH2Test.java       # Configurazione H2
+                ├── BaseServletH2Test.java # Mock Servlet API
+                ├── TestFunctions.java    # SHA1 in Java per alias H2
+                ├── authorization/
+                ├── businesslogic/
+                ├── daointegration/
+                ├── exceptions/
+                └── inputvalidation/
+```
+
+#### Ruolo delle directory
+
+**`Controller/` — Servlet**
+
+Ogni Servlet gestisce un **endpoint HTTP specifico** e ha una singola responsabilità. Il nome è autoesplicativo e segue una convenzione verbale:
+
+| Categoria | Servlet | Responsabilità |
+|:----------|:--------|:---------------|
+| **Autenticazione** | `LoginServlet`, `RegistrazioneServlet`, `Registrazione` | Gestione ciclo di vita sessione utente |
+| **Catalogo (pubblico)** | `HomeServlet`, `InizioServlet`, `RicercaServlet`, `MaterialeServlet`, `FiltraggioServletMateriale`, `FiltraggioServletPrezzo` | Visualizzazione prodotti, ricerca, filtri |
+| **Carrello** | `CarrelloServlet` | Gestione carrello (sessione + DB) |
+| **Ordini e pagamento** | `PagamentoServlet`, `DatiPagamentoServlet` | Checkout, storico ordini, dettagli |
+| **Admin — prodotti** | `AggiuntaProdottoServlet`, `ModificaProdottiServletAmministratore`, `CercaProdottoPerModificaServlet`, `RimuoviProdottoServlet` | CRUD prodotti (solo admin) |
+| **Admin — utenti** | `HomeServletAmministratore`, `RendiAmministratoreServlet` | Dashboard admin, promozione utenti |
+| **Utility** | `ServletErrorHelper`, `JspHelper` | Gestione errori HTTP centralizzata, estrazione dati per JSP |
+
+Ogni Servlet delega l'accesso ai dati al **DAO** corrispondente e la presentazione alla **JSP**. Non contiene query SQL direttamente.
+
+**`Model/` — Bean + DAO + Utility**
+
+Il Model è suddiviso in **tre tipi di classi**:
+
+| Tipo | Classi | Ruolo |
+|:---|:---|:---|
+| **Bean** (4) | `Utente`, `Prodotto`, `Carta`, `AcquistoProdotti` | Contenitori di dati (POJO) con getter/setter e logica minima (es. hashing password in `Utente`) |
+| **DAO** (4) | `UtenteDAO`, `ProdottoDAO`, `CartaDAO`, `AcquistoProdottiDAO` | Accesso al database tramite `PreparedStatement` (no SQL Injection) e try-with-resources (no resource leak) |
+| **Utility** (2) | `ConPool`, `DataAccessException` | Connection pool Tomcat con **fail-fast**: se `MYSQL_PASSWORD` non è impostata, l'app non parte. Eccezione custom per semantica degli errori |
+
+**Caratteristiche del Model:**
+
+- **Bean serializzabili**: tutti i bean implementano `Serializable` (requisito Tomcat per la persistenza di sessione)
+- **Tutti i DAO usano `PreparedStatement`**: nessuna concatenazione di stringhe SQL (protezione da SQL Injection)
+- **Tutti i DAO usano try-with-resources**: chiusura automatica di `Connection`, `PreparedStatement`, `ResultSet`
+- **`ConPool` singleton static**: pattern Singleton per la `DataSource`
+
+**`webapp/` — View (JSP)**
+
+La directory segue la separazione tra **pagine pubbliche** e **pagine protette**:
+
+| Path | Visibilità | Esempi |
+|:---|:---|:---|
+| `webapp/*.jsp` | Pubblico (accessibile direttamente) | `HomePage.jsp`, `Login.jsp`, `RegisterUser.jsp` |
+| `webapp/WEB-INF/` | **Protetto** (solo forward interno dal Servlet) | JSP di output, admin panel, pagine di errore |
+| `webapp/immagini/` | Pubblico | Immagini prodotti, logo, UI |
+| `webapp/ParteCSS/` | Pubblico | Fogli di stile |
+| `webapp/ParteHTML/` | **Protetto** (incluso tramite `<%@ include %>`) | Frammenti comuni (navBar, Filter) |
+
+**Nota sulla sicurezza:** le JSP dentro `WEB-INF/` **non sono accessibili direttamente dal browser**. Solo i Servlet possono farci forward tramite `RequestDispatcher`. Questo previene accessi non autorizzati a pagine che assumono uno stato di sessione valido (es. pagine admin, dettagli ordine).
+
+**`test/java/security/` — Suite di test**
+
+La suite è organizzata specularmente al codice di produzione, con **due strategie complementari**:
+
+| Directory | Tipo | Approccio |
+|:---|:---|:---|
+| **`unit/`** | **Test unitari + analisi statica** | Mockito per le Servlet; lettura del sorgente con `Files.readAllBytes` e verifica di pattern (`source.contains(...)`) per i DAO |
+| **`functional/`** | **Test funzionali H2** | Esegue i Servlet e i DAO con Mockito (Servlet API) e H2 in-memory (database reale) |
+
+Entrambe le directory sono ulteriormente suddivise per **area OWASP** (`authorization`, `businesslogic`, `daointegration`, `dataprotection`, `inputvalidation`), così è immediato capire quale area di sicurezza copre ogni test.
+
+**Classi di supporto:**
+
+- **`BaseH2Test`** — Classe astratta che configura H2 in-memory con lo schema completo, registra l'alias `SHA1()` per compatibilità con MySQL, e fornisce i metodi `cleanDatabase()` e `executeSql()`.
+- **`BaseServletH2Test`** — Estende `BaseH2Test` e fornisce mock preconfigurati di `HttpServletRequest`, `HttpServletResponse`, `HttpSession`, `RequestDispatcher`, oltre ai metodi helper `invokeDoGet()`, `invokeDoPost()`, `createAdminUser()`, `createNormalUser()`.
+
 ---
 
 ## 3. API Reference
@@ -261,7 +403,7 @@ FASE 5: Pipeline CI/CD    → Orchestrazione automatizzata
 | 1 | 28/09 | **GitGuardian** | Scansione iniziale + fix credenziali hardcoded | 1 vulnerabilità critica risolta |
 | 2 | 01/10 | **Snyk** | Scansione dipendenze Maven + Dockerfile + SAST | 5 vulnerabilità risolte |
 | 3 | 03-07/10 | **Test Suite** | Scrittura dei test OWASP + fix vulnerabilità logiche | 481 test + 14 vulnerabilità risolte |
-| 4 | 05-07/10 | **SonarCloud** | Analisi qualità + risoluzione issue | Quality Gate PASSED, ~80 issue risolte |
+| 4 | 05-07/10 | **SonarCloud** | Analisi qualità + risoluzione issue | Quality Gate PASSED, ~84 issue risolte |
 | 5 | 09/10 | **Pipeline CI** | Hub workflow + orchestrazione | Pipeline DevSecOps completa |
 
 **Nota metodologica:** l'ordine sequenziale non è casuale. GitGuardian è stato eseguito per primo perché un segreto committato nella history Git è la vulnerabilità più critica (accesso diretto a credenziali reali). Una volta garantita l'assenza di segreti, si è passati alle dipendenze (Snyk) e poi ai test e alla qualità (SonarCloud).
@@ -367,14 +509,15 @@ Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test
 |-----------|:-----:|:----:|:---:|:------:|
 | Security | 93 | 59 | **-34** | D → D |
 | Reliability | 103 | 85 | **-18** | **E → C** |
-| Maintainability | 74 | 46 | **-28** | A → A |
-| **Totale** | **270** | **190** | **-80** | — |
+| Maintainability | 74 | 42 | **-32** | A → A |
+| **Totale** | **270** | **186** | **-84** | — |
 
 **Interventi principali:**
 - **14 Blocker risolte** — try-with-resources su tutti i DAO
 - **16 High risolte** — costanti duplicate, cognitive complexity, `Random`, eccezioni generiche
 - **15 Medium risolte** — `DataAccessException` custom, rimozione `SELECT *`
 - **23 Low risolte** — import inutilizzati, `throws`, `eq()`, join assertions
+- **~16 Altri fix collaterali** — ulteriori regole Medium/Low
 
 > 📄 **Report dettagliato:** [`docs/SonarCloud/README.md`](docs/SonarCloud/README.md)
 
@@ -419,8 +562,18 @@ git push
 |---------|-----------------|
 | **Permessi minimi** | `permissions: contents: read` globale; permessi specifici per job |
 | **SHA pinning** | Action di terze parti pin-nate a SHA commit |
-| **Segreti** | GitHub Secrets (`SONAR_TOKEN`, `SNYK_API_KEY`, `GITGUARDIAN_API_KEY`, `DOCKERHUB_*`) |
+| **Segreti** | GitHub Secrets (vedi tabella sotto) |
 | **Docker Hub** | Login con Access Token (non password) |
+
+**Secrets richiesti:**
+
+| Secret | Servizio utilizzato | Workflow | Tipo | Utilizzo |
+|:---|:---|:---|:---|:---|
+| `SONAR_TOKEN` | SonarCloud | Analisi statica del codice | Token API | Autenticazione per l'analisi della qualità e della sicurezza del codice |
+| `SNYK_API_KEY` | Snyk | Security scan delle dipendenze | API Key | Rilevamento di vulnerabilità nelle dipendenze del progetto |
+| `GITGUARDIAN_API_KEY` | GitGuardian | Secret scanning | API Key | Rilevamento di credenziali e segreti esposti nel repository |
+| `DOCKERHUB_USERNAME` | Docker Hub | Build e pubblicazione dell'immagine | Username | Identificazione dell'account utilizzato per pubblicare l'immagine Docker |
+| `DOCKERHUB_TOKEN` | Docker Hub | Build e pubblicazione dell'immagine | Access Token | Autenticazione per il push dell'immagine Docker sul registry |
 
 ---
 
@@ -561,7 +714,7 @@ docker compose up -d
 | **Aree OWASP coperte** | **5** |
 | **Vulnerabilità risolte** | **20** (1 GitGuardian + 5 Snyk + 14 Test) |
 | **Finding documentati (rischio accettato)** | **~15** |
-| **Issue SonarCloud risolte** | **~108 (New Code) + ~80 (Overall Code)** |
+| **Issue SonarCloud risolte** | **~108 (New Code) + ~84 (Overall Code)** |
 | **Quality Gate SonarCloud** | **PASSED** |
 | **Coverage New Code** | **84.76%** |
 | **Duplicazioni New Code** | **0.64%** |

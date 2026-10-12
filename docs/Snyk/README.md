@@ -69,7 +69,6 @@ Snyk è stato integrato nel progetto in due modalità complementari:
 ## 2. Analisi delle dipendenze Maven (`pom.xml`)
 
 ### 2.1 Configurazione
-
 Il file [`pom.xml`](../../pom.xml) definisce le dipendenze Maven del progetto. Snyk Open Source ha scansionato le librerie dichiarate e ha rilevato **1 dipendenza vulnerabile** con **6 problemi associati** (2 diretti + 4 transitivi), oltre a una problematica di configurazione (dipendenza duplicata).
 
 ### 2.2 Vulnerabilità rilevate
@@ -98,7 +97,7 @@ Le tre CVE sono **High/Medium con fix disponibile** e riguardano una libreria di
 
 #### 2.4.1 Aggiornamento del driver MySQL
 
-L'aggiornamento nel [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L54-L58) dalla versione **8.0.18** alla versione **8.0.33** di `mysql-connector-java` risolve tutte e tre le CVE (XXE → fixata dalla 8.0.27; Improper Authorization → dalla 8.0.28; DoS transitiva su protobuf → dalla 8.0.29). È stata scelta la 8.0.33 perché è l'ultima versione della serie 8.0.x mantenuta stabile, con **compatibilità garantita** con il codice esistente (`ConPool.java` utilizza la classe `com.mysql.cj.jdbc.Driver`, invariata tra le due versioni).
+L'aggiornamento nel [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L43-L47) dalla versione **8.0.18** alla versione **8.0.33** di `mysql-connector-java` risolve tutte e tre le CVE (XXE → fixata dalla 8.0.27; Improper Authorization → dalla 8.0.28; DoS transitiva su protobuf → dalla 8.0.29). È stata scelta la 8.0.33 perché è l'ultima versione della serie 8.0.x mantenuta stabile, con **compatibilità garantita** con il codice esistente (`ConPool.java` utilizza la classe `com.mysql.cj.jdbc.Driver`, invariata tra le due versioni).
 
 #### 2.4.2 Vulnerabilità emerse dopo l'analisi iniziale
 
@@ -241,7 +240,7 @@ Le vulnerabilità residue sono state accettate come **rischio residuo controllat
 
 ### 3.6 Considerazioni finali
 
-L'analisi del [`Dockerfile`](https://github.com/DomFalco/PharmatexSESCS/blob/master/Dockerfile#L12) ha permesso di applicare due miglioramenti concreti:
+L'analisi del [`Dockerfile`](https://github.com/DomFalco/PharmatexSESCS/blob/master/Dockerfile) ha permesso di applicare due miglioramenti concreti:
 1. **Aggiornamento dei pacchetti di sistema** tramite `apt-get upgrade`: risolve le vulnerabilità fixabili upstream e garantisce che il container usi le versioni più recenti disponibili per Ubuntu 22.04.
 2. **Riduzione della superficie d'attacco** tramite JRE invece di JDK: elimina 15 CVE Medium legate a `binutils` e ai tool di sviluppo, senza impatti funzionali.
 
@@ -291,17 +290,17 @@ Le 4 occorrenze corrispondono a:
 
 Per risolvere le vulnerabilità sono state adottate **due misure complementari**:
 
-1. **Aggiornamento delle dipendenze Maven [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L28-L38)** Sono state aggiunte le dipendenze **JSTL (Jakarta Standard Tag Library)**.
-2. **Nel file [`Prodotti.jsp`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L5) è stata inoltre aggiornata la direttiva taglib alla nuova URI Jakarta.
+1. **Aggiornamento delle dipendenze Maven [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L30-L40)** Sono state aggiunte le dipendenze **JSTL (Jakarta Standard Tag Library)**.
+2. **Nel file [`Prodotti.jsp`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L3)** è stata inoltre aggiornata la direttiva taglib alla nuova URI Jakarta.
 
 Gli scriptlet `<%= ... %>` sono stati sostituiti con il tag `<c:out>`, che esegue automaticamente l'escaping dei caratteri HTML speciali (`<`, `>`, `"`, `'`, `&`), neutralizzando qualsiasi tentativo di iniezione di script.
 
 | Riga | Prima | Dopo |
 |------|-------|------|
-| 21 | `<title><%=x%></title>` | `<title><c:out value="<%=x%>"/></title>` 🔗 [Vedi la riga 21](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L22)|
-| 38 | `<a href="RicercaServlet?search=<%=p.getNomeProd()%>">` | `<a href="RicercaServlet?search=<c:out value='<%=p.getNomeProd()%>'/>">` 🔗 [Vedi la riga 38](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L38)|
-| 39 | `<img src="<%=directory%>">` | `<img src="<c:out value='<%=directory%>'/>">` 🔗 [Vedi la riga 39](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L39)|
-| 43 | `Modello:<%=p.getNomeProd()%>` | `Modello:<c:out value="<%=p.getNomeProd()%>"/>`  🔗 [Vedi la riga 43](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L43)|
+| 21 | `<title><%=x%></title>` | `<title><c:out value="<%=x%>"/></title>` 🔗 [Vedi la riga 9](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L9)|
+| 38 | `<a href="RicercaServlet?search=<%=p.getNomeProd()%>">` | `<a href="RicercaServlet?search=<c:out value='<%=p.getNomeProd()%>'/>">` 🔗 [Vedi la riga 25](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L25)|
+| 39 | `<img src="<%=directory%>">` | `<img src="<c:out value='<%=directory%>'/>">` 🔗 [Vedi la riga 26](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L26)|
+| 43 | `Modello:<%=p.getNomeProd()%>` | `Modello:<c:out value="<%=p.getNomeProd()%>"/>`  🔗 [Vedi la riga 30](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L30)|
 
 #### 4.3.3 Verifica
 
@@ -326,15 +325,15 @@ Le **3 vulnerabilità** rilevate sono state risolte introducendo opportune misur
 
 **In `FiltraggioServletMateriale.java`:**
 
-1. **Null check** — verifica esplicita che i parametri `mat` e `materiale` non siano `null`, evitando NullPointerException. 🔗 [Vedi le righe 13-14](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L13-L14)
-2. **Sanitizzazione con whitelist** — rimozione di tutti i caratteri non alfanumerici tramite `replaceAll("[^a-zA-Z0-9\\s]", "")`, creando le variabili sicure `matSicuro` e `materialeSicuro`. 🔗 [Vedi le righe 20-22](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L20-L22)
-3. **Inserimento sicuro in sessione** — uso delle variabili sanitizzate (`matSicuro`, `materialeSicuro`) in `setAttribute`, invece degli input originali.🔗 [Vedi le righe 44-45](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L44-L45)
+1. **Null check** — verifica esplicita che i parametri `mat` e `materiale` non siano `null`, evitando NullPointerException. 🔗 [Vedi le righe 32-34](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L32-L34)
+2. **Sanitizzazione con whitelist** — rimozione di tutti i caratteri non alfanumerici tramite `replaceAll("[^a-zA-Z0-9\\s]", "")`, creando le variabili sicure `matSicuro` e `materialeSicuro`. 🔗 [Vedi le righe 36-38](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L36-L38)
+3. **Inserimento sicuro in sessione** — uso delle variabili sanitizzate (`matSicuro`, `materialeSicuro`) in `setAttribute`, invece degli input originali.🔗 [Vedi le righe 60-63](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L60-L63)
 
 **In `InizioServlet.java`:**
 
-1. **Null check e validazione di `valore`** — se `richiesta` è `null`, il parametro `valore` viene validato con regex `matches("[a-zA-Z0-9\\s]+")`. Se non conforme, `sendError(SC_BAD_REQUEST)`. 🔗 [Vedi le righe 21-29](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L21-L29)
-2. **Validazione di `richiesta`** — verifica con la stessa regex prima di qualsiasi utilizzo, con `sendError(SC_BAD_REQUEST)` se non conforme. 🔗 [Vedi le righe 43-47](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L43-L47)
-3. **Inserimento sicuro in sessione** — `setAttribute` avviene solo dopo la validazione, quindi il valore è ormai sicuro. 🔗 [Vedi le righe 62-64](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L62-L64)
+1. **Null check e validazione di `valore`** — se `richiesta` è `null`, il parametro `valore` viene validato con regex `matches("[a-zA-Z0-9\\s]+")`. Se non conforme, `sendError(SC_BAD_REQUEST)`. 🔗 [Vedi le righe 21-27](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L21-L27)
+2. **Validazione di `richiesta`** — verifica con la stessa regex prima di qualsiasi utilizzo, con `sendError(SC_BAD_REQUEST)` se non conforme. 🔗 [Vedi le righe 41-44](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L41-L44)
+3. **Inserimento sicuro in sessione** — `setAttribute` avviene solo dopo la validazione, quindi il valore è ormai sicuro. 🔗 [Vedi le righe 58-62](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L58-L62)
 
 #### 4.4.3 Verifica
 
@@ -346,7 +345,7 @@ Dopo il rescan di Snyk Code, le **3 occorrenze** di Trust Boundary Violation non
 
 **Categoria:** [CWE-916: Use of Password Hash With Insufficient Computational Effort](https://cwe.mitre.org/data/definitions/916.html)
 
-Il metodo `setPassword()` in [`Utente.java`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Model/Utente.java#L70) utilizza **SHA-1** tramite `MessageDigest.getInstance("SHA-1")` per hashare le password degli utenti.
+Il metodo `setPassword()` in [`Utente.java`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Model/Utente.java#L73) utilizza **SHA-1** tramite `MessageDigest.getInstance("SHA-1")` per hashare le password degli utenti.
 
 **SHA-1 è inadatto all'hashing di password** perché:
 

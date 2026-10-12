@@ -110,7 +110,7 @@ L'analisi SonarCloud persegue i seguenti obiettivi:
 
 ## 2. Configurazione
 
-### 2.1 Dipendenze aggiunte al [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml)
+### 2.1 Dipendenze aggiunte al [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L55-L169)
 
 | Dipendenza | Versione | Ruolo |
 |------------|:--------:|-------|
@@ -131,58 +131,7 @@ L'analisi SonarCloud persegue i seguenti obiettivi:
 
 ### 2.3 Workflow GitHub Actions
 
-File [`.github/workflows/sonarcloud.yml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/.github/workflows/sonarcloud.yml):
-
-```yaml
-name: SonarCloud Analysis
-
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-
-permissions:
-  contents: read
-  pull-requests: write
-  security-events: write
-
-jobs:
-  sonarcloud:
-    name: SonarCloud Scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout del codice
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: Build e test con Maven
-        run: mvn -B clean verify
-
-      - name: SonarCloud Scan
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }} \
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }} \
-            -Dsonar.host.url=https://sonarcloud.io
-```
+File [`.github/workflows/sonarcloud.yml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/.github/workflows/sonarcloud.yml)
 
 ### 2.4 Quality Gate "Sonar way"
 
@@ -215,8 +164,8 @@ jobs:
 | **TOTALE PROGETTO** | **50** | **481** |
 
 > 📄 **Documentazione dettagliata:**
-> - Test unitari e analisi statica: [`docs/TestCase/unit.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/TestCase/unit.md)
-> - Test funzionali H2: [`docs/TestCase/functional.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/TestCase/functional.md)
+> - Test unitari e analisi statica: [`unit.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/TestCase/unit.md)
+> - Test funzionali H2: [`functional.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/TestCase/functional.md)
 
 ---
 
@@ -367,8 +316,8 @@ L'estensione dei test H2 alle Servlet che interagiscono con il DB ha portato a:
 |------|---------------|
 | `Utente.java` | `implements Serializable` + `serialVersionUID = 1L` |
 | `Prodotto.java` | `implements Serializable` + `serialVersionUID = 1L` |
-| `Carta.java` | `implements Serializable` + `serialVersionUID = 1L` (coerenza) |
-| `AcquistoProdotti.java` | `implements Serializable` + `serialVersionUID = 1L` (coerenza) |
+| `Carta.java` | `implements Serializable` + `serialVersionUID = 1L` |
+| `AcquistoProdotti.java` | `implements Serializable` + `serialVersionUID = 1L` |
 
 **Issue risolte:** H2-ISSUE-01, H2-ISSUE-02, H2-ISSUE-03.
 
@@ -409,7 +358,7 @@ Aggiunti test H2 per le Servlet non ancora coperte.
 | **07/10/2026** | Test H2 DAO | Coverage: 86.59% → 87.9%, +21 issue |
 | **07/10/2026** | Test H2 Servlet | Coverage: 87.9% → 77.44% (failed) |
 | **07/10/2026** | Fix finali Serializable + S1989 | Quality Gate **PASSED**, Coverage 84.76% |
-| **07/10/2026** | Intervento Overall Code | Blocker 14, High 16, Medium 15, Low 23 risolte |
+| **07/10/2026** | Intervento Overall Code | 84 issue risolte (14 Blocker, 16 High, 15 Medium, 23 Low, 16 altri) |
 
 **Risultato finale:** Quality Gate PASSED, 0 New Issues, Reliability Rating Overall E → C.
 
@@ -478,19 +427,19 @@ Questa sezione documenta le issue risolte **sull'Overall Code** — codice legac
 | Low | S1130 | `throws Exception` non necessari | `ProdottoDAOH2Test` | 1 |
 | Low | S6073 | Rimozione `eq(...)` ridondanti | 6 file di test | 15 |
 | Low | S5853 | Join assertions in AssertJ | `FiltraggioServletMaterialeH2Test` | 3 |
-| Altri fix collaterali | — | Varie regole Medium/Low | Vari file `.java` | ~12 |
-| **TOTALE OVERALL CODE** | | | | **~80** |
+| Altri fix collaterali | — | Varie regole Medium/Low | Vari file `.java` | ~16 |
+| **TOTALE OVERALL CODE** | | | | **~84** |
 
 **Distribuzione per severità:**
 
 | Severità | Issue risolte | Percentuale |
 |:--------:|:-------------:|:-----------:|
-| Blocker | 14 | 17.5% |
-| High | 16 | 20.0% |
-| Medium | 15 | 18.75% |
-| Low | 23 | 28.75% |
-| Altri fix collaterali | ~12 | 15.0% |
-| **TOTALE** | **~80** | 100% |
+| Blocker | 14 | 16.7% |
+| High | 16 | 19.0% |
+| Medium | 15 | 17.9% |
+| Low | 23 | 27.4% |
+| Altri fix collaterali | ~16 | 19.0% |
+| **TOTALE** | **84** | 100% |
 
 ### 6.3 Blocker risolte — S2095 (14)
 
@@ -636,8 +585,8 @@ rimosso import inutilizzato `java.security.ProtectionDomain`.
 |-----------|:-----:|:----:|:-------:|:------------:|:-----------:|
 | Security | 93 | 59 | **-34** | D | D |
 | Reliability | 103 | 85 | **-18** | **E** | **C** |
-| Maintainability | 74 | 46 | **-28** | A | A |
-| **TOTALE** | **270** | **190** | **-80** | — | — |
+| Maintainability | 74 | 42 | **-32** | A | A |
+| **TOTALE** | **270** | **186** | **-84** | — | — |
 
 **Il Reliability Rating è passato da E a C** (+2 gradi sulla scala A-E).
 
@@ -663,8 +612,8 @@ rimosso import inutilizzato `java.security.ProtectionDomain`.
 |:---|:---:|:---:|:---:|
 | Security | 93 (D) | 59 (D) | -34 |
 | Reliability | 103 (E) | 85 (C) | **-18 (E→C)** |
-| Maintainability | 74 (A) | 46 (A) | -28 |
-| **Totale** | **270** | **190** | **-80** |
+| Maintainability | 74 (A) | 42 (A) | -32 |
+| **Totale** | **270** | **186** | **-84** |
 | Coverage | 91.4% | 91.4% | — |
 | Duplications | 13.3% | 12.9% | -0.4% |
 
@@ -674,17 +623,17 @@ rimosso import inutilizzato `java.security.ProtectionDomain`.
 
 ## 8. Debito tecnico documentato — Overall Code
 
-Delle **270 issue storiche** rilevate sull'Overall Code, **80 sono state risolte**. Le **190 residue** sono state accettate come debito tecnico documentato.
+Delle **270 issue storiche** rilevate sull'Overall Code, **84 sono state risolte**. Le **186 residue** sono state accettate come debito tecnico documentato.
 
 ### 8.1 Perimetro delle issue residue
 
 | Tipo di file | Issue residue | Severità | Esempi |
 |--------------|:-------------:|:--------:|--------|
-| `.jsp` | ~85 | Reliability Medium | Accessibilità WCAG (title, lang, label, `th scope`, `!DOCTYPE`) |
-| `.htm` | ~50 | Reliability Medium | Accessibilità WCAG (title, label, input id) |
-| `.css` | ~25 | Maintainability Medium/Low | Proprietà duplicate (`border`, `font-family`), contrasto colori |
-| `.java` | ~30 | Medium/Low | SHA-1 (accettato), eccezioni generiche, import inutilizzati |
-| **TOTALE** | **190** | — | — |
+| `.jsp` | 85 | Reliability Medium + Low | Accessibilità WCAG (`title`, `lang`, `label`, `id` input, `th scope`, `!DOCTYPE`, `alt`), integrity SRI |
+| `.htm` | 9 | Reliability Medium + Low | Accessibilità WCAG (`title`, `label`), regex `[0-9]` → `\d`, boolean literal |
+| `.css` | 17 | Maintainability Medium | Proprietà duplicate (`border`, `font-family`), contrasto colori insufficiente |
+| `.java` | 75 | Security High + Maintainability Medium/Low | SHA-1 accettato, eccezioni propagate, `ArrayList` → `List`, private constructor, naming |
+| **TOTALE** | **186** | — | — |
 
 **Nota importante:** le issue residue sui file `.java` sono **unicamente** relative a:
 - **SHA-1 in `Utente.java`** (1 issue High, documentata come CWE-916 accettato) — vedi [`snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md)
@@ -697,12 +646,21 @@ Delle **270 issue storiche** rilevate sull'Overall Code, **80 sono state risolte
 
 | Categoria | Quantità | Severità | Tipo file | Motivazione |
 |-----------|:--------:|:--------:|:---------:|-------------|
-| Accessibilità JSP | ~85 | Reliability Medium | `.jsp` | WCAG 2-A su JSP legacy (title, lang, label, th scope) |
-| Accessibilità HTML | ~50 | Reliability Medium | `.htm` | WCAG 2-A su HTML legacy (title, label, input id) |
-| CSS duplicati | ~25 | Maintainability | `.css` | Proprietà duplicate, contrasto colori |
-| SHA-1 weak hash | 1 | Security High | `.java` | **CWE-916 accettato** (fix richiede migrazione bcrypt) |
-| Altro `.java` | ~29 | Medium/Low | `.java` | Convenzioni, eccezioni generiche, debito minore |
-| **TOTALE** | **190** | — | — | — |
+| Accessibilità WCAG (`title`, `lang`, `label`, `id`, `th scope`, `!DOCTYPE`) | ~80 | Reliability Medium | `.jsp`, `.htm` | Requisiti WCAG 2-A su pagine legacy. Non impattano sicurezza o funzionalità |
+| Exception handling (`ServletException`, `IOException`) | 49 | Security Low | `.java` | Eccezioni propagate — gestite dal container Tomcat. Falsi positivi |
+| Alt text immagini | 17 | Reliability Low | `.jsp` | Immagini senza attributo `alt` (WCAG 2-A) |
+| Contrasto CSS insufficiente | 12 | Maintainability Medium | `.css` | Testo non conforme al rapporto di contrasto WCAG |
+| `ArrayList` → `List` | 10 | Maintainability Low | `.java` | Tipo di ritorno concreto invece dell'interfaccia (best practice) |
+| Integrity SRI risorse esterne | 9 | Security Low | `.jsp` | CDN senza `integrity` + `crossorigin` (former hotspot) |
+| Convenzioni naming Java | 8 | Maintainability Low | `.java` | `CVV`, campi su riga separata, variabili locali |
+| Anchor come button | 5 | Maintainability Low | `.jsp`, `.htm` | `<a>` usato come pulsante anziché `<button>` |
+| Proprietà CSS duplicate | 5 | Maintainability Medium | `.css` | `border` e `font-family` ripetuti |
+| Private constructor mancante | 3 | Maintainability Medium | `.java` | Utility class con costruttore pubblico implicito |
+| Naming package | 2 | Maintainability Low | `.java` | `Model` → `model`, `Controller` → `controller` |
+| SHA-1 weak hash | 1 | Security High | `.java` | CWE-916 accettato (fix richiede migrazione bcrypt + reset password) |
+| Costante duplicata | 1 | Maintainability High | `.java` | `ATTR_MATERIALE` duplicato in `FiltraggioServletMateriale` |
+| Altro (`@Override` mancante, campo `tipoLetto` non usato, regex `\d`, boolean literal, import inutilizzato) | ~4 | Maintainability Low | `.java`, `.htm` | Fix minori |
+| **TOTALE** | **~186** | — | — | — |
 
 ### 8.3 Motivazione dell'accettazione
 
@@ -723,7 +681,7 @@ SonarCloud è uno dei **tre tool di sicurezza** integrati nella pipeline del pro
 |:---|:---|:---:|:---:|
 | **SonarCloud (SAST)** | Qualità codice, coverage, security hotspot, code smell | Ogni push/PR | Sì |
 | **Snyk Code + Open Source** | Vulnerabilità CWE, dipendenze Maven, Dockerfile, licenze | Ogni push/PR | Configurabile |
-| **GitGuardian** | Secret scanning (credenziali, API key, token) | Opzionale | No |
+| **GitGuardian** | Secret scanning (credenziali, API key, token) | Ogni push/PR | No |
 
 ### 9.2 Finding condivisi tra i tool
 
@@ -759,8 +717,8 @@ Alcuni finding sono stati rilevati da più tool, altri solo da uno. La tabella r
 - **GitGuardian** ha individuato le credenziali hardcoded in `ConPool.java`
 
 > 📄 **Documentazione di dettaglio:**
-> - Snyk (dipendenze + SAST): [`docs/Snyk/Snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md)
-> - GitGuardian (secret scanning): [`docs/GitGuardian/GitGuardian.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/GitGuardian/README.md)
+> - Snyk (dipendenze + SAST): [`Snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md)
+> - GitGuardian (secret scanning): [`GitGuardian.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/GitGuardian/README.md)
 
 ---
 
@@ -770,7 +728,7 @@ Alcuni finding sono stati rilevati da più tool, altri solo da uno. La tabella r
 
 - **Coverage alta (84.76%)**: la suite di 481 test copre quasi tutto il codice nuovo
 - **Zero issue residue sul New Code**
-- **Intervento completo sul legacy `.java`**: **14 Blocker + 12 High + 17 Medium + 25 Low** risolte sull'Overall Code
+- **Intervento completo sul legacy `.java`**: **14 Blocker + 16 High + 15 Medium + 23 Low** risolte sull'Overall Code
 - **Tutte le issue Blocker e High sui file `.java` sono state risolte**
 - **Reliability Rating Overall: da E a C** (+2 gradi)
 - **Security Rating New Code: A**
@@ -781,5 +739,5 @@ Alcuni finding sono stati rilevati da più tool, altri solo da uno. La tabella r
 ### 10.2 Trade-off documentati
 
 1. **Duplicazione check autorizzazione (0.64%)**: accettata per non introdurre 7 nuove issue Sonar
-2. **Debito tecnico residuo (190 issue)**: tutte Medium/Low, relative a file `.jsp`, `.htm` e `.css`
+2. **Debito tecnico residuo (186 issue)**: tutte Medium/Low, relative a file `.jsp`, `.htm` e `.css`
 3. **SHA-1 per password**: accettato come rischio (CWE-916), fix in futura iterazione

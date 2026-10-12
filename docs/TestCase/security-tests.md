@@ -192,11 +192,6 @@ I **test unitari** non contribuiscono direttamente alla coverage (usano Mockito 
 
 La suite ha identificato **14 vulnerabilità risolte** e **~15 finding documentati come rischio accettato**. La seguente tabella riassume i finding di sicurezza più rilevanti.
 
-Per il dettaglio completo di ogni vulnerabilità critica (contesto, scenario osservato, patch applicata o raccomandata), consulta:
-
-- **Vulnerabilità su test unitari** → [`unit.md` § 8](unit.md#8-dettaglio-vulnerabilità-critiche)
-- **Vulnerabilità su test funzionali H2** → [`functional.md` § 7](functional.md#7-dettaglio-vulnerabilità-critiche)
-
 ### 6.1 Vulnerabilità risolte
 
 | ID | Vulnerabilità | CWE | Endpoint / File | Tipo test | Stato | Dettaglio |
@@ -238,7 +233,7 @@ Per il dettaglio completo di ogni vulnerabilità critica (contesto, scenario oss
 
 ## 7. Link ai documenti di dettaglio
 
-Per una trattazione completa dei test, consulta:
+Per una trattazione completa dei test, consultare:
 
 ### 7.1 Test Unitari e Analisi Statica — [`unit.md`](unit.md)
 
