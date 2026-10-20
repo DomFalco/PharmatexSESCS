@@ -11,7 +11,7 @@
 
 <p align="center">
   <strong>Università degli Studi di Salerno</strong><br>
-  Corso di Laurea in Sicurezza Informatica per Tecnologie Cloud<br>
+  Corso di Laurea in Sicurezza Informatica e Tecnologie Cloud<br>
   Software Engineering for Secure Cloud Systems · A.A. 2025/2026
 </p>
 
