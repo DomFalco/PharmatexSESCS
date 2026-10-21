@@ -44,10 +44,17 @@ public class AggiuntaProdottoServlet extends HttpServlet {
             dispatcher.forward(request, response);
 
         } catch (NumberFormatException | NullPointerException e) {
-            // L'IOException viene gestita dalla firma del metodo doPost
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido o parametro mancante.");
+            inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido o parametro mancante.");
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro della richiesta.");
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro della richiesta.");
+        }
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            throw new ServletException("Impossibile inviare la risposta di errore", e);
         }
     }
 }

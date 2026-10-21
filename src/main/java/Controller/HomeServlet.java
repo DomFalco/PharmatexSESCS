@@ -35,27 +35,35 @@ public class HomeServlet extends HttpServlet {
             else if (request.getParameter("valore").equals("home")) {
                 HttpSession session = request.getSession(false);
                 if (session == null) {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                    inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
                     return;
                 }
                 Utente admin = (Utente) session.getAttribute("Amministratore");
                 if (admin == null || !admin.isAmministratore()) {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                    inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
                     return;
                 }
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
                 dispatcher.forward(request, response);
             }
             else {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
+                inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
             }
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione della richiesta.");
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione della richiesta.");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doGet(req, resp);
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            throw new ServletException("Impossibile inviare la risposta di errore", e);
+        }
     }
 }

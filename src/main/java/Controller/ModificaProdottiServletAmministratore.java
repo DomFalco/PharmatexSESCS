@@ -33,7 +33,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
             Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);
 
             if (p == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato.");
+                inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato.");
                 return;
             }
 
@@ -41,7 +41,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
             String quantitaTotale = request.getParameter(PARAM_QUANTITA_TOTALE);
 
             if (nuovoPrezzo == null || quantitaTotale == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
+                inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
                 return;
             }
 
@@ -63,14 +63,22 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
                 forward(request, response);
             }
         } catch (NumberFormatException | NullPointerException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
+            inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");
         }
     }
 
     private void forward(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RequestDispatcher ds = request.getRequestDispatcher(HOME_SERVLET_AMMINISTRATORE);
         ds.forward(request, response);
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            throw new ServletException("Impossibile inviare la risposta di errore", e);
+        }
     }
 }

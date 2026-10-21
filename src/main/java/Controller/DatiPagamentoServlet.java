@@ -24,19 +24,19 @@ public class DatiPagamentoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
             return;
         }
         Utente u = (Utente) session.getAttribute("Utente");
         if (u == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato.");
+            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato.");
             return;
         }
 
         ArrayList<Prodotto> cart_list = (ArrayList<Prodotto>) session.getAttribute("cart-list");
         ArrayList<Integer> qList = (ArrayList<Integer>) session.getAttribute("quantitaArticoli");
         if (cart_list == null || qList == null || cart_list.isEmpty() || qList.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
+            inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
             return;
         }
 
@@ -65,7 +65,15 @@ public class DatiPagamentoServlet extends HttpServlet {
             dispatcher.forward(request, response);
 
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro dopo il pagamento.");
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro dopo il pagamento.");
+        }
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            throw new ServletException("Impossibile inviare la risposta di errore", e);
         }
     }
 }

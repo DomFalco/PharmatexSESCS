@@ -21,24 +21,24 @@ public class CercaProdottoPerModificaServlet extends HttpServlet {
         try {
             HttpSession session = request.getSession(false);
             if (session == null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
                 return;
             }
             Utente admin = (Utente) session.getAttribute("Amministratore");
             if (admin == null || !admin.isAmministratore()) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
                 return;
             }
 
             String x = request.getParameter("search");
             if (x == null || !x.matches("[a-zA-Z0-9\\s]+")) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'search' non valido.");
+                inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'search' non valido.");
                 return;
             }
 
             Prodotto pmod = ProdottoDAO.doRetriveBySearch(x);
             if (pmod == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Prodotto non trovato.");
+                inviaErrore(response, HttpServletResponse.SC_NOT_FOUND, "Prodotto non trovato.");
                 return;
             }
 
@@ -47,7 +47,15 @@ public class CercaProdottoPerModificaServlet extends HttpServlet {
             ds.forward(request, response);
 
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la visualizzazione del prodotto.");
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la visualizzazione del prodotto.");
+        }
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            throw new ServletException("Impossibile inviare la risposta di errore", e);
         }
     }
 }

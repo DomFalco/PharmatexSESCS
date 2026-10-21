@@ -21,18 +21,18 @@ public class RimuoviProdottoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession sessione = request.getSession(false);
         if (sessione == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
             return;
         }
         Utente admin = (Utente) sessione.getAttribute("Amministratore");
         if (admin == null || !admin.isAmministratore()) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
             return;
         }
 
         Prodotto p = (Prodotto) sessione.getAttribute("idModificaPrezzo");
         if (p == null || p.getIdProdotto() == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato per la rimozione.");
+            inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato per la rimozione.");
             return;
         }
 
@@ -43,7 +43,15 @@ public class RimuoviProdottoServlet extends HttpServlet {
             RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
             ds.forward(request, response);
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la rimozione del prodotto.");
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la rimozione del prodotto.");
+        }
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            throw new ServletException("Impossibile inviare la risposta di errore", e);
         }
     }
 }
