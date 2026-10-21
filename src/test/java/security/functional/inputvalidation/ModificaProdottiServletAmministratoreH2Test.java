@@ -1,8 +1,8 @@
 package security.functional.inputvalidation;
 
-import Controller.ModificaProdottiServletAmministratore;
-import Model.ConPool;
-import Model.Prodotto;
+import controller.ModificaProdottiServletAmministratore;
+import model.ConPool;
+import model.Prodotto;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;

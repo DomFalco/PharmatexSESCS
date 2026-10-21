@@ -107,7 +107,7 @@ class UtenteDAOTest {
     @Test
     @DisplayName("Il DAO ha almeno 6 metodi statici")
     void testNumeroMetodiStatici() {
-        Method[] methods = Model.UtenteDAO.class.getDeclaredMethods();
+        Method[] methods = model.UtenteDAO.class.getDeclaredMethods();
         long staticMethods = Arrays.stream(methods)
                 .filter(m -> java.lang.reflect.Modifier.isStatic(m.getModifiers()))
                 .count();
@@ -121,7 +121,7 @@ class UtenteDAOTest {
     @SuppressWarnings("ConstantValue")
     void testEstendeHttpServlet() {
         assertTrue(jakarta.servlet.http.HttpServlet.class.isAssignableFrom(
-                        Model.UtenteDAO.class),
+                        model.UtenteDAO.class),
                 "Il DAO estende HttpServlet: design smell, dovrebbe essere una classe POJO");
     }
 

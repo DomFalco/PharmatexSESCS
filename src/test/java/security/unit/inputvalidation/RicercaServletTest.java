@@ -1,6 +1,6 @@
 package security.unit.inputvalidation;
 
-import Controller.RicercaServlet;
+import controller.RicercaServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;

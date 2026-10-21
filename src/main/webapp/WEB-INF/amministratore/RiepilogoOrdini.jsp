@@ -1,6 +1,6 @@
-<%@ page import="Model.Prodotto" %>
+<%@ page import="model.Prodotto" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="Model.AcquistoProdotti" %>
+<%@ page import="model.AcquistoProdotti" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/ParteHTML/navBarAmministratore.jsp" %>
 <!DOCTYPE html>

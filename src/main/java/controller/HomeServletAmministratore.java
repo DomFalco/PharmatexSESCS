@@ -1,0 +1,78 @@
+package controller;
+
+import model.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import jakarta.servlet.annotation.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+@WebServlet("/HomeServletAmministratore")
+public class HomeServletAmministratore extends HttpServlet {
+
+    private static final String PARAM_VALORE = "valore";
+    private static final Logger LOGGER = Logger.getLogger(HomeServletAmministratore.class.getName());
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+            return;
+        }
+        Utente admin = (Utente) session.getAttribute("Amministratore");
+        if (admin == null || !admin.isAmministratore()) {
+            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+            return;
+        }
+
+        try {
+            if (request.getParameter(PARAM_VALORE) == null) {
+                List<Prodotto> tuttiProdotti = ProdottoDAO.doRetriveAll();
+                request.setAttribute("tuttiProdotti", tuttiProdotti);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("quantita")) {
+                List<Prodotto> prodottiEsauriti = ProdottoDAO.doRetriveQuantitaEsaurita();
+                request.setAttribute("prodottiEsauriti", prodottiEsauriti);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/QuantitaEsaurita.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("ordine")) {
+                List<AcquistoProdotti> riepilogoProdotti = AcquistoProdottiDAO.doRetriveAcquisto();
+                request.setAttribute("riepilogoProdotti", riepilogoProdotti);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/RiepilogoOrdini.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("clienti")) {
+                List<Utente> riepilogoUtente = UtenteDAO.doRetriveUtente();
+                request.setAttribute("riepilogoUtente", riepilogoUtente);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("aggiungi")) {
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/AggiungiNuovoProdotto.jsp");
+                ds.forward(request, response);
+            }
+        } catch (ServletException | IOException e) {
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento della pagina amministratore.");
+        }
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doPost(request, response);
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Impossibile inviare la risposta di errore", e);
+        }
+    }
+}

@@ -117,7 +117,7 @@ class AcquistoProdottiDAOTest {
     @Test
     @DisplayName("Il DAO ha almeno 3 metodi statici")
     void testNumeroMetodiStatici() {
-        Method[] methods = Model.AcquistoProdottiDAO.class.getDeclaredMethods();
+        Method[] methods = model.AcquistoProdottiDAO.class.getDeclaredMethods();
         long staticMethods = Arrays.stream(methods)
                 .filter(m -> java.lang.reflect.Modifier.isStatic(m.getModifiers()))
                 .count();
@@ -131,7 +131,7 @@ class AcquistoProdottiDAOTest {
     @SuppressWarnings("ConstantValue")
     void testNonEstendeHttpServlet() {
         assertFalse(jakarta.servlet.http.HttpServlet.class.isAssignableFrom(
-                        Model.AcquistoProdottiDAO.class),
+                        model.AcquistoProdottiDAO.class),
                 "AcquistoProdottiDAO non estende HttpServlet: buona pratica " +
                         "(a differenza di ProdottoDAO e UtenteDAO)");
     }

@@ -1,6 +1,6 @@
 package security.functional.inputvalidation;
 
-import Controller.FiltraggioServletMateriale;
+import controller.FiltraggioServletMateriale;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;

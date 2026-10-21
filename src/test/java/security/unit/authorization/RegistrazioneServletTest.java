@@ -1,6 +1,6 @@
 package security.unit.authorization;
 
-import Controller.RegistrazioneServlet;
+import controller.RegistrazioneServlet;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

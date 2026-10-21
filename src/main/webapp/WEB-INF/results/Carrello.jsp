@@ -1,7 +1,7 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.math.BigDecimal" %>
 <%@ page import="java.math.RoundingMode" %>
-<%@ page import="Model.Prodotto" %>
+<%@ page import="model.Prodotto" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/ParteHTML/navBar.jsp" %>
 <!DOCTYPE html>

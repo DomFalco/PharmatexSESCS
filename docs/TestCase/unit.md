@@ -15,7 +15,7 @@
     - [1.3 Stack di test](#13-stack-di-test)
 - [2. Pattern di test utilizzati](#2-pattern-di-test-utilizzati)
     - [2.1 Test delle Servlet (Mockito)](#21-test-delle-servlet-mockito)
-    - [2.2 Test delle classi Model](#22-test-delle-classi-model)
+    - [2.2 Test delle classi model](#22-test-delle-classi-model)
     - [2.3 Test che toccano il DB](#23-test-che-toccano-il-db)
     - [2.4 Test di "documentazione"](#24-test-di-documentazione)
     - [2.5 Analisi statica del sorgente per i DAO](#25-analisi-statica-del-sorgente-per-i-dao)
@@ -123,7 +123,7 @@ Mock obbligatori:
 - `request.getProtocol()` → `"HTTP/1.1"`
 - `request.getSession()` e `request.getSession(false)` → mock di `HttpSession`
 
-### 2.2 Test delle classi Model
+### 2.2 Test delle classi model
 
 Chiamate dirette ai metodi pubblici (`new Utente()`, `utente.setPassword(...)`, ecc.), senza necessità di mock.
 
@@ -408,7 +408,7 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 | SEC-DAO-06 | I DAO `ProdottoDAO` e `UtenteDAO` estendono `HttpServlet` (design smell: un DAO non è una Servlet) | — | `ProdottoDAO`, `UtenteDAO` | Documentato |
 | SEC-DAO-07 | Eccezioni SQL wrappate in `DataAccessException` custom (miglioramento rispetto a `RuntimeException` generica) | CWE-391 | Tutti i DAO | Risolto |
 
-**Nota su SEC-DAO-03:** il doppio hashing non compromette il login (perché `doLogin` confronta l'hash nel DB con `SHA1(input)` prima del re-hashing del bean), ma è un **design smell** che viola il principio di separazione tra Model e hashing. Un setter non dovrebbe mai applicare trasformazioni crittografiche.
+**Nota su SEC-DAO-03:** il doppio hashing non compromette il login (perché `doLogin` confronta l'hash nel DB con `SHA1(input)` prima del re-hashing del bean), ma è un **design smell** che viola il principio di separazione tra model e hashing. Un setter non dovrebbe mai applicare trasformazioni crittografiche.
 
 **Nota:** il trattino `—` nella colonna CWE indica un **design smell** o problema architetturale che non mappa su un CWE specifico (non è una vulnerabilità di sicurezza ma una violazione di best practice).
 
@@ -422,7 +422,7 @@ Questa sezione documenta in dettaglio le **vulnerabilità critiche risolte** eme
 
 ### 8.1 NPE su `mat.equalsIgnoreCase()` in MaterialeServlet (SEC-IV-01)
 
-- **File:** `src/main/java/Controller/MaterialeServlet.java`
+- **File:** `controller`
 - **Test:** `testMatNullNonCausaNPE` (`MaterialeServletTest`)
 - **CWE:** [CWE-476](https://cwe.mitre.org/data/definitions/476.html) (NULL Pointer Dereference)
 - **Severità:** Critica
@@ -447,7 +447,7 @@ Aggiunto un null check esplicito prima del confronto: se `mat` è `null`, viene 
 
 ### 8.2 Doppio forward in MaterialeServlet (SEC-IV-02)
 
-- **File:** `src/main/java/Controller/MaterialeServlet.java`
+- **File:** `controller`
 - **Test:** `testNessunDoppioForward` (`MaterialeServletTest`)
 - **CWE:** [CWE-754](https://cwe.mitre.org/data/definitions/754.html) (Improper Check for Unusual or Exceptional Conditions)
 - **Severità:** Critica
@@ -472,7 +472,7 @@ Aggiunto `return;` immediatamente dopo il primo `forward()` nel ramo "lista vuot
 
 ### 8.3 Sanitizzazione input assente in FiltraggioServletMateriale (IV-01)
 
-- **File:** `src/main/java/Controller/FiltraggioServletMateriale.java`
+- **File:** `controller`
 - **Test:** `testSanitizationBeforeComparison` (`FiltraggioServletMaterialeTest`)
 - **CWE:** [CWE-79](https://cwe.mitre.org/data/definitions/79.html) (Improper Neutralization of Input During Web Page Generation — XSS)
 - **Severità:** Alta
@@ -497,7 +497,7 @@ Aggiunta sanitizzazione con `replaceAll("[^a-zA-Z0-9\\s]", "")` sul valore di `m
 
 ### 8.4 Validazione regex assente in InizioServlet (IV-02)
 
-- **File:** `src/main/java/Controller/InizioServlet.java`
+- **File:** `controller`
 - **Test:** `testActionConScriptRestituisce400` (`InizioServletTest`)
 - **CWE:** [CWE-20](https://cwe.mitre.org/data/definitions/20.html) (Improper Input Validation)
 - **Severità:** Alta
@@ -556,7 +556,7 @@ Aggiunto in ogni Servlet il controllo `session.getAttribute("Utente")` / `sessio
 
 ### 8.6 Matching permissivo in RendiAmministratoreServlet (AUTH-07)
 
-- **File:** `src/main/java/Controller/RendiAmministratoreServlet.java`
+- **File:** `controller`
 - **Test:** `testMatchingPermissivoBloccato` (`RendiAmministratoreServletTest`)
 - **CWE:** [CWE-20](https://cwe.mitre.org/data/definitions/20.html) (Improper Input Validation)
 - **Severità:** Alta

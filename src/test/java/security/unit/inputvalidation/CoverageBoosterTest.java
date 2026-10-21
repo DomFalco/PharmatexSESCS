@@ -1,6 +1,6 @@
 package security.unit.inputvalidation;
 
-import Controller.*;
+import controller.*;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -42,14 +43,11 @@ public class CoverageBoosterTest {
     @DisplayName("Copertura HomeServlet catch 500")
     void testHomeServletCatch() throws Exception {
         when(request.getMethod()).thenReturn("GET");
-        // Evita la chiamata al DB usando il ramo "home"
         when(request.getParameter("valore")).thenReturn("home");
-        // Rende valida la sessione
-        Model.Utente admin = new Model.Utente();
+        model.Utente admin = new model.Utente();
         admin.setAmministratore(true);
         when(session.getAttribute("Amministratore")).thenReturn(admin);
 
-        // Fa fallire il forward per scatenare il catch
         doThrow(new IOException("Errore simulato")).when(dispatcher).forward(any(), any());
 
         new HomeServlet().service(request, response);
@@ -60,7 +58,6 @@ public class CoverageBoosterTest {
     @DisplayName("Copertura InizioServlet catch 500")
     void testInizioServletCatch() throws Exception {
         when(request.getMethod()).thenReturn("GET");
-        // Evita il DB usando il ramo "login"
         when(request.getParameter("action")).thenReturn("login");
 
         doThrow(new IOException("Errore simulato")).when(dispatcher).forward(any(), any());
@@ -73,7 +70,6 @@ public class CoverageBoosterTest {
     @DisplayName("Copertura MaterialeServlet catch 500")
     void testMaterialeServletCatch() throws Exception {
         when(request.getMethod()).thenReturn("GET");
-        // Evita il DB facendo restituire null (va nel ramo RicercaErrata)
         when(session.getAttribute("mat")).thenReturn(null);
         when(session.getAttribute("materiale")).thenReturn(null);
 
@@ -87,8 +83,7 @@ public class CoverageBoosterTest {
     @DisplayName("Copertura PagamentoServlet catch 500")
     void testPagamentoServletCatch() throws Exception {
         when(request.getMethod()).thenReturn("GET");
-        // Rende valida la sessione
-        Model.Utente u = new Model.Utente();
+        model.Utente u = new model.Utente();
         when(session.getAttribute("Utente")).thenReturn(u);
 
         doThrow(new IOException("Errore simulato")).when(dispatcher).forward(any(), any());
@@ -106,5 +101,51 @@ public class CoverageBoosterTest {
 
         new Registrazione().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
+    }
+
+    @Test
+    @DisplayName("Copertura catch inviaErrore in RendiAmministratoreServlet")
+    void testRendiAmministratoreInviaErroreCatch() throws Exception {
+        when(request.getMethod()).thenReturn("POST");
+        model.Utente admin = new model.Utente();
+        admin.setAmministratore(true);
+        when(session.getAttribute("Amministratore")).thenReturn(admin);
+        when(request.getParameter("action")).thenReturn(null); // Forza ingresso in inviaErrore
+
+        // Forza sendError a lanciare IOException
+        doThrow(new IOException("Errore simulato")).when(response).sendError(anyInt(), anyString());
+
+        new RendiAmministratoreServlet().service(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
+    }
+
+    @Test
+    @DisplayName("Copertura catch inviaErrore in CercaProdottoPerModificaServlet")
+    void testCercaProdottoInviaErroreCatch() throws Exception {
+        when(request.getMethod()).thenReturn("POST");
+        model.Utente admin = new model.Utente();
+        admin.setAmministratore(true);
+        when(session.getAttribute("Amministratore")).thenReturn(admin);
+        when(request.getParameter("search")).thenReturn("!!invalid!!"); // Forza ingresso in inviaErrore
+
+        doThrow(new IOException("Errore simulato")).when(response).sendError(anyInt(), anyString());
+
+        new CercaProdottoPerModificaServlet().service(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
+    }
+
+    @Test
+    @DisplayName("Copertura catch inviaErrore in AggiuntaProdottoServlet")
+    void testAggiuntaProdottoInviaErroreCatch() throws Exception {
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getParameter("larghezza")).thenReturn("invalid"); // Forza NumberFormatException
+
+        doThrow(new IOException("Errore simulato")).when(response).sendError(anyInt(), anyString());
+
+        new AggiuntaProdottoServlet().service(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 }

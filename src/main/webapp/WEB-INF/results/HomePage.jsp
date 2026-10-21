@@ -1,7 +1,7 @@
-<%@ page import="Model.Prodotto" %>
+<%@ page import="model.Prodotto" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="Model.Utente" %>
+<%@ page import="model.Utente" %>
 <!DOCTYPE html>
 <html lang="it">
 <head>

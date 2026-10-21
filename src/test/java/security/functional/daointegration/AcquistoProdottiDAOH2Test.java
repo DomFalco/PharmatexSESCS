@@ -1,7 +1,7 @@
 package security.functional.daointegration;
 
-import Model.AcquistoProdotti;
-import Model.AcquistoProdottiDAO;
+import model.AcquistoProdotti;
+import model.AcquistoProdottiDAO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import security.functional.BaseH2Test;
@@ -9,15 +9,13 @@ import security.functional.BaseH2Test;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Test funzionali dello AcquistoProdottiDAO su H2 in-memory.
- * Il DAO gestisce la tabella "Acquistare" (relazione N:N tra Cliente e Prodotto)
- * e fornisce query di join per recuperare gli acquisti con i dati del cliente.
  */
 class AcquistoProdottiDAOH2Test extends BaseH2Test {
 
@@ -64,7 +62,7 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
         AcquistoProdottiDAO.acquistaProdotto("mario@test.com", "P0002", 2);
         AcquistoProdottiDAO.acquistaProdotto("luigi@test.com", "P0001", 5);
 
-        ArrayList<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquistoUtente("mario@test.com");
+        List<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquistoUtente("mario@test.com");
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -77,7 +75,7 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
     void testDoRetriveAcquistoUtenteVuoto() throws Exception {
         executeSql(insertCliente("mario@test.com"));
 
-        ArrayList<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquistoUtente("mario@test.com");
+        List<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquistoUtente("mario@test.com");
 
         assertThat(result).isEmpty();
     }
@@ -97,7 +95,7 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
         AcquistoProdottiDAO.acquistaProdotto("mario@test.com", "P0001", 1);
         AcquistoProdottiDAO.acquistaProdotto("luigi@test.com", "P0002", 2);
 
-        ArrayList<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquisto();
+        List<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquisto();
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -108,7 +106,7 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("doRetriveAcquisto su DB vuoto restituisce lista vuota")
     void testDoRetriveAcquistoVuoto() {
-        ArrayList<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquisto();
+        List<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquisto();
         assertThat(result).isEmpty();
     }
 
@@ -124,7 +122,7 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
 
         AcquistoProdottiDAO.acquistaProdotto("mario@test.com", "P0001", 3);
 
-        ArrayList<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquistoUtente("mario@test.com");
+        List<AcquistoProdotti> result = AcquistoProdottiDAO.doRetriveAcquistoUtente("mario@test.com");
 
         assertThat(result).hasSize(1);
         AcquistoProdotti ap = result.get(0);
@@ -142,7 +140,7 @@ class AcquistoProdottiDAOH2Test extends BaseH2Test {
     // ==================================================================
 
     private int countAcquisti() throws Exception {
-        try (Connection conn = Model.ConPool.getConnection();
+        try (Connection conn = model.ConPool.getConnection();
              PreparedStatement ps = conn.prepareStatement(
                      "SELECT COUNT(*) FROM Acquistare");
              ResultSet rs = ps.executeQuery()) {

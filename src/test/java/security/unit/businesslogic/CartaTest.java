@@ -1,7 +1,7 @@
 package security.unit.businesslogic;
 
-import Model.Carta;
-import Model.Utente;
+import model.Carta;
+import model.Utente;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,8 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Test dell'area OWASP: Business Logic / Data Protection.
  * Verifica il comportamento della classe Carta: gestione dati carta di credito.
- * NOTA: i test DOCUMENTANO la mancanza di validazione, il salvataggio in chiaro
- * di CVV e numero carta (violazione PCI DSS), e la mutazione condivisa con Utente.
  */
 @DisplayName("Business Logic - Carta")
 class CartaTest {
@@ -58,10 +56,10 @@ class CartaTest {
     }
 
     @Test
-    @DisplayName("setNomeIntestario / getNomeIntestario funzionano")
-    void testNomeIntestario() {
-        carta.setNomeIntestario("Mario Rossi");
-        assertEquals("Mario Rossi", carta.getNomeIntestario());
+    @DisplayName("setNomeIntestatario / getNomeIntestatario funzionano")
+    void testNomeIntestatario() {
+        carta.setNomeIntestatario("Mario Rossi");
+        assertEquals("Mario Rossi", carta.getNomeIntestatario());
     }
 
     @Test
@@ -72,10 +70,10 @@ class CartaTest {
     }
 
     @Test
-    @DisplayName("setCVV / getCVV funzionano")
-    void testCVV() {
-        carta.setCVV("123");
-        assertEquals("123", carta.getCVV());
+    @DisplayName("setCvv / getCvv funzionano")
+    void testCvv() {
+        carta.setCvv("123");
+        assertEquals("123", carta.getCvv());
     }
 
     // =================================================================
@@ -86,11 +84,9 @@ class CartaTest {
     @DisplayName("CVV viene salvato in chiaro (violazione PCI DSS)")
     void testCvvInChiaro() {
         String cvv = "123";
-        carta.setCVV(cvv);
+        carta.setCvv(cvv);
 
-        // Il CVV viene memorizzato così com'è, senza cifratura né hashing.
-        // PCI DSS vieta di memorizzare il CVV dopo l'autorizzazione.
-        assertEquals(cvv, carta.getCVV(),
+        assertEquals(cvv, carta.getCvv(),
                 "Il CVV è memorizzato in chiaro: VIOLAZIONE PCI DSS. " +
                         "Il CVV non deve MAI essere persistito dopo l'autorizzazione.");
     }
@@ -105,8 +101,6 @@ class CartaTest {
         String numero = "1234567890123456";
         carta.setNumeroCarta(numero);
 
-        // Il numero carta è memorizzato in chiaro.
-        // PCI DSS richiede cifratura o tokenizzazione.
         assertEquals(numero, carta.getNumeroCarta(),
                 "Il numero carta è memorizzato in chiaro: VIOLAZIONE PCI DSS. " +
                         "Richiede cifratura o tokenizzazione.");
@@ -119,8 +113,6 @@ class CartaTest {
     @Test
     @DisplayName("Manca un metodo di mascheramento del numero carta")
     void testMancanzaMascheramentoNumeroCarta() {
-        // La classe non ha un metodo per mostrare il numero carta mascherato
-        // (es. "****1234"). Se usato nei log, il numero completo è esposto.
         boolean metodoMaskingEsiste = false;
         for (java.lang.reflect.Method m : Carta.class.getDeclaredMethods()) {
             if (m.getName().toLowerCase().contains("mask")) {
@@ -143,7 +135,6 @@ class CartaTest {
     void testNumeroCartaNonNumericoAccettato() {
         carta.setNumeroCarta("abc");
 
-        // Il setter accetta qualsiasi stringa: nessuna validazione del formato
         assertEquals("abc", carta.getNumeroCarta(),
                 "Il setter non valida il formato del numero carta (Luhn, cifre)");
     }
@@ -151,7 +142,7 @@ class CartaTest {
     @Test
     @DisplayName("Numero carta di lunghezza errata viene accettato")
     void testNumeroCartaLunghezzaErrata() {
-        carta.setNumeroCarta("123");  // troppo corto
+        carta.setNumeroCarta("123");
 
         assertEquals("123", carta.getNumeroCarta(),
                 "Il setter non verifica la lunghezza (16 cifre per Visa/MC)");
@@ -160,9 +151,9 @@ class CartaTest {
     @Test
     @DisplayName("CVV con formato errato viene accettato (vulnerabilità documentata)")
     void testCvvFormatoErrato() {
-        carta.setCVV("abcdef");  // il CVV deve essere di 3-4 cifre
+        carta.setCvv("abcdef");
 
-        assertEquals("abcdef", carta.getCVV(),
+        assertEquals("abcdef", carta.getCvv(),
                 "Il setter non valida il formato del CVV (3-4 cifre)");
     }
 
@@ -178,9 +169,8 @@ class CartaTest {
     @Test
     @DisplayName("Data di scadenza nel passato viene accettata")
     void testDataScadenzaPassata() {
-        carta.setDataScadenza("01/20");  // scaduta
+        carta.setDataScadenza("01/20");
 
-        // La classe non verifica che la carta sia effettivamente valida
         assertEquals("01/20", carta.getDataScadenza(),
                 "Il setter non verifica che la data di scadenza sia futura");
     }
@@ -194,51 +184,51 @@ class CartaTest {
     void testSetEmailModificaUtenteOriginale() {
         carta.setEmailProprietario("nuova@email.com");
 
-        // Il setter modifica direttamente l'oggetto Utente originale:
-        // side effect pericoloso se l'Utente è condiviso tra più oggetti
         assertEquals("nuova@email.com", utente.getEmail(),
-                "Il setter modifica l'Utente originale: mutazione condivisa. " +
-                        "Fix: clonare l'Utente nel costruttore o salvare l'email in un campo proprio");
+                "Il setter modifica l'Utente originale: mutazione condivisa.");
     }
 
     // =================================================================
-    // 8. DOCUMENTAZIONE: incapsulamento debole (campi package-private)
+    // 8. FIX: incapsulamento corretto (campi private)
     // =================================================================
 
     @Test
-    @DisplayName("I campi non sono 'private' (incapsulamento debole documentato)")
-    void testCampiNonPrivati() throws Exception {
-        // I campi della classe sono dichiarati senza 'private':
-        // sono accessibili da qualsiasi classe nello stesso package
+    @DisplayName("I campi sono 'private' (incapsulamento corretto)")
+    void testCampiPrivati() throws Exception {
         Field numeroCartaField = Carta.class.getDeclaredField("numeroCarta");
-        Field cvvField = Carta.class.getDeclaredField("CVV");
+        Field cvvField = Carta.class.getDeclaredField("cvv");
 
-        assertFalse(Modifier.isPrivate(numeroCartaField.getModifiers()),
-                "Il campo 'numeroCarta' non è private: incapsulamento debole");
-        assertFalse(Modifier.isPrivate(cvvField.getModifiers()),
-                "Il campo 'CVV' non è private: incapsulamento debole. " +
-                        "Un campo così sensibile dovrebbe essere private.");
+        assertTrue(Modifier.isPrivate(numeroCartaField.getModifiers()),
+                "Il campo 'numeroCarta' deve essere private");
+        assertTrue(Modifier.isPrivate(cvvField.getModifiers()),
+                "Il campo 'cvv' deve essere private");
     }
 
     // =================================================================
-    // 9. Documentazione: typo nel nome del campo
+    // 9. FIX: corretto il typo nel nome del campo
     // =================================================================
 
     @Test
-    @DisplayName("Il campo si chiama 'nomeIntestario' (typo documentato)")
-    void testTypoNomeIntestario() {
-        // Il campo dovrebbe chiamarsi "nomeIntestatario" (con la 't')
-        // ma è "nomeIntestario". Non è un problema funzionale,
-        // ma è un'incoerenza di naming (code smell).
+    @DisplayName("Il campo si chiama 'nomeIntestatario' (typo corretto)")
+    void testTypoNomeIntestatarioCorretto() {
         boolean campoConTypoEsiste = false;
         try {
             Carta.class.getDeclaredField("nomeIntestario");
             campoConTypoEsiste = true;
         } catch (NoSuchFieldException e) {
-            // Campo non trovato
+            // Campo non trovato (corretto)
         }
 
-        assertTrue(campoConTypoEsiste,
-                "Il campo si chiama 'nomeIntestario' (typo): dovrebbe essere 'nomeIntestatario'");
+        assertFalse(campoConTypoEsiste, "Il campo non dovrebbe più chiamarsi 'nomeIntestario'");
+
+        boolean campoCorrettoEsiste = false;
+        try {
+            Carta.class.getDeclaredField("nomeIntestatario");
+            campoCorrettoEsiste = true;
+        } catch (NoSuchFieldException e) {
+            // Campo non trovato (errore)
+        }
+
+        assertTrue(campoCorrettoEsiste, "Il campo dovrebbe chiamarsi 'nomeIntestatario'");
     }
 }

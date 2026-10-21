@@ -1,20 +1,18 @@
 package security.functional.daointegration;
 
-import Model.Utente;
-import Model.UtenteDAO;
+import model.Utente;
+import model.UtenteDAO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
 import security.functional.BaseH2Test;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test funzionali dello UtenteDAO su H2 in-memory.
- * Il DAO usa BCrypt per il login, quindi i test inseriscono hash generati
- * dinamicamente tramite BCrypt.hashpw().
  */
 class UtenteDAOH2Test extends BaseH2Test {
 
@@ -107,7 +105,7 @@ class UtenteDAOH2Test extends BaseH2Test {
                 "luigi@test.com", "pass2", "Luigi", "Verdi", true
         ));
 
-        ArrayList<Utente> result = UtenteDAO.doRetriveUtente();
+        List<Utente> result = UtenteDAO.doRetriveUtente();
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -118,7 +116,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("doRetriveUtente su DB vuoto restituisce lista vuota")
     void testDoRetriveUtenteVuoto() {
-        ArrayList<Utente> result = UtenteDAO.doRetriveUtente();
+        List<Utente> result = UtenteDAO.doRetriveUtente();
         assertThat(result).isEmpty();
     }
 
@@ -178,7 +176,7 @@ class UtenteDAOH2Test extends BaseH2Test {
         UtenteDAO.doRegistrazione(u);
 
         assertThat(UtenteDAO.controlloEmail("nuovo@test.com")).isTrue();
-        ArrayList<Utente> all = UtenteDAO.doRetriveUtente();
+        List<Utente> all = UtenteDAO.doRetriveUtente();
         assertThat(all).hasSize(1);
         assertThat(all.get(0).getEmail()).isEqualTo("nuovo@test.com");
         assertThat(all.get(0).isAmministratore()).isFalse();

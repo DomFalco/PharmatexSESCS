@@ -371,7 +371,7 @@ Questa sezione riassume **tutte le issue risolte sul New Code** durante la sessi
 | Severità | Regola | Descrizione | File coinvolti | Issue risolte |
 |:--------:|:------:|-------------|----------------|:-------------:|
 | **Blocker** | S2095 | Try-with-resources su DAO | `ProdottoDAO`, `UtenteDAO`, `CartaDAO`, `AcquistoProdottiDAO` | 14 |
-| **High** | S1192 | Costanti duplicate nei Controller | 6 Servlet | 12 |
+| **High** | S1192 | Costanti duplicate nei controller | 6 Servlet | 12 |
 | **High** | S3776 | Cognitive Complexity | `ConPool`, `CarrelloServlet` | 2 |
 | **High** | S2119 | `Random` non riutilizzato | `HomeServlet` | 1 |
 | **High** | S1640 | Eccezioni generiche → `DataAccessException` | Tutti i DAO | 1 |
@@ -393,7 +393,7 @@ Questa sezione riassume **tutte le issue risolte sul New Code** durante la sessi
 
 ## 6. Issue risolte sull'Overall Code — Riepilogo
 
-Questa sezione documenta le issue risolte **sull'Overall Code** — codice legacy scritto ~3 anni fa. Anche in questo caso, **tutte le issue risolte sono relative a file `.java`** (DAO e Controller Java).
+Questa sezione documenta le issue risolte **sull'Overall Code** — codice legacy scritto ~3 anni fa. Anche in questo caso, **tutte le issue risolte sono relative a file `.java`** (DAO e controller Java).
 
 ### 6.1 Contesto: intervento sul codice legacy
 
@@ -417,7 +417,7 @@ Questa sezione documenta le issue risolte **sull'Overall Code** — codice legac
 | Severità | Regola | Descrizione | File coinvolti | Issue risolte |
 |:--------:|:------:|-------------|----------------|:-------------:|
 | **Blocker** | S2095 | Try-with-resources su `PreparedStatement` | `UtenteDAO`, `CartaDAO`, `AcquistoProdottiDAO` | **14** |
-| **High** | S1192 | Costanti duplicate nei Controller | 6 file `.java` | **12** |
+| **High** | S1192 | Costanti duplicate nei controller | 6 file `.java` | **12** |
 | **High** | S3776 | Cognitive Complexity | `ConPool`, `CarrelloServlet` | 2 |
 | **High** | S2119 | `Random` non riutilizzato | `HomeServlet` | 1 |
 | **High** | S1640 | Eccezioni generiche → `DataAccessException` | Tutti i DAO | 1 |

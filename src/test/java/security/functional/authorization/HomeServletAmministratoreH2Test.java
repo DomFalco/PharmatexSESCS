@@ -1,8 +1,8 @@
 package security.functional.authorization;
 
-import Controller.HomeServletAmministratore;
-import Model.Prodotto;
-import Model.Utente;
+import controller.HomeServletAmministratore;
+import model.Prodotto;
+import model.Utente;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;

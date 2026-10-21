@@ -1,9 +1,9 @@
 package security.functional.authorization;
 
-import Controller.RimuoviProdottoServlet;
-import Model.ConPool;
-import Model.Prodotto;
-import Model.Utente;
+import controller.RimuoviProdottoServlet;
+import model.ConPool;
+import model.Prodotto;
+import model.Utente;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;

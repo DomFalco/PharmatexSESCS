@@ -1,6 +1,6 @@
 package security.unit.businesslogic;
 
-import Model.Prodotto;
+import model.Prodotto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -102,7 +102,6 @@ class ProdottoTest {
     void testPrezzoNegativoAccettato() {
         prodotto.setPrezzo(-100.0);
 
-        // Il setter NON valida il prezzo: valori negativi sono accettati
         assertEquals(-100.0, prodotto.getPrezzo(), 0.001,
                 "Il setter non valida il prezzo: valori negativi sono accettati. " +
                         "Fix suggerito: lanciare IllegalArgumentException se prezzo < 0");
@@ -146,28 +145,26 @@ class ProdottoTest {
     }
 
     // =================================================================
-    // 4. Documentazione: campo tipoLetto inaccessibile
+    // 4. FIX: campo tipoLetto rimosso
     // =================================================================
 
     @Test
-    @DisplayName("Il campo 'tipoLetto' non ha getter/setter (bug documentato)")
-    void testCampoTipoLettoInaccessibile() {
-        // Il campo 'tipoLetto' è dichiarato nella classe ma non ha getter/setter:
-        // non è possibile leggerlo o scriverlo dall'esterno.
-        // Questo è un bug di incompletezza dell'API.
+    @DisplayName("Il campo inutilizzato 'tipoLetto' è stato rimosso (fix applicato)")
+    void testCampoTipoLettoRimosso() {
+        // Il campo 'tipoLetto' era dichiarato ma non aveva getter/setter (inutilizzato).
+        // È stato rimosso per pulizia del codice e per risolvere una segnalazione di SonarQube.
+        // Verifichiamo tramite reflection che il campo NON esista più.
 
-        // Verifica tramite reflection che il campo esiste
         boolean campoEsiste = false;
         try {
             Prodotto.class.getDeclaredField("tipoLetto");
             campoEsiste = true;
         } catch (NoSuchFieldException e) {
-            // Campo non trovato
+            // Campo non trovato -> corretto!
         }
 
-        assertTrue(campoEsiste,
-                "Il campo 'tipoLetto' esiste ma è inaccessibile: " +
-                        "mancano getter e setter (bug di incompletezza)");
+        assertFalse(campoEsiste,
+                "Il campo inutilizzato 'tipoLetto' dovrebbe essere stato rimosso.");
     }
 
     // =================================================================

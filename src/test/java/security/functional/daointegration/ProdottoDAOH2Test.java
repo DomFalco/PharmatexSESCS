@@ -1,26 +1,19 @@
 package security.functional.daointegration;
 
-import Model.Prodotto;
-import Model.ProdottoDAO;
+import model.Prodotto;
+import model.ProdottoDAO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import security.functional.BaseH2Test;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test funzionali del ProdottoDAO su H2 in-memory.
- * Verificano il comportamento runtime delle query SQL, cosa che l'analisi
- * statica del sorgente non puo' fare. Ogni test popola il DB con dati
- * controllati, chiama il metodo del DAO e verifica il risultato.
  */
 class ProdottoDAOH2Test extends BaseH2Test {
-
-    // ==================================================================
-    // Test di lettura (SELECT)
-    // ==================================================================
 
     @Test
     @DisplayName("doRetriveAll restituisce tutti i prodotti presenti nel DB")
@@ -28,7 +21,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdotto("P0001", "Materasso", "Nuvola", 400.0, 5));
         executeSql(insertProdotto("P0002", "Letto",     "Dublino", 300.0, 3));
 
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveAll();
+        List<Prodotto> result = ProdottoDAO.doRetriveAll();
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -39,7 +32,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("doRetriveAll su DB vuoto restituisce lista vuota")
     void testDoRetriveAllEmpty() {
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveAll();
+        List<Prodotto> result = ProdottoDAO.doRetriveAll();
         assertThat(result).isEmpty();
     }
 
@@ -50,7 +43,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdotto("P0002", "Letto",     "Dublino", 300.0, 3));
         executeSql(insertProdotto("P0003", "Materasso", "Roma",   239.0, 5));
 
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveByCategoria("Materasso");
+        List<Prodotto> result = ProdottoDAO.doRetriveByCategoria("Materasso");
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -58,13 +51,6 @@ class ProdottoDAOH2Test extends BaseH2Test {
                 .containsOnly("Materasso");
     }
 
-    /**
-     * Verifica del fix SEC-DAO-01.
-     * Prima del fix: doRetriveBySearch("nuvola") restituiva null perche' il
-     * pattern non era uppercasato lato Java, nonostante la query usasse
-     * upper(nomeProd). Il bug e' stato scoperto SOLO grazie a questo test
-     * funzionale su H2.
-     */
     @Test
     @DisplayName("FIX SEC-DAO-01: doRetriveBySearch e' case-insensitive (fix applicato)")
     void testDoRetriveBySearch_CaseInsensitive() throws Exception {
@@ -87,7 +73,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdotto("P0002", "Materasso", "Roma",   239.0, 5));
         executeSql(insertProdotto("P0003", "Materasso", "Giglio", 350.0, 5));
 
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveByFilter("Materasso", 450.0, 250.0);
+        List<Prodotto> result = ProdottoDAO.doRetriveByFilter("Materasso", 450.0, 250.0);
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -101,15 +87,11 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdotto("P0001", "Materasso", "Nuvola", 400.0, 5));
         executeSql(insertProdotto("P0002", "Materasso", "Roma",   239.0, 0));
 
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveQuantitaEsaurita();
+        List<Prodotto> result = ProdottoDAO.doRetriveQuantitaEsaurita();
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getIdProdotto()).isEqualTo("P0002");
     }
-
-    // ==================================================================
-    // Test di scrittura (INSERT / UPDATE / DELETE)
-    // ==================================================================
 
     @Test
     @DisplayName("aggiuntaProdotto inserisce correttamente un nuovo prodotto")
@@ -126,7 +108,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
 
         ProdottoDAO.aggiuntaProdotto(p);
 
-        ArrayList<Prodotto> all = ProdottoDAO.doRetriveAll();
+        List<Prodotto> all = ProdottoDAO.doRetriveAll();
         assertThat(all).hasSize(1);
         assertThat(all.get(0).getIdProdotto()).isEqualTo("P0099");
         assertThat(all.get(0).getNomeProd()).isEqualTo("TestCuscino");
@@ -150,7 +132,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
 
         ProdottoDAO.doUpdateQuantita(2, "P0001");
 
-        ArrayList<Prodotto> all = ProdottoDAO.doRetriveAll();
+        List<Prodotto> all = ProdottoDAO.doRetriveAll();
         assertThat(all).hasSize(1);
         assertThat(all.get(0).getQuantita()).isEqualTo(2);
     }
@@ -162,14 +144,10 @@ class ProdottoDAOH2Test extends BaseH2Test {
 
         ProdottoDAO.doSetNewPrezzo(299.99, "P0001");
 
-        ArrayList<Prodotto> all = ProdottoDAO.doRetriveAll();
+        List<Prodotto> all = ProdottoDAO.doRetriveAll();
         assertThat(all).hasSize(1);
         assertThat(all.get(0).getPrezzo()).isEqualTo(299.99);
     }
-
-    // ==================================================================
-    // Test dei metodi di filtro per materiale
-    // ==================================================================
 
     @Test
     @DisplayName("doRetriveMaterialeMaterasso filtra per tipo di materiale del materasso")
@@ -181,7 +159,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdottoCompleto("P0003", "Materasso", "Giglio",
                 350.0, 5, "Memory", null, null));
 
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveMaterialeMaterasso("Memory");
+        List<Prodotto> result = ProdottoDAO.doRetriveMaterialeMaterasso("Memory");
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -199,7 +177,7 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdottoCompleto("R0003", "Rete", "GoldSoft",
                 329.0, 5, null, "Faggio", null));
 
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveMaterialeRete("Faggio");
+        List<Prodotto> result = ProdottoDAO.doRetriveMaterialeRete("Faggio");
 
         assertThat(result).hasSize(2);
         assertThat(result)
@@ -217,17 +195,13 @@ class ProdottoDAOH2Test extends BaseH2Test {
         executeSql(insertProdottoCompleto("C0003", "Cuscino", "Salute",
                 40.0, 5, null, null, "Memory"));
 
-        ArrayList<Prodotto> result = ProdottoDAO.doRetriveMaterialeCuscino("Memory");
+        List<Prodotto> result = ProdottoDAO.doRetriveMaterialeCuscino("Memory");
 
         assertThat(result).hasSize(2);
         assertThat(result)
                 .extracting(Prodotto::getIdProdotto)
                 .containsExactlyInAnyOrder("C0001", "C0003");
     }
-
-    // ==================================================================
-    // Test di sicurezza (SQL Injection a runtime)
-    // ==================================================================
 
     @Test
     @DisplayName("SQL Injection su doRetriveBySearch viene neutralizzata dal PreparedStatement")
@@ -239,10 +213,6 @@ class ProdottoDAOH2Test extends BaseH2Test {
         assertThat(result.getIdProdotto()).isNull();
     }
 
-    // ==================================================================
-    // Helper: INSERT di un prodotto con i campi minimi
-    // ==================================================================
-
     private String insertProdotto(String id, String categoria, String nome,
                                   double prezzo, int quantita) {
         return "INSERT INTO Prodotto (idProdotto, nomeCategoria, nomeProd, descrizione, "
@@ -250,10 +220,6 @@ class ProdottoDAOH2Test extends BaseH2Test {
                 + id + "', '" + categoria + "', '" + nome + "', "
                 + "'Descrizione di test', " + prezzo + ", " + quantita + ")";
     }
-
-    // ==================================================================
-    // Helper: INSERT di un prodotto con i campi materiale
-    // ==================================================================
 
     private String insertProdottoCompleto(String id, String categoria, String nome,
                                           double prezzo, int quantita,

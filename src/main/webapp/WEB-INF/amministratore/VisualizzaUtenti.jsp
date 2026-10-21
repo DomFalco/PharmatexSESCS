@@ -1,5 +1,5 @@
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="Model.Utente" %>
+<%@ page import="model.Utente" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/ParteHTML/navBarAmministratore.jsp" %>
 <!DOCTYPE html>

@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("DAO Integration - CartaDAO")
 class CartaDAOTest {
 
-    private static final String SOURCE_PATH = "src/main/java/Model/CartaDAO.java";
+    private static final String SOURCE_PATH = "src/main/java/model/CartaDAO.java";
     private static final Pattern CONCATENAZIONE_QUERY =
             Pattern.compile("prepareStatement\\([^+)]*\\+[^+)]*\\)");
 
@@ -71,7 +71,7 @@ class CartaDAOTest {
     void testCvvInChiaro() {
         assertTrue(sourceCode.contains("CVV"),
                 "La INSERT include il CVV: violazione PCI DSS (il CVV non deve essere persistito)");
-        assertTrue(sourceCode.contains("ps1.setString(4, p.getCVV())"),
+        assertTrue(sourceCode.contains("ps1.setString(4, p.getCvv())"),
                 "Il CVV viene salvato tramite setString: memorizzato in chiaro. " +
                         "Violazione PCI DSS: il CVV non deve MAI essere persistito.");
     }
@@ -85,9 +85,9 @@ class CartaDAOTest {
     }
 
     @Test
-    @DisplayName("Il check di esistenza carica tutti i numeri carta in una ArrayList (documentazione)")
+    @DisplayName("Il check di esistenza carica tutti i numeri carta in una List (documentazione)")
     void testCheckEsistenzaInMemoria() {
-        assertTrue(sourceCode.contains("ArrayList<String> cartaCredito"),
+        assertTrue(sourceCode.contains("List<String> cartaCredito"),
                 "Il DAO carica tutti i numeri di carta in memoria: " +
                         "inefficiente e aumenta la superficie di esposizione dati. " +
                         "Fix suggerito: usare SELECT 1 ... WHERE numeroCarta=? LIMIT 1");
@@ -96,7 +96,6 @@ class CartaDAOTest {
     @Test
     @DisplayName("Nessun else se la carta esiste gia' (silent skip documentato)")
     void testNessunElseSeCartaEsiste() {
-        // Aggiornato dopo refactoring: 'int f' sostituito con 'boolean esiste'
         assertTrue(sourceCode.contains("boolean esiste"),
                 "Il DAO usa 'boolean esiste' per decidere se inserire: se la carta esiste, " +
                         "non fa nulla silenziosamente (il chiamante non riceve feedback)");
@@ -109,7 +108,6 @@ class CartaDAOTest {
     @Test
     @DisplayName("Il DAO usa try-with-resources per Connection e PreparedStatement")
     void testTryWithResources() {
-        // Aggiornato dopo refactoring: PreparedStatement ora è nel try-with-resources
         int occurrences = countOccurrences(sourceCode,
                 "try (Connection con = ConPool.getConnection();");
         assertTrue(occurrences >= 2,
@@ -120,7 +118,6 @@ class CartaDAOTest {
     @Test
     @DisplayName("Le eccezioni SQLException sono wrappate in DataAccessException (custom)")
     void testEccezioniWrappate() {
-        // Aggiornato dopo refactoring: RuntimeException → DataAccessException
         int occurrences = countOccurrences(sourceCode, "throw new DataAccessException");
         assertTrue(occurrences >= 2,
                 "Il DAO wrappa SQLException in DataAccessException: " +
@@ -130,7 +127,7 @@ class CartaDAOTest {
     @Test
     @DisplayName("Il DAO ha almeno 1 metodo statico")
     void testNumeroMetodiStatici() {
-        Method[] methods = Model.CartaDAO.class.getDeclaredMethods();
+        Method[] methods = model.CartaDAO.class.getDeclaredMethods();
         long staticMethods = Arrays.stream(methods)
                 .filter(m -> java.lang.reflect.Modifier.isStatic(m.getModifiers()))
                 .count();
@@ -144,7 +141,7 @@ class CartaDAOTest {
     @SuppressWarnings("ConstantValue")
     void testNonEstendeHttpServlet() {
         assertFalse(jakarta.servlet.http.HttpServlet.class.isAssignableFrom(
-                        Model.CartaDAO.class),
+                        model.CartaDAO.class),
                 "CartaDAO non estende HttpServlet: buona pratica");
     }
 

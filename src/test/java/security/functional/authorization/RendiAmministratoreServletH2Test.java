@@ -1,8 +1,8 @@
 package security.functional.authorization;
 
-import Controller.RendiAmministratoreServlet;
-import Model.ConPool;
-import Model.Utente;
+import controller.RendiAmministratoreServlet;
+import model.ConPool;
+import model.Utente;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;

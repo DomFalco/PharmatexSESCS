@@ -1,7 +1,7 @@
 package security.unit.authorization;
 
-import Controller.RendiAmministratoreServlet;
-import Model.Utente;
+import controller.RendiAmministratoreServlet;
+import model.Utente;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

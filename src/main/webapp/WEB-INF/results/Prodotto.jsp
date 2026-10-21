@@ -1,4 +1,4 @@
-<%@ page import="Model.Prodotto" %>
+<%@ page import="model.Prodotto" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="it">

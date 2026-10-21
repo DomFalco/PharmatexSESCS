@@ -1,6 +1,6 @@
 package security.unit.businesslogic;
 
-import Controller.Registrazione;
+import controller.Registrazione;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,7 +1,7 @@
 package security.functional.authorization;
 
-import Controller.RegistrazioneServlet;
-import Model.ConPool;
+import controller.RegistrazioneServlet;
+import model.ConPool;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -191,7 +191,7 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
 
         // Ora verifica che il login funzioni con le stesse credenziali
         // (usando direttamente il DAO, perché il flusso è stato già testato)
-        Model.Utente utente = Model.UtenteDAO.doLogin("mario@test.com", "password123");
+        model.Utente utente = model.UtenteDAO.doLogin("mario@test.com", "password123");
         assertThat(utente).isNotNull();
         assertThat(utente.getEmail()).isEqualTo("mario@test.com");
     }

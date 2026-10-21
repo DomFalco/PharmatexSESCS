@@ -1,7 +1,7 @@
 package security.unit.authorization;
 
-import Controller.CercaProdottoPerModificaServlet;
-import Model.Utente;
+import controller.CercaProdottoPerModificaServlet;
+import model.Utente;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

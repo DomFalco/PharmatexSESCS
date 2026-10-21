@@ -1,6 +1,6 @@
 package security.unit.inputvalidation;
 
-import Controller.InizioServlet;
+import controller.InizioServlet;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

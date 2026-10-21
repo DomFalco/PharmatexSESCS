@@ -1,7 +1,7 @@
 package security.unit.inputvalidation;
 
-import Controller.JspHelper;
-import Model.Prodotto;
+import controller.JspHelper;
+import model.Prodotto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

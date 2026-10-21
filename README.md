@@ -108,7 +108,7 @@
 | Tecnologia | Versione | Scopo |
 |------------|:--------:|-------|
 | **Java** | 8 | Linguaggio principale |
-| **Jakarta Servlet API** | 5.0.0 | Controller HTTP |
+| **Jakarta Servlet API** | 5.0.0 | controller HTTP |
 | **JSP (Jakarta Server Pages)** | 3.0 | View layer |
 | **MySQL Connector/J** | 9.3.0 | Driver JDBC (aggiornato per CVE Snyk) |
 | **Apache Tomcat** | 10.1 | Servlet Container |
@@ -121,11 +121,11 @@
 
 ### 1.3 System Design — Class Diagram
 
-Il progetto segue il pattern **MVC (Model-View-Controller)**:
+Il progetto segue il pattern **MVC (model-View-controller)**:
 
-- **Model**: i Bean (`Utente`, `Prodotto`, `Carta`, `AcquistoProdotti`) e i DAO (`UtenteDAO`, `ProdottoDAO`, `CartaDAO`, `AcquistoProdottiDAO`)
+- **model**: i Bean (`Utente`, `Prodotto`, `Carta`, `AcquistoProdotti`) e i DAO (`UtenteDAO`, `ProdottoDAO`, `CartaDAO`, `AcquistoProdottiDAO`)
 - **View**: pagine JSP in `/WEB-INF/results/` e `/WEB-INF/amministratore/`
-- **Controller**: Servlet mappate via `@WebServlet`
+- **controller**: Servlet mappate via `@WebServlet`
 
 **Diagramma delle classi principali (semplificato):**
 
@@ -185,8 +185,8 @@ Browser / Client
      ▼
 Apache Tomcat 10.1
      │
-     ├── Controller (Servlet)
-     ├── Model (DAO + Bean)
+     ├── controller (Servlet)
+     ├── model (DAO + Bean)
      └── View (JSP)
      │
      ▼
@@ -216,7 +216,7 @@ MySQL 8
 
 ### 2.4 Architettura e Struttura
 
-Il progetto segue un'architettura **MVC (Model-View-Controller)** con separazione netta tra logica di business, presentazione e accesso ai dati, secondo lo standard **Jakarta EE (Servlet + JSP)**.
+Il progetto segue un'architettura **MVC (model-View-controller)** con separazione netta tra logica di business, presentazione e accesso ai dati, secondo lo standard **Jakarta EE (Servlet + JSP)**.
 
 #### Struttura delle directory
 
@@ -224,7 +224,7 @@ Il progetto segue un'architettura **MVC (Model-View-Controller)** con separazion
 PharmatexSESCS/src/
 ├── main/
 │   ├── java/
-│   │   ├── Controller/              # Servlet (Controller HTTP)
+│   │   ├── controller/              # Servlet (controller HTTP)
 │   │   │   ├── AggiuntaProdottoServlet.java
 │   │   │   ├── CarrelloServlet.java
 │   │   │   ├── CercaProdottoPerModificaServlet.java
@@ -246,7 +246,7 @@ PharmatexSESCS/src/
 │   │   │   ├── ServletErrorHelper.java    # Utility: gestione errori HTTP
 │   │   │   └── JspHelper.java             # Utility: estrazione dati per JSP
 │   │   │
-│   │   └── Model/                    # Bean + DAO + Utility
+│   │   └── model/                    # Bean + DAO + Utility
 │   │       ├── Utente.java           # Bean
 │   │       ├── UtenteDAO.java        # DAO
 │   │       ├── Prodotto.java         # Bean
@@ -310,7 +310,7 @@ Ogni Servlet delega l'accesso ai dati al **DAO** corrispondente e la presentazio
 
 **`Model/` — Bean + DAO + Utility**
 
-Il Model è suddiviso in **tre tipi di classi**:
+Il model è suddiviso in **tre tipi di classi**:
 
 | Tipo | Classi | Ruolo |
 |:---|:---|:---|
@@ -318,7 +318,7 @@ Il Model è suddiviso in **tre tipi di classi**:
 | **DAO** (4) | `UtenteDAO`, `ProdottoDAO`, `CartaDAO`, `AcquistoProdottiDAO` | Accesso al database tramite `PreparedStatement` (no SQL Injection) e try-with-resources (no resource leak) |
 | **Utility** (2) | `ConPool`, `DataAccessException` | Connection pool Tomcat con **fail-fast**: se `MYSQL_PASSWORD` non è impostata, l'app non parte. Eccezione custom per semantica degli errori |
 
-**Caratteristiche del Model:**
+**Caratteristiche del model:**
 
 - **Bean serializzabili**: tutti i bean implementano `Serializable` (requisito Tomcat per la persistenza di sessione)
 - **Tutti i DAO usano `PreparedStatement`**: nessuna concatenazione di stringhe SQL (protezione da SQL Injection)

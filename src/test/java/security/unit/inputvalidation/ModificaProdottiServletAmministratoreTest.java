@@ -1,7 +1,7 @@
 package security.unit.inputvalidation;
 
-import Controller.ModificaProdottiServletAmministratore;
-import Model.Prodotto;
+import controller.ModificaProdottiServletAmministratore;
+import model.Prodotto;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

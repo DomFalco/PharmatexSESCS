@@ -61,7 +61,7 @@ La scansione iniziale (Fase 1) non ha prodotto alert. Tuttavia, l'analisi manual
 
 | ID | Strumento | File | Categoria (CWE) | Severità (CVSS) | Priorità | Stato | Note |
 |:---|:---|:---|:---|:---|:---|:---|:---|
-| SEC-01 | GitGuardian | `src/main/java/Model/ConPool.java` | CWE-798: Use of Hard-coded Credentials | 9.8 (Critica) | P0 — Immediata | Risolto | Rilevato dopo modifica temporanea della password ad alta entropia. L'incidente di test è stato marcato come "ignora" per verificarne il funzionamento. |
+| SEC-01 | GitGuardian | `model` | CWE-798: Use of Hard-coded Credentials | 9.8 (Critica) | P0 — Immediata | Risolto | Rilevato dopo modifica temporanea della password ad alta entropia. L'incidente di test è stato marcato come "ignora" per verificarne il funzionamento. |
 
 **Prioritizzazione:** La vulnerabilità è stata classificata come **P0** perché una credenziale in chiaro fornisce accesso diretto al database, con impatto completo su riservatezza, integrità e disponibilità dei dati.
 

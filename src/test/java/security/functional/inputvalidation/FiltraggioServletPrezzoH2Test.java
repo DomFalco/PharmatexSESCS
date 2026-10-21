@@ -1,7 +1,7 @@
 package security.functional.inputvalidation;
 
-import Controller.FiltraggioServletPrezzo;
-import Model.Prodotto;
+import controller.FiltraggioServletPrezzo;
+import model.Prodotto;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletResponse;

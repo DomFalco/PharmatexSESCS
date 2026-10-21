@@ -369,7 +369,7 @@ Questa sezione documenta in dettaglio le vulnerabilità critiche emerse **solo g
 
 ### 7.1 SEC-DAO-01 — doRetriveBySearch non case-insensitive
 
-- **File:** `src/main/java/Model/ProdottoDAO.java`
+- **File:** `model`
 - **Test:** `testDoRetriveBySearch_CaseInsensitive` (`ProdottoDAOH2Test`)
 - **CWE:** [CWE-178](https://cwe.mitre.org/data/definitions/178.html) (Improper Handling of Case Sensitivity)
 - **Severità:** Critica
@@ -397,7 +397,7 @@ Modificata la query in `upper(nomeProd) LIKE upper(?)` per uppercasare anche il 
 
 ### 7.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo
 
-- **File:** `src/main/java/Controller/FiltraggioServletPrezzo.java`
+- **File:** `controller`
 - **Test:** `testDoppioForward_BugDocumentato` (`FiltraggioServletPrezzoH2Test`)
 - **CWE:** [CWE-754](https://cwe.mitre.org/data/definitions/754.html) (Improper Check for Unusual or Exceptional Conditions)
 - **Severità:** Critica
@@ -424,8 +424,8 @@ Aggiungere `return;` dopo il primo `forward()` nel ramo "entrambi vuoti", replic
 ### 7.3 FUNC-AUTH-01 — Missing Authorization in 2 Servlet
 
 - **File:**
-    - `src/main/java/Controller/AggiuntaProdottoServlet.java`
-    - `src/main/java/Controller/ModificaProdottiServletAmministratore.java`
+    - `controller`
+    - `controller`
 - **Test:** vari test nelle classi `AggiuntaProdottoServletH2Test`, `ModificaProdottiServletAmministratoreH2Test`
 - **CWE:** [CWE-862](https://cwe.mitre.org/data/definitions/862.html) (Missing Authorization)
 - **Severità:** Critica
@@ -462,9 +462,9 @@ Il controllo va replicato in entrambe le Servlet. I test funzionali H2 fungono d
 ### 7.4 FUNC-IV-01 — NPE su parametri null in 3 Servlet
 
 - **File:**
-    - `src/main/java/Controller/RicercaServlet.java`
-    - `src/main/java/Controller/FiltraggioServletPrezzo.java`
-    - `src/main/java/Controller/ModificaProdottiServletAmministratore.java`
+    - `controller`
+    - `controller`
+    - `controller`
 - **Test:** vari test nelle classi `RicercaServletH2Test`, `FiltraggioServletPrezzoH2Test`, `ModificaProdottiServletAmministratoreH2Test`
 - **CWE:** [CWE-476](https://cwe.mitre.org/data/definitions/476.html) (NULL Pointer Dereference)
 - **Severità:** Alta
@@ -501,9 +501,9 @@ Il pattern va replicato per ogni parametro critico. I test funzionali H2 documen
 ### 7.5 FUNC-IV-02 — NumberFormatException su input non numerici
 
 - **File:**
-    - `src/main/java/Controller/FiltraggioServletPrezzo.java`
-    - `src/main/java/Controller/ModificaProdottiServletAmministratore.java`
-    - `src/main/java/Controller/AggiuntaProdottoServlet.java`
+    - `controller`
+    - `controller`
+    - `controller`
 - **Test:** vari test nelle classi H2Test corrispondenti
 - **CWE:** [CWE-20](https://cwe.mitre.org/data/definitions/20.html) (Improper Input Validation)
 - **Severità:** Alta
@@ -539,7 +539,7 @@ try {
 
 ### 7.6 FUNC-IV-03 — Silent drop in ModificaProdottiServletAmministratore
 
-- **File:** `src/main/java/Controller/ModificaProdottiServletAmministratore.java`
+- **File:** `controller`
 - **Test:** `testNessunRamoEseguitoConParametriVuoti` (`ModificaProdottiServletAmministratoreH2Test`)
 - **CWE:** — (design smell)
 - **Severità:** Media
@@ -571,7 +571,7 @@ Aggiungere un `else` finale che redirige esplicitamente o mostra un errore:
 
 ### 7.7 FUNC-BL-01 — IndexOutOfBoundsException in DatiPagamentoServlet
 
-- **File:** `src/main/java/Controller/DatiPagamentoServlet.java`
+- **File:** `controller`
 - **Test:** vari test in `DatiPagamentoServletH2Test`
 - **CWE:** — (bug logico)
 - **Severità:** Alta
@@ -603,7 +603,7 @@ if (qList.size() != cart_list.size()) {
 
 ### 7.8 FUNC-BL-02 — Doppio forward in RimuoviProdottoServlet
 
-- **File:** `src/main/java/Controller/RimuoviProdottoServlet.java`
+- **File:** `controller`
 - **Test:** vari test in `RimuoviProdottoServletH2Test`
 - **CWE:** [CWE-754](https://cwe.mitre.org/data/definitions/754.html) (Improper Check for Unusual or Exceptional Conditions)
 - **Severità:** Media

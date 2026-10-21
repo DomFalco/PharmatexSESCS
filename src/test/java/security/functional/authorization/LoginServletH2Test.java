@@ -1,7 +1,7 @@
 package security.functional.authorization;
 
-import Controller.LoginServlet;
-import Model.Utente;
+import controller.LoginServlet;
+import model.Utente;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
