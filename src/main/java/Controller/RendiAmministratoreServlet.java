@@ -35,32 +35,36 @@ public class RendiAmministratoreServlet extends HttpServlet {
             return;
         }
 
-        if (action.startsWith("amministratore")) {
-            String val = action.substring("amministratore".length());
-            if (val.isEmpty()) {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
-                return;
+        try {
+            if (action.startsWith("amministratore")) {
+                String val = action.substring("amministratore".length());
+                if (val.isEmpty()) {
+                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
+                    return;
+                }
+                UtenteDAO.rendiAmministratore(val);
+                ArrayList<Utente> u = UtenteDAO.doRetriveUtente();
+                request.setAttribute("riepilogoUtente", u);
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
+                dispatcher.forward(request, response);
             }
-            UtenteDAO.rendiAmministratore(val);
-            ArrayList<Utente> u = UtenteDAO.doRetriveUtente();
-            request.setAttribute("riepilogoUtente", u);
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
-            dispatcher.forward(request, response);
-        }
-        else if (action.startsWith("rimuovipermessi")) {
-            String val = action.substring("rimuovipermessi".length());
-            if (val.isEmpty()) {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
-                return;
+            else if (action.startsWith("rimuovipermessi")) {
+                String val = action.substring("rimuovipermessi".length());
+                if (val.isEmpty()) {
+                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
+                    return;
+                }
+                UtenteDAO.rimuoviAmministratore(val);
+                ArrayList<Utente> u = UtenteDAO.doRetriveUtente();
+                request.setAttribute("riepilogoUtente", u);
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
+                dispatcher.forward(request, response);
             }
-            UtenteDAO.rimuoviAmministratore(val);
-            ArrayList<Utente> u = UtenteDAO.doRetriveUtente();
-            request.setAttribute("riepilogoUtente", u);
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
-            dispatcher.forward(request, response);
-        }
-        else {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
+            else {
+                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
+            }
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'aggiornamento dei permessi.");
         }
     }
 }

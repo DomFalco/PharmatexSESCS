@@ -26,47 +26,44 @@ public class FiltraggioServletMateriale extends HttpServlet {
     @Override
     @SuppressWarnings("java:S1989")
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String mat = request.getParameter("prodotto");
-        String materiale = request.getParameter(ATTR_MATERIALE); // <-- FIX SONARQUBE QUI
+        try {
+            String mat = request.getParameter("prodotto");
+            String materiale = request.getParameter(ATTR_MATERIALE);
 
-        // 1. CONTROLLO NULL (evita crash se i parametri non vengono inviati)
-        if (mat == null) mat = "";
-        if (materiale == null) materiale = "";
+            if (mat == null) mat = "";
+            if (materiale == null) materiale = "";
 
-        // 2. SANITIZZAZIONE (risolve il Trust Boundary Violation per Snyk)
-        String matSicuro = mat.replaceAll("[^a-zA-Z0-9\\s]", "");
-        String materialeSicuro = materiale.replaceAll("[^a-zA-Z0-9\\s]", "");
+            String matSicuro = mat.replaceAll("[^a-zA-Z0-9\\s]", "");
+            String materialeSicuro = materiale.replaceAll("[^a-zA-Z0-9\\s]", "");
 
-        // 3. LOGICA DI RISPOSTA HTML (usa le variabili sicure per i confronti)
-        PrintWriter out = response.getWriter();
+            PrintWriter out = response.getWriter();
 
-        if (matSicuro.equalsIgnoreCase(CATEGORIA_MATERASSO)) {
-            scriviOption(out, OPTION_SELEZIONARE,
-                    "<option>Memory</option>",
-                    "<option>Molla</option>",
-                    "<option>Lana</option>",
-                    "<option>Lattice</option>");
-        } else if (matSicuro.equalsIgnoreCase(CATEGORIA_RETE)) {
-            scriviOption(out, OPTION_SELEZIONARE,
-                    "<option>Faggio</option>",
-                    "<option>Ferro</option>");
-        } else if (matSicuro.equalsIgnoreCase(CATEGORIA_CUSCINO)) {
-            scriviOption(out, OPTION_SELEZIONARE,
-                    "<option>Memory</option>",
-                    "<option>Basic</option>",
-                    "<option>Fibre sintetiche</option>");
+            if (matSicuro.equalsIgnoreCase(CATEGORIA_MATERASSO)) {
+                scriviOption(out, OPTION_SELEZIONARE,
+                        "<option>Memory</option>",
+                        "<option>Molla</option>",
+                        "<option>Lana</option>",
+                        "<option>Lattice</option>");
+            } else if (matSicuro.equalsIgnoreCase(CATEGORIA_RETE)) {
+                scriviOption(out, OPTION_SELEZIONARE,
+                        "<option>Faggio</option>",
+                        "<option>Ferro</option>");
+            } else if (matSicuro.equalsIgnoreCase(CATEGORIA_CUSCINO)) {
+                scriviOption(out, OPTION_SELEZIONARE,
+                        "<option>Memory</option>",
+                        "<option>Basic</option>",
+                        "<option>Fibre sintetiche</option>");
+            }
+
+            HttpSession session = request.getSession();
+            session.setAttribute(ATTR_MAT, matSicuro);
+            session.setAttribute(ATTR_MATERIALE, materialeSicuro);
+
+        } catch (IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la generazione della risposta.");
         }
-
-        // 4. INSERIMENTO SICURO NELLA SESSIONE
-        HttpSession session = request.getSession();
-        session.setAttribute(ATTR_MAT, matSicuro);
-        session.setAttribute(ATTR_MATERIALE, materialeSicuro);
     }
 
-    /**
-     * Scrive una lista di option HTML sul writer di risposta.
-     * Il primo elemento è tipicamente il placeholder "Selezionare...".
-     */
     private void scriviOption(PrintWriter out, String... option) {
         for (String o : option) {
             out.append(o);

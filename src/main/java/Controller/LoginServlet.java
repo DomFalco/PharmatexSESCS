@@ -40,45 +40,47 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Utente u = UtenteDAO.doLogin(
-                request.getParameter(PARAM_EMAIL),
-                request.getParameter(PARAM_PASSWORD));
+        try {
+            HttpSession session = request.getSession();
+            Utente u = UtenteDAO.doLogin(
+                    request.getParameter(PARAM_EMAIL),
+                    request.getParameter(PARAM_PASSWORD));
 
-        String action = request.getParameter(PARAM_ACTION);
+            String action = request.getParameter(PARAM_ACTION);
 
-        if (action == null) {
-            // Login: nessuna action specificata
-            if (u == null) {
-                request.setAttribute(PARAM_PARAMETRI, MSG_CREDENZIALI_ERRATE);
-                RequestDispatcher rs = request.getRequestDispatcher(LOGIN_JSP);
-                rs.include(request, response);
-            } else if (!u.isAmministratore()) {
-                session.setAttribute(ATTR_UTENTE, u);
-                RequestDispatcher ds = request.getRequestDispatcher(HOME_PAGE);
-                ds.forward(request, response);
-            } else {
-                session.setAttribute(ATTR_AMMINISTRATORE, u);
-                RequestDispatcher ds = request.getRequestDispatcher(HOME_SERVLET_AMMINISTRATORE);
-                ds.forward(request, response);
+            if (action == null) {
+                // Login: nessuna action specificata
+                if (u == null) {
+                    request.setAttribute(PARAM_PARAMETRI, MSG_CREDENZIALI_ERRATE);
+                    RequestDispatcher rs = request.getRequestDispatcher(LOGIN_JSP);
+                    rs.include(request, response);
+                } else if (!u.isAmministratore()) {
+                    session.setAttribute(ATTR_UTENTE, u);
+                    RequestDispatcher ds = request.getRequestDispatcher(HOME_PAGE);
+                    ds.forward(request, response);
+                } else {
+                    session.setAttribute(ATTR_AMMINISTRATORE, u);
+                    RequestDispatcher ds = request.getRequestDispatcher(HOME_SERVLET_AMMINISTRATORE);
+                    ds.forward(request, response);
+                }
+            } else if (action.equals(ACTION_LOGOUT)) {
+                session.invalidate();
+                RequestDispatcher dispatcher = request.getRequestDispatcher(HOME_PAGE);
+                dispatcher.forward(request, response);
+            } else if (action.equals(ACTION_CARRELLO)) {
+                RequestDispatcher dispatcher = request.getRequestDispatcher(CARRELLO_JSP);
+                dispatcher.forward(request, response);
+            } else if (action.equals(ACTION_RIEPILOGO)) {
+                Utente utente = (Utente) session.getAttribute(ATTR_UTENTE);
+                ArrayList<AcquistoProdotti> riepilogoProdotti =
+                        AcquistoProdottiDAO.doRetriveAcquistoUtente(utente.getEmail());
+                request.setAttribute(ATTR_RIEPILOGO_ORDINE_UTENTE, riepilogoProdotti);
+                RequestDispatcher dispatcher = request.getRequestDispatcher(RIEPILOGO_ACQUISTI_JSP);
+                dispatcher.forward(request, response);
             }
-        } else if (action.equals(ACTION_LOGOUT)) {
-            session.invalidate();
-            RequestDispatcher dispatcher = request.getRequestDispatcher(HOME_PAGE);
-            dispatcher.forward(request, response);
-        } else if (action.equals(ACTION_CARRELLO)) {
-            RequestDispatcher dispatcher = request.getRequestDispatcher(CARRELLO_JSP);
-            dispatcher.forward(request, response);
-        } else if (action.equals(ACTION_RIEPILOGO)) {
-            Utente utente = (Utente) session.getAttribute(ATTR_UTENTE);
-            ArrayList<AcquistoProdotti> riepilogoProdotti =
-                    AcquistoProdottiDAO.doRetriveAcquistoUtente(utente.getEmail());
-            request.setAttribute(ATTR_RIEPILOGO_ORDINE_UTENTE, riepilogoProdotti);
-            RequestDispatcher dispatcher = request.getRequestDispatcher(RIEPILOGO_ACQUISTI_JSP);
-            dispatcher.forward(request, response);
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del login.");
         }
-        // Nota: se action non è null e non matcha nessun valore previsto,
-        // la Servlet non fa nulla (silent drop, comportamento documentato).
     }
 
     @Override

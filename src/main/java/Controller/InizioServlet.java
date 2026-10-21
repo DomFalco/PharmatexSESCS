@@ -16,53 +16,58 @@ import java.util.ArrayList;
 @WebServlet("/InizioServlet")
 public class InizioServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        String richiesta = request.getParameter("action");
+        try {
+            String richiesta = request.getParameter("action");
 
-        if (richiesta == null) {
-            String valore = request.getParameter("valore");
-            if (valore != null) {
-                if (!valore.matches("[a-zA-Z0-9\\s]+")) {
-                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'valore' non valido.");
+            if (richiesta == null) {
+                String valore = request.getParameter("valore");
+                if (valore != null) {
+                    if (!valore.matches("[a-zA-Z0-9\\s]+")) {
+                        ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'valore' non valido.");
+                        return;
+                    }
+
+                    ArrayList<Prodotto> prodottiCategoriaAmministratore = ProdottoDAO.doRetriveByCategoria(valore);
+                    request.setAttribute("CategorieProdotti", prodottiCategoriaAmministratore);
+                    request.setAttribute("Categoria", valore);
+                    RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/CategorieProdotti.jsp");
+                    dispatcher.forward(request, response);
+                    return;
+                } else {
+                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
                     return;
                 }
+            }
 
-                ArrayList<Prodotto> prodottiCategoriaAmministratore = ProdottoDAO.doRetriveByCategoria(valore);
-                request.setAttribute("CategorieProdotti", prodottiCategoriaAmministratore);
-                request.setAttribute("Categoria", valore);
-                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/CategorieProdotti.jsp");
-                dispatcher.forward(request, response);
-                return;
-            } else {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
+            if (!richiesta.matches("[a-zA-Z0-9\\s]+")) {
+                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' non valido.");
                 return;
             }
-        }
 
-        if (!richiesta.matches("[a-zA-Z0-9\\s]+")) {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' non valido.");
-            return;
-        }
+            if (richiesta.equals("login")) {
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Login.jsp");
+                dispatcher.forward(request, response);
+                return;
+            }
 
-        if (richiesta.equals("login")) {
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Login.jsp");
+            if (richiesta.equals("contatti")) {
+                RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Contatti.jsp");
+                dispatcher.forward(request, response);
+                return;
+            }
+
+            HttpSession session = request.getSession();
+            session.setAttribute("filtri", richiesta);
+
+            ArrayList<Prodotto> prodottiCategoria = ProdottoDAO.doRetriveByCategoria(richiesta);
+            request.setAttribute(richiesta, prodottiCategoria);
+
+            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Prodotti.jsp");
             dispatcher.forward(request, response);
-            return;
+
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro della richiesta.");
         }
-
-        if (richiesta.equals("contatti")) {
-            RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Contatti.jsp");
-            dispatcher.forward(request, response);
-            return;
-        }
-
-        HttpSession session = request.getSession();
-        session.setAttribute("filtri", richiesta);
-
-        ArrayList<Prodotto> prodottiCategoria = ProdottoDAO.doRetriveByCategoria(richiesta);
-        request.setAttribute(richiesta, prodottiCategoria);
-
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Prodotti.jsp");
-        dispatcher.forward(request, response);
     }
 
     @Override

@@ -9,8 +9,10 @@
 <body>
 <div id="mySidebar" class="sidebar">
     <form action="FiltraggioServletPrezzo">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()"
-           style="text-decoration: none;width: 5px;height: 5px; color: white">&#x2715</a>
+        <!-- FIX SONARQUBE: Sostituito <a> con <button> -->
+        <button type="button" class="closebtn" onclick="closeNav()"
+                style="background: none; border: none; cursor: pointer; text-decoration: none; width: 5px; height: 5px; color: white; padding: 0; font-size: 1.5em;">&#x2715</button>
+
         <label for="prezzomin">Prezzo minimo:</label>
         <input type="text" id="prezzomin" name="prezzomin">
         <label id="prezzoMaxLab" for="prezzomax">Prezzo massimo:</label>

@@ -26,33 +26,37 @@ public class HomeServletAmministratore extends HttpServlet {
             return;
         }
 
-        if (request.getParameter(PARAM_VALORE) == null) {
-            ArrayList<Prodotto> tuttiProdotti = ProdottoDAO.doRetriveAll();
-            request.setAttribute("tuttiProdotti", tuttiProdotti);
-            RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
-            ds.forward(request, response);
-        }
-        else if (request.getParameter(PARAM_VALORE).equals("quantita")) {
-            ArrayList<Prodotto> prodottiEsauriti = ProdottoDAO.doRetriveQuantitaEsaurita();
-            request.setAttribute("prodottiEsauriti", prodottiEsauriti);
-            RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/QuantitaEsaurita.jsp");
-            ds.forward(request, response);
-        }
-        else if (request.getParameter(PARAM_VALORE).equals("ordine")) {
-            ArrayList<AcquistoProdotti> riepilogoProdotti = AcquistoProdottiDAO.doRetriveAcquisto();
-            request.setAttribute("riepilogoProdotti", riepilogoProdotti);
-            RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/RiepilogoOrdini.jsp");
-            ds.forward(request, response);
-        }
-        else if (request.getParameter(PARAM_VALORE).equals("clienti")) {
-            ArrayList<Utente> riepilogoUtente = UtenteDAO.doRetriveUtente();
-            request.setAttribute("riepilogoUtente", riepilogoUtente);
-            RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
-            ds.forward(request, response);
-        }
-        else if (request.getParameter(PARAM_VALORE).equals("aggiungi")) {
-            RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/AggiungiNuovoProdotto.jsp");
-            ds.forward(request, response);
+        try {
+            if (request.getParameter(PARAM_VALORE) == null) {
+                ArrayList<Prodotto> tuttiProdotti = ProdottoDAO.doRetriveAll();
+                request.setAttribute("tuttiProdotti", tuttiProdotti);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("quantita")) {
+                ArrayList<Prodotto> prodottiEsauriti = ProdottoDAO.doRetriveQuantitaEsaurita();
+                request.setAttribute("prodottiEsauriti", prodottiEsauriti);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/QuantitaEsaurita.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("ordine")) {
+                ArrayList<AcquistoProdotti> riepilogoProdotti = AcquistoProdottiDAO.doRetriveAcquisto();
+                request.setAttribute("riepilogoProdotti", riepilogoProdotti);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/RiepilogoOrdini.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("clienti")) {
+                ArrayList<Utente> riepilogoUtente = UtenteDAO.doRetriveUtente();
+                request.setAttribute("riepilogoUtente", riepilogoUtente);
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
+                ds.forward(request, response);
+            }
+            else if (request.getParameter(PARAM_VALORE).equals("aggiungi")) {
+                RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/AggiungiNuovoProdotto.jsp");
+                ds.forward(request, response);
+            }
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento della pagina amministratore.");
         }
     }
 

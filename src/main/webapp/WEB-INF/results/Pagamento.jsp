@@ -4,7 +4,8 @@
 <head>
     <title>Metodo di pagamento</title>
     <link rel="stylesheet" type="text/css" href="ParteCSS/PagamentoProdotti.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- FIX SONARQUBE: Aggiunto integrity e crossorigin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script>
         function confermaParametri(){
             var nomeRGX=/^[a-zA-Z' ']*$/;

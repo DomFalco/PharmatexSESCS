@@ -4,7 +4,8 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pharmatex - Homepage</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- FIX SONARQUBE: Aggiunto integrity e crossorigin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="ParteCSS/styleSito.css">
     <link rel="stylesheet" href="ParteCSS/CategorieProdotti.css">
     <style>
@@ -96,7 +97,9 @@
         </div>
     </div>
 
-    <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="myFunction()">&#9776;</a>
+    <!-- FIX SONARQUBE: Sostituito <a> con <button> -->
+    <button type="button" style="font-size:15px; background:none; border:none; cursor:pointer; padding: 14px 16px; float:right;" class="icon" onclick="myFunction()">&#9776;</button>
+
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?action=contatti'">
             <i class="fa fa-phone"></i>
@@ -142,7 +145,6 @@
     margin-left: 3px;
     float: right;"><i class="fa fa-search"></i></button>
 
-            <!-- FIX SONARQUBE: Aggiunto label nascosto e id all'input -->
             <label for="searchInput" style="display: none;">Cerca per nome</label>
             <input type="text" id="searchInput" placeholder="Cerca per nome" name="search" class="nomeProdotto" style="padding: 6px;
     font-size: 17px;

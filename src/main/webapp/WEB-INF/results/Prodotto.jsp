@@ -5,7 +5,8 @@
 <head>
     <link rel="stylesheet" type="text/css" href="ParteCSS/paginaProdotto.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/styleSito.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- FIX SONARQUBE: Aggiunto integrity e crossorigin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <% Prodotto p = (Prodotto) request.getAttribute("prodotto");
         String val = p.getIdProdotto().substring(3);
         int y = Integer.parseInt(val);
@@ -30,7 +31,6 @@
             margin-left: 40%;
             margin-right: 50%;
             float: left;
-            /* Rimosso border: 0px; duplicato */
         }
     </style>
 </head>
@@ -109,7 +109,8 @@
         <%}%>
         <tr>
             <td>
-                <button class="cart"><a style="text-decoration: none; color: white; text-underline: none" href="HomePage"><i class="fa fa-home"></i></a></button>
+                <!-- FIX SONARQUBE: Rimosso <a> dentro <button>, usato onclick -->
+                <button type="button" class="cart" onclick="window.location.href='HomePage'"><i class="fa fa-home"></i></button>
             </td>
         </tr>
     </table>

@@ -29,39 +29,37 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
     @Override
     @SuppressWarnings("java:S1989")
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession sessione = request.getSession();
-        Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);
+        try {
+            HttpSession sessione = request.getSession();
+            Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);
 
-        String nuovoPrezzo = request.getParameter(PARAM_NUOVO_PREZZO);
-        String quantitaTotale = request.getParameter(PARAM_QUANTITA_TOTALE);
+            String nuovoPrezzo = request.getParameter(PARAM_NUOVO_PREZZO);
+            String quantitaTotale = request.getParameter(PARAM_QUANTITA_TOTALE);
 
-        if (!nuovoPrezzo.equals("") && !quantitaTotale.equals("")) {
-            // Ramo 1: aggiorna sia prezzo che quantità (quantità incrementale)
-            double prezzo = Double.parseDouble(nuovoPrezzo);
-            ProdottoDAO.doSetNewPrezzo(prezzo, p.getIdProdotto());
-            int q = Integer.parseInt(quantitaTotale);
-            int quantita = p.getQuantita() + q;
-            ProdottoDAO.doUpdateQuantita(quantita, p.getIdProdotto());
-            forward(request, response);
-        } else if (!nuovoPrezzo.equals("")) {
-            // Ramo 2: aggiorna solo il prezzo
-            double prezzo = Double.parseDouble(nuovoPrezzo);
-            ProdottoDAO.doSetNewPrezzo(prezzo, p.getIdProdotto());
-            forward(request, response);
-        } else if (quantitaTotale != null) {
-            // Ramo 3: aggiorna solo la quantità (quantità incrementale)
-            int q = Integer.parseInt(quantitaTotale);
-            int quantita = p.getQuantita() + q;
-            ProdottoDAO.doUpdateQuantita(quantita, p.getIdProdotto());
-            forward(request, response);
+            if (!nuovoPrezzo.equals("") && !quantitaTotale.equals("")) {
+                double prezzo = Double.parseDouble(nuovoPrezzo);
+                ProdottoDAO.doSetNewPrezzo(prezzo, p.getIdProdotto());
+                int q = Integer.parseInt(quantitaTotale);
+                int quantita = p.getQuantita() + q;
+                ProdottoDAO.doUpdateQuantita(quantita, p.getIdProdotto());
+                forward(request, response);
+            } else if (!nuovoPrezzo.equals("")) {
+                double prezzo = Double.parseDouble(nuovoPrezzo);
+                ProdottoDAO.doSetNewPrezzo(prezzo, p.getIdProdotto());
+                forward(request, response);
+            } else if (quantitaTotale != null) {
+                int q = Integer.parseInt(quantitaTotale);
+                int quantita = p.getQuantita() + q;
+                ProdottoDAO.doUpdateQuantita(quantita, p.getIdProdotto());
+                forward(request, response);
+            }
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");
         }
-        // Nota: se nuovoPrezzo="" e quantitaTotale=null, nessun ramo viene eseguito
-        // (silent drop, comportamento documentato)
     }
 
-    /**
-     * Forward verso HomeServletAmministratore.
-     */
     private void forward(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         RequestDispatcher ds = request.getRequestDispatcher(HOME_SERVLET_AMMINISTRATORE);

@@ -33,32 +33,44 @@ public class FiltraggioServletPrezzo extends HttpServlet {
     @Override
     @SuppressWarnings("java:S1989")
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        String richiesta = (String) session.getAttribute(ATTR_FILTRI);
-        ArrayList<Prodotto> filterList = null;
+        try {
+            HttpSession session = request.getSession();
+            String richiesta = (String) session.getAttribute(ATTR_FILTRI);
+            ArrayList<Prodotto> filterList = null;
 
-        String prezzoMin = request.getParameter(PARAM_PREZZO_MIN);
-        String prezzoMax = request.getParameter(PARAM_PREZZO_MAX);
+            String prezzoMin = request.getParameter(PARAM_PREZZO_MIN);
+            String prezzoMax = request.getParameter(PARAM_PREZZO_MAX);
 
-        if (prezzoMin.equals("") && prezzoMax.equals("")) {
-            RequestDispatcher dispatcher = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
+            // FIX SONARQUBE: Prevenzione NullPointerException
+            if (prezzoMin == null) prezzoMin = "";
+            if (prezzoMax == null) prezzoMax = "";
+
+            if (prezzoMin.equals("") && prezzoMax.equals("")) {
+                RequestDispatcher dispatcher = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
+                dispatcher.forward(request, response);
+                return;
+            } else if (prezzoMin.equals("")) {
+                double valoreMax = Double.parseDouble(prezzoMax);
+                filterList = ProdottoDAO.doRetriveByFilter(richiesta, valoreMax, PREZZO_MIN_DEFAULT);
+            } else if (prezzoMax.equals("")) {
+                double valoreMin = Double.parseDouble(prezzoMin);
+                filterList = ProdottoDAO.doRetriveByFilter(richiesta, PREZZO_MAX_DEFAULT, valoreMin);
+            } else {
+                double valoreMin = Double.parseDouble(prezzoMin);
+                double valoreMax = Double.parseDouble(prezzoMax);
+                filterList = ProdottoDAO.doRetriveByFilter(richiesta, valoreMax, valoreMin);
+            }
+
+            request.setAttribute(ATTR_FILTRA, filterList);
+            request.setAttribute(ATTR_FILTRAGGIO, richiesta);
+
+            RequestDispatcher dispatcher = request.getRequestDispatcher(PRODOTTI_JSP);
             dispatcher.forward(request, response);
-        } else if (prezzoMin.equals("")) {
-            double valoreMax = Double.parseDouble(prezzoMax);
-            filterList = ProdottoDAO.doRetriveByFilter(richiesta, valoreMax, PREZZO_MIN_DEFAULT);
-        } else if (prezzoMax.equals("")) {
-            double valoreMin = Double.parseDouble(prezzoMin);
-            filterList = ProdottoDAO.doRetriveByFilter(richiesta, PREZZO_MAX_DEFAULT, valoreMin);
-        } else {
-            double valoreMin = Double.parseDouble(prezzoMin);
-            double valoreMax = Double.parseDouble(prezzoMax);
-            filterList = ProdottoDAO.doRetriveByFilter(richiesta, valoreMax, valoreMin);
+
+        } catch (NumberFormatException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Il prezzo deve essere un valore numerico valido.");
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il filtraggio per prezzo.");
         }
-
-        request.setAttribute(ATTR_FILTRA, filterList);
-        request.setAttribute(ATTR_FILTRAGGIO, richiesta);
-
-        RequestDispatcher dispatcher = request.getRequestDispatcher(PRODOTTI_JSP);
-        dispatcher.forward(request, response);
     }
 }

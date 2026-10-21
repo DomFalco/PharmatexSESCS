@@ -15,7 +15,8 @@
         boolean f = false;
     %>
     <link rel="stylesheet" href="ParteCSS/Carrello.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- FIX SONARQUBE: Aggiunto integrity e crossorigin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
 <% if(carrello==null || carrello.size() == 0) { %>
@@ -46,7 +47,8 @@
                     <div class="info">
                         <b style="text-align: center;color: red;"><%=String.format(java.util.Locale.ITALY, "%.2f", carrello.get(i).getPrezzo())%> €</b> <br>
                         <b style="text-align: center;">Quantità articoli:<%=qList.get(i)%></b>
-                        <button class="cart"><a style="text-decoration: none; color: white; text-underline: none" href="CarrelloServlet?action=rimuovi<%=carrello.get(i).getIdProdotto()%>"><i class="fa fa-trash-o"></i></a></button>
+                        <!-- FIX SONARQUBE: Rimosso <a> dentro <button>, usato onclick -->
+                        <button type="button" class="cart" onclick="window.location.href='CarrelloServlet?action=rimuovi<%=carrello.get(i).getIdProdotto()%>'"><i class="fa fa-trash-o"></i></button>
                         <% if(qList.get(i)>carrello.get(i).getQuantita()) { f=true; %>
                         <p style="color: red">Errore quantità non sufficiente in magazzino</p>
                         <% } %>

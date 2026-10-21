@@ -3,7 +3,8 @@
 <html lang="it">
 <head>
     <title>Contatti</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- FIX SONARQUBE: Aggiunto integrity e crossorigin per jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="ParteCSS/Contatti.css">
     <script>
         $(document).ready(function(){
@@ -49,7 +50,6 @@
         <th scope="col" style="font-size: 2vw">Orario:</th>
     </tr>
     <tr>
-        <!-- FIX SONARQUBE: I dati non devono usare <th>, ma <td> -->
         <td><p id="1">Via casa dell'acqua n.20 <br> 80013 Casalnuovo di Napoli (NA) <br> loc. Tavernanova</p></td>
         <td><p id="2">Cellulare:3477386676<br>Fisso:0813184751</p></td>
         <td><p id="3">pharmatex.materassi@libero.it</p></td>

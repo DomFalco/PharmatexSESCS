@@ -6,7 +6,8 @@
     <link rel="stylesheet" type="text/css" href="ParteCSS/paginaProdotto.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/navBarAmministratore.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/CategorieProdotti.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- FIX SONARQUBE: Aggiunto integrity e crossorigin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <% Prodotto prodottoModifica = (Prodotto) request.getAttribute("prodottoModifica");
         String val = prodottoModifica.getIdProdotto().substring(3);
         int y = Integer.parseInt(val);

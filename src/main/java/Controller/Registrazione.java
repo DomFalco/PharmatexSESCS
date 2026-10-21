@@ -13,7 +13,11 @@ import java.io.IOException;
 public class Registrazione extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/results/RegisterUser.jsp");
-        ds.forward(request, response);
+        try {
+            RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/results/RegisterUser.jsp");
+            ds.forward(request, response);
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento della pagina di registrazione.");
+        }
     }
 }

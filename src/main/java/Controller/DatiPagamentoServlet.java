@@ -40,27 +40,32 @@ public class DatiPagamentoServlet extends HttpServlet {
             return;
         }
 
-        int x;
-        for (int i = 0; i < cart_list.size(); i++) {
-            AcquistoProdottiDAO.acquistaProdotto(u.getEmail(), cart_list.get(i).getIdProdotto(), qList.get(i));
-            x = cart_list.get(i).getQuantita() - qList.get(i);
-            ProdottoDAO.doUpdateQuantita(x, cart_list.get(i).getIdProdotto());
+        try {
+            int x;
+            for (int i = 0; i < cart_list.size(); i++) {
+                AcquistoProdottiDAO.acquistaProdotto(u.getEmail(), cart_list.get(i).getIdProdotto(), qList.get(i));
+                x = cart_list.get(i).getQuantita() - qList.get(i);
+                ProdottoDAO.doUpdateQuantita(x, cart_list.get(i).getIdProdotto());
+            }
+
+            Carta c = new Carta(u);
+            c.setNumeroCarta(request.getParameter("NCarta"));
+            c.setNomeIntestario(request.getParameter("credenziali"));
+            c.setDataScadenza(request.getParameter("dataScadenza"));
+            c.setCVV(request.getParameter("cvv"));
+            c.setEmailProprietario(u.getEmail());
+            CartaDAO.aggiuntaCredenzialiPagamento(c, u.getEmail());
+
+            cart_list.clear();
+            qList.clear();
+            session.setAttribute("cart-list", cart_list);
+            session.setAttribute("quantitaArticoli", qList);
+
+            RequestDispatcher dispatcher = request.getRequestDispatcher("HomePage");
+            dispatcher.forward(request, response);
+
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro dopo il pagamento.");
         }
-
-        Carta c = new Carta(u);
-        c.setNumeroCarta(request.getParameter("NCarta"));
-        c.setNomeIntestario(request.getParameter("credenziali"));
-        c.setDataScadenza(request.getParameter("dataScadenza"));
-        c.setCVV(request.getParameter("cvv"));
-        c.setEmailProprietario(u.getEmail());
-        CartaDAO.aggiuntaCredenzialiPagamento(c, u.getEmail());
-
-        cart_list.clear();
-        qList.clear();
-        session.setAttribute("cart-list", cart_list);
-        session.setAttribute("quantitaArticoli", qList);
-
-        RequestDispatcher dispatcher = request.getRequestDispatcher("HomePage");
-        dispatcher.forward(request, response);
     }
 }

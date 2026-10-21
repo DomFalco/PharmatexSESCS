@@ -36,10 +36,14 @@ public class RimuoviProdottoServlet extends HttpServlet {
             return;
         }
 
-        ProdottoDAO.cancellaProdotto(p.getIdProdotto());
-        ArrayList<Prodotto> tuttiProdotti = ProdottoDAO.doRetriveAll();
-        request.setAttribute("tuttiProdotti", tuttiProdotti);
-        RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
-        ds.forward(request, response);
+        try {
+            ProdottoDAO.cancellaProdotto(p.getIdProdotto());
+            ArrayList<Prodotto> tuttiProdotti = ProdottoDAO.doRetriveAll();
+            request.setAttribute("tuttiProdotti", tuttiProdotti);
+            RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
+            ds.forward(request, response);
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la rimozione del prodotto.");
+        }
     }
 }

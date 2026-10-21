@@ -17,42 +17,47 @@ public class MaterialeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
+        try {
+            HttpSession session = request.getSession(false);
 
-        if (session == null) {
-            RequestDispatcher ds = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
+            if (session == null) {
+                RequestDispatcher ds = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
+                ds.forward(request, response);
+                return;
+            }
+
+            String mat = (String) session.getAttribute("mat");
+            String materiale = (String) session.getAttribute("materiale");
+
+            if (mat == null || materiale == null) {
+                RequestDispatcher ds = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
+                ds.forward(request, response);
+                return;
+            }
+
+            ArrayList<Prodotto> prodottiMateriale = new ArrayList<>();
+
+            if (mat.equalsIgnoreCase("materasso")) {
+                prodottiMateriale = ProdottoDAO.doRetriveMaterialeMaterasso(materiale);
+            } else if (mat.equalsIgnoreCase("rete")) {
+                prodottiMateriale = ProdottoDAO.doRetriveMaterialeRete(materiale);
+            } else if (mat.equalsIgnoreCase("cuscino")) {
+                prodottiMateriale = ProdottoDAO.doRetriveMaterialeCuscino(materiale);
+            }
+
+            if (prodottiMateriale.isEmpty()) {
+                RequestDispatcher ds = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
+                ds.forward(request, response);
+                return;
+            }
+
+            request.setAttribute("prodottiMateriale", prodottiMateriale);
+            RequestDispatcher ds = request.getRequestDispatcher(PRODOTTI_MATERIALE_JSP);
             ds.forward(request, response);
-            return;
+
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento dei materiali.");
         }
-
-        String mat = (String) session.getAttribute("mat");
-        String materiale = (String) session.getAttribute("materiale");
-
-        if (mat == null || materiale == null) {
-            RequestDispatcher ds = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
-            ds.forward(request, response);
-            return;
-        }
-
-        ArrayList<Prodotto> prodottiMateriale = new ArrayList<>();
-
-        if (mat.equalsIgnoreCase("materasso")) {
-            prodottiMateriale = ProdottoDAO.doRetriveMaterialeMaterasso(materiale);
-        } else if (mat.equalsIgnoreCase("rete")) {
-            prodottiMateriale = ProdottoDAO.doRetriveMaterialeRete(materiale);
-        } else if (mat.equalsIgnoreCase("cuscino")) {
-            prodottiMateriale = ProdottoDAO.doRetriveMaterialeCuscino(materiale);
-        }
-
-        if (prodottiMateriale.isEmpty()) {
-            RequestDispatcher ds = request.getRequestDispatcher(RICERCA_ERRATA_JSP);
-            ds.forward(request, response);
-            return;
-        }
-
-        request.setAttribute("prodottiMateriale", prodottiMateriale);
-        RequestDispatcher ds = request.getRequestDispatcher(PRODOTTI_MATERIALE_JSP);
-        ds.forward(request, response);
     }
 
     @Override

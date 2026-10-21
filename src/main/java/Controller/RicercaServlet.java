@@ -16,14 +16,20 @@ import java.io.IOException;
 public class RicercaServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String nomeProdotto = request.getParameter("search");
-        Prodotto p = null;
-        String nProd = nomeProdotto.toUpperCase();
-        HttpSession session= request.getSession();
+        try {
+            String nomeProdotto = request.getParameter("search");
+            if (nomeProdotto == null) {
+                nomeProdotto = "";
+            }
+            Prodotto p = null;
+            String nProd = nomeProdotto.toUpperCase();
+            HttpSession session = request.getSession();
             String address;
+
             p = ProdottoDAO.doRetriveBySearch(nProd);
             session.setAttribute("prod", p);
-            if (request.getParameter("search").equals("") || p.getNomeProd() == null) {
+
+            if (nomeProdotto.equals("") || p == null || p.getNomeProd() == null) {
                 address = "/WEB-INF/results/RicercaErrata.jsp";
             } else {
                 address = "/WEB-INF/results/Prodotto.jsp";
@@ -31,5 +37,9 @@ public class RicercaServlet extends HttpServlet {
             request.setAttribute("prodotto", p);
             RequestDispatcher ds = request.getRequestDispatcher(address);
             ds.forward(request, response);
+
+        } catch (ServletException | IOException e) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la ricerca del prodotto.");
+        }
     }
 }
