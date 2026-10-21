@@ -4,6 +4,7 @@ import Controller.AggiuntaProdottoServlet;
 import Model.ConPool;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,14 +24,6 @@ import static org.mockito.Mockito.*;
 
 /**
  * Test funzionali di AggiuntaProdottoServlet con H2 in-memory.
- *
- * Verifica:
- * - Aggiunta prodotto con parametri validi → INSERT + forward
- * - Tutti i campi salvati correttamente
- * - FINDING 1: nessun controllo autorizzazione (chiunque può aggiungere)
- * - FINDING 2: NumberFormatException su larghezza/lunghezza/prezzo non numerici
- * - FINDING 3: NumberFormatException su quantita non numerica
- * - FINDING 4: idProdotto null accettato (viola PRIMARY KEY)
  */
 @DisplayName("Functional - AggiuntaProdottoServlet (Input Validation)")
 class AggiuntaProdottoServletH2Test extends BaseServletH2Test {
@@ -44,9 +37,6 @@ class AggiuntaProdottoServletH2Test extends BaseServletH2Test {
         servlet.service((ServletRequest) request, (ServletResponse) response);
     }
 
-    /**
-     * Configura tutti i 16 parametri richiesti dalla Servlet con valori validi.
-     */
     private void setParametriValidi() {
         when(request.getParameter("idProdotto")).thenReturn("P0099");
         when(request.getParameter("nomeCategoria")).thenReturn("Cuscino");
@@ -116,82 +106,45 @@ class AggiuntaProdottoServletH2Test extends BaseServletH2Test {
     // FINDING 1: nessun controllo autorizzazione
     // ==================================================================
 
-    /**
-     * FINDING (documentato): CWE-862 — Missing Authorization.
-     *
-     * AggiuntaProdottoServlet NON controlla la sessione né il ruolo admin.
-     * Chiunque può chiamare /AggiuntaProdottoServlet e inserire un prodotto
-     * nel database, anche un utente anonimo o un utente normale.
-     *
-     * Questo è un grave bug di sicurezza: le funzionalità amministrative
-     * devono richiedere autenticazione e ruolo admin.
-     *
-     * Fix suggerito: aggiungere il controllo sessione + ruolo admin come
-     * nelle altre Servlet (es. CercaProdottoPerModificaServlet).
-     */
     @Test
     @DisplayName("FINDING CWE-862: nessun controllo autorizzazione (utente anonimo può aggiungere)")
     void testNessunControlloAutorizzazione_BugDocumentato() throws Exception {
-        // Nessuna sessione, nessun admin — la Servlet non se ne cura
         setParametriValidi();
         when(request.getRequestDispatcher("HomeServletAmministratore")).thenReturn(dispatcher);
 
         invokeService(new AggiuntaProdottoServlet());
 
-        // Il prodotto è stato inserito NONOSTANTE l'assenza di autenticazione
         assertThat(countProdotti("P0099")).isEqualTo(1);
-        // Nessun 403 viene restituito
         verify(response, never()).sendError(eq(403), anyString());
-        // Forward eseguito normalmente
         verify(dispatcher).forward(request, response);
     }
 
     // ==================================================================
-    // FINDING 2 e 3: NumberFormatException su input non numerici
+    // FINDING 2 e 3: NumberFormatException (ORA CORRETTA IN 400 BAD REQUEST)
     // ==================================================================
 
-    /**
-     * FINDING (documentato): NumberFormatException non gestita.
-     *
-     * La Servlet usa Double.parseDouble() / Integer.parseInt() senza
-     * try/catch. Se l'utente invia un valore non numerico per larghezza,
-     * lunghezza, prezzo o quantita, la Servlet lancia NumberFormatException
-     * → 500 Internal Server Error.
-     *
-     * Fix suggerito: validare i parametri prima del parsing, oppure gestire
-     * l'eccezione e restituire 400 con messaggio "Formato numerico non valido".
-     */
     @ParameterizedTest
     @CsvSource({
             "larghezza, abc",
             "prezzo,    quaranta",
             "quantita,  dieci"
     })
-    @DisplayName("FINDING: parametro non numerico → NumberFormatException")
-    void testParametroNonNumerico_BugDocumentato(String parametro, String valoreNonNumerico) {
+    @DisplayName("Parametro non numerico → Bad Request 400")
+    void testParametroNonNumerico(String parametro, String valoreNonNumerico) throws Exception {
         setParametriValidi();
         when(request.getParameter(parametro)).thenReturn(valoreNonNumerico);
         AggiuntaProdottoServlet servlet = new AggiuntaProdottoServlet();
 
-        assertThatThrownBy(() -> invokeService(servlet))
-                .isInstanceOf(NumberFormatException.class);
+        invokeService(servlet);
+
+        // FIX: La servlet ora cattura l'eccezione e risponde 400
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
     // ==================================================================
     // FINDING 4: idProdotto null accettato
     // ==================================================================
 
-    /**
-     * FINDING (documentato): idProdotto null non validato.
-     *
-     * Se l'utente non fornisce "idProdotto", il bean riceve null e il DAO
-     * esegue INSERT con NULL nella PRIMARY KEY. Su H2/MySQL questo causa
-     * un errore SQL (violazione NOT NULL), che il DAO rilancia come
-     * DataAccessException → 500.
-     *
-     * Fix suggerito: validare che idProdotto non sia null/vuoto prima
-     * dell'INSERT.
-     */
     @Test
     @DisplayName("FINDING: idProdotto null causa errore SQL (500)")
     void testIdProdottoNull_BugDocumentato() {

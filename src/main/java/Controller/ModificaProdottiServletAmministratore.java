@@ -15,7 +15,6 @@ import java.io.IOException;
 @WebServlet("/ModificaProdottiServletAmministratore")
 public class ModificaProdottiServletAmministratore extends HttpServlet {
 
-    // ===== Costanti =====
     private static final String PARAM_NUOVO_PREZZO = "nuovoPrezzo";
     private static final String PARAM_QUANTITA_TOTALE = "quantitaTotale";
     private static final String ATTR_ID_MODIFICA_PREZZO = "idModificaPrezzo";
@@ -33,8 +32,20 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
             HttpSession sessione = request.getSession();
             Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);
 
+            // FIX: Blocca l'esecuzione se il prodotto non è in sessione
+            if (p == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato.");
+                return;
+            }
+
             String nuovoPrezzo = request.getParameter(PARAM_NUOVO_PREZZO);
             String quantitaTotale = request.getParameter(PARAM_QUANTITA_TOTALE);
+
+            // FIX: Blocca l'esecuzione se i parametri sono null
+            if (nuovoPrezzo == null || quantitaTotale == null) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
+                return;
+            }
 
             if (!nuovoPrezzo.equals("") && !quantitaTotale.equals("")) {
                 double prezzo = Double.parseDouble(nuovoPrezzo);
@@ -47,7 +58,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
                 double prezzo = Double.parseDouble(nuovoPrezzo);
                 ProdottoDAO.doSetNewPrezzo(prezzo, p.getIdProdotto());
                 forward(request, response);
-            } else if (quantitaTotale != null) {
+            } else if (!quantitaTotale.equals("")) {
                 int q = Integer.parseInt(quantitaTotale);
                 int quantita = p.getQuantita() + q;
                 ProdottoDAO.doUpdateQuantita(quantita, p.getIdProdotto());

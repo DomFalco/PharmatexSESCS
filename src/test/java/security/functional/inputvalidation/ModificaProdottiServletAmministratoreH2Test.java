@@ -5,6 +5,7 @@ import Model.ConPool;
 import Model.Prodotto;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,21 +16,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
  * Test funzionali di ModificaProdottiServletAmministratore con H2 in-memory.
- *
- * Verifica:
- * - Modifica prezzo + quantita (quantita INCREMENTALE: p.quantita + q)
- * - Solo prezzo
- * - Solo quantita
- * - FINDING CWE-862: nessun controllo autorizzazione
- * - FINDING CWE-476: NPE su nuovoPrezzo null
- * - FINDING CWE-476: NPE su idModificaPrezzo null
- * - FINDING: NumberFormatException su input non numerico
- * - FINDING: silent drop se nuovoPrezzo="" e quantitaTotale=null
  */
 @DisplayName("Functional - ModificaProdottiServletAmministratore (Input Validation)")
 class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
@@ -37,7 +29,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
     @BeforeEach
     void setUp() {
         setUpServletMocks();
-        // La Servlet implementa doGet + doPost (delega) -> POST default ok
     }
 
     private void invokeService(ModificaProdottiServletAmministratore servlet) throws Exception {
@@ -50,10 +41,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         p.setQuantita(quantita);
         return p;
     }
-
-    // ==================================================================
-    // Modifica prezzo + quantita
-    // ==================================================================
 
     @Test
     @DisplayName("nuovoPrezzo + quantitaTotale -> aggiorna entrambi + forward")
@@ -71,10 +58,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         verify(dispatcher).forward(request, response);
     }
 
-    // ==================================================================
-    // Solo prezzo
-    // ==================================================================
-
     @Test
     @DisplayName("Solo nuovoPrezzo -> aggiorna solo il prezzo")
     void testSoloPrezzo() throws Exception {
@@ -90,10 +73,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         assertThat(getQuantita("P0001")).isEqualTo(5);
         verify(dispatcher).forward(request, response);
     }
-
-    // ==================================================================
-    // Solo quantita
-    // ==================================================================
 
     @Test
     @DisplayName("Solo quantitaTotale -> aggiorna solo la quantita (incrementale)")
@@ -111,20 +90,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         verify(dispatcher).forward(request, response);
     }
 
-    // ==================================================================
-    // FINDING CWE-862: nessun controllo autorizzazione
-    // ==================================================================
-
-    /**
-     * FINDING (documentato): CWE-862 - Missing Authorization.
-     *
-     * La Servlet NON controlla ne' la sessione ne' il ruolo admin.
-     * Chiunque puo' modificare il prezzo o la quantita di un prodotto,
-     * anche un utente anonimo o un utente non amministratore.
-     *
-     * Fix suggerito: aggiungere il controllo sessione + ruolo admin
-     * come nelle altre Servlet (es. CercaProdottoPerModificaServlet).
-     */
     @Test
     @DisplayName("FINDING CWE-862: nessun controllo autorizzazione (utente anonimo puo' modificare)")
     void testNessunControlloAutorizzazione_BugDocumentato() throws Exception {
@@ -141,115 +106,73 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         verify(response, never()).sendError(eq(403), anyString());
     }
 
-    // ==================================================================
-    // FINDING CWE-476: nuovoPrezzo null
-    // ==================================================================
-
-    /**
-     * FINDING (documentato): CWE-476 - NPE su nuovoPrezzo null.
-     *
-     * La Servlet chiama `request.getParameter("nuovoPrezzo").equals("")`
-     * senza verificare che il parametro non sia null. Se il client non invia
-     * il parametro, getParameter ritorna null -> NPE.
-     */
     @Test
-    @DisplayName("FINDING CWE-476: nuovoPrezzo null -> NullPointerException")
-    void testNuovoPrezzoNull_BugDocumentato() {
+    @DisplayName("FIX CWE-476: nuovoPrezzo null -> Bad Request 400")
+    void testNuovoPrezzoNull() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn(null);
         when(request.getParameter("quantitaTotale")).thenReturn("3");
         ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(servlet))
-                .isInstanceOf(NullPointerException.class);
+        invokeService(servlet);
+
+        // FIX: La servlet ora cattura l'eccezione e risponde 400
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    // ==================================================================
-    // FINDING CWE-476: idModificaPrezzo null
-    // ==================================================================
-
-    /**
-     * FINDING (documentato): CWE-476 - NPE su idModificaPrezzo null.
-     *
-     * Se l'attributo "idModificaPrezzo" non e' in sessione (es. l'admin
-     * non ha selezionato un prodotto prima), la Servlet chiama
-     * `p.getIdProdotto()` su null -> NPE.
-     */
     @Test
-    @DisplayName("FINDING CWE-476: idModificaPrezzo null -> NullPointerException")
-    void testIdModificaPrezzoNull_BugDocumentato() {
+    @DisplayName("FIX CWE-476: idModificaPrezzo null -> Bad Request 400")
+    void testIdModificaPrezzoNull() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(null);
         when(request.getParameter("nuovoPrezzo")).thenReturn("350.0");
         when(request.getParameter("quantitaTotale")).thenReturn("3");
         ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(servlet))
-                .isInstanceOf(NullPointerException.class);
+        invokeService(servlet);
+
+        // FIX: La servlet ora cattura l'eccezione e risponde 400
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    // ==================================================================
-    // FINDING: NumberFormatException
-    // ==================================================================
-
     @Test
-    @DisplayName("FINDING: nuovoPrezzo non numerico -> NumberFormatException")
-    void testNuovoPrezzoNonNumerico_BugDocumentato() {
+    @DisplayName("nuovoPrezzo non numerico -> Bad Request 400")
+    void testNuovoPrezzoNonNumerico() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn("abc");
         when(request.getParameter("quantitaTotale")).thenReturn("3");
         ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(servlet))
-                .isInstanceOf(NumberFormatException.class);
+        invokeService(servlet);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
     @Test
-    @DisplayName("FINDING: quantitaTotale non numerica -> NumberFormatException")
-    void testQuantitaTotaleNonNumerica_BugDocumentato() {
+    @DisplayName("quantitaTotale non numerica -> Bad Request 400")
+    void testQuantitaTotaleNonNumerica() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn("");
         when(request.getParameter("quantitaTotale")).thenReturn("dieci");
         ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
-        assertThatThrownBy(() -> invokeService(servlet))
-                .isInstanceOf(NumberFormatException.class);
+        invokeService(servlet);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    // ==================================================================
-    // FINDING: silent drop
-    // ==================================================================
-
-    /**
-     * FINDING (documentato): silent drop se nuovoPrezzo="" e quantitaTotale=null.
-     *
-     * I tre rami della Servlet sono:
-     *   1. nuovoPrezzo != "" AND quantitaTotale != ""  (entrambi valorizzati)
-     *   2. nuovoPrezzo != ""                            (solo prezzo)
-     *   3. quantitaTotale != null                       (solo quantita)
-     *
-     * Se nuovoPrezzo="" e quantitaTotale=null:
-     *   - Ramo 1: nuovoPrezzo != "" ? NO
-     *   - Ramo 2: nuovoPrezzo != "" ? NO
-     *   - Ramo 3: quantitaTotale != null ? NO
-     *
-     * Nessun ramo viene eseguito -> nessun forward -> risposta vuota.
-     */
     @Test
-    @DisplayName("FINDING: nuovoPrezzo='' e quantitaTotale=null -> silent drop")
-    void testSilentDrop_BugDocumentato() throws Exception {
+    @DisplayName("FIX: nuovoPrezzo='' e quantitaTotale=null -> Bad Request 400 (invece di silent drop)")
+    void testSilentDrop() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
         when(request.getParameter("nuovoPrezzo")).thenReturn("");
         when(request.getParameter("quantitaTotale")).thenReturn(null);
 
         invokeService(new ModificaProdottiServletAmministratore());
 
+        // FIX: Non c'è più il silent drop, ora la Servlet blocca l'esecuzione
         verify(dispatcher, never()).forward(any(), any());
-        verify(response, never()).sendError(anyInt(), anyString());
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
-
-    // ==================================================================
-    // doGet -> doPost
-    // ==================================================================
 
     @Test
     @DisplayName("doGet inoltra a doPost (comportamento trasparente)")

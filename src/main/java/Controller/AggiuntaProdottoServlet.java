@@ -24,7 +24,6 @@ public class AggiuntaProdottoServlet extends HttpServlet {
             p.setNomeProd(request.getParameter("nomeProdotto"));
             p.setDescrizione(request.getParameter("descrizione"));
 
-            // FIX SONARQUBE: Gestione NumberFormatException
             p.setLarghezza(Double.parseDouble(request.getParameter("larghezza")));
             p.setLunghezza(Double.parseDouble(request.getParameter("lunghezza")));
             p.setPrezzo(Double.parseDouble(request.getParameter("prezzo")));
@@ -44,8 +43,8 @@ public class AggiuntaProdottoServlet extends HttpServlet {
             RequestDispatcher dispatcher = request.getRequestDispatcher("HomeServletAmministratore");
             dispatcher.forward(request, response);
 
-        } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido nei parametri.");
+        } catch (NumberFormatException | NullPointerException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido o parametro mancante.");
         } catch (ServletException | IOException e) {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro della richiesta.");
         }

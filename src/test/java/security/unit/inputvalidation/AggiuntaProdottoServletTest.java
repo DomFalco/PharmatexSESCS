@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -61,36 +61,38 @@ class AggiuntaProdottoServletTest {
         when(request.getParameter("formaCuscino")).thenReturn("Quadrato");
     }
 
-    // ====== 1. Documentazione NPE su parametri null ======
+    // ====== 1. Parametri stringa null ======
 
     @Test
-    @DisplayName("Parametri stringa null non vengono validati (vulnerabilità documentata)")
-    void testParametriStringaNullNonValidati() {
+    @DisplayName("Parametri stringa null vengono gestiti con Bad Request")
+    void testParametriStringaNullNonValidati() throws Exception {
         when(request.getParameter("idProdotto")).thenReturn(null);
 
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "Il codice non gestisce parametri stringa null: NPE documentata");
+        servlet.service(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    // ====== 2. Documentazione NumberFormatException - Parameterized ======
+    // ====== 2. NumberFormatException - Parameterized ======
 
-    @ParameterizedTest(name = "Parametro ''{0}'' = ''{1}'' causa NumberFormatException")
+    @ParameterizedTest(name = "Parametro ''{0}'' = ''{1}'' risponde con 400")
     @CsvSource({
             "larghezza, abc",
             "prezzo, abc",
             "quantita, abc",
             "prezzo, '10; DROP TABLE Prodotto;'"
     })
-    @DisplayName("Input non numerico causa NumberFormatException (vulnerabilità documentata)")
-    void testInputNonNumericoCausaNumberFormatException(String paramName, String value) {
+    @DisplayName("Input non numerico risponde con 400 Bad Request")
+    void testInputNonNumericoCausaNumberFormatException(String paramName, String value) throws Exception {
         mockParametriValidi();
         when(request.getParameter(paramName)).thenReturn(value);
 
-        assertThrows(NumberFormatException.class, () -> servlet.service(request, response),
-                "Parsing non protetto: NumberFormatException documentata per " + paramName);
+        servlet.service(request, response);
+
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    // ====== 3. Documentazione: input non validato passa al DAO - Parameterized ======
+    // ====== 3. Input non validato passa al DAO ======
 
     @ParameterizedTest(name = "Parametro ''{0}'' = ''{1}'' non viene validato")
     @CsvSource({
@@ -107,13 +109,12 @@ class AggiuntaProdottoServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
-            // Eccezione attesa dal DB non configurato
         }
 
         verify(request, atLeastOnce()).getParameter(paramName);
     }
 
-    // ====== 4. Documentazione mancanza controllo autorizzazione ======
+    // ====== 4. Mancanza controllo autorizzazione ======
 
     @Test
     @DisplayName("Nessun controllo di autorizzazione presente (vulnerabilità documentata)")
@@ -123,7 +124,6 @@ class AggiuntaProdottoServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
-            // Eccezione attesa dal DB
         }
 
         verify(session, never()).getAttribute("Utente");
@@ -139,7 +139,6 @@ class AggiuntaProdottoServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
-            // Eccezione attesa dal DB
         }
 
         verify(request, atLeastOnce()).getParameter("idProdotto");

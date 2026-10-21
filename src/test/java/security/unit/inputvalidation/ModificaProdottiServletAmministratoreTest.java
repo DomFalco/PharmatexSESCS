@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -51,40 +51,44 @@ class ModificaProdottiServletAmministratoreTest {
         return p;
     }
 
-    // ====== 1. Documentazione NPE ======
+    // ====== 1. NPE / Null handling ======
 
     @Test
-    @DisplayName("Prodotto null in sessione causa NPE (vulnerabilità documentata)")
-    void testProdottoNullInSessioneCausaNPE() {
+    @DisplayName("Prodotto null in sessione risponde con 400 Bad Request")
+    void testProdottoNullInSessioneCausaNPE() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(null);
         when(request.getParameter("nuovoPrezzo")).thenReturn("99.99");
         when(request.getParameter("quantitaTotale")).thenReturn("5");
 
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "Il codice accede a p.getIdProdotto() senza null check: NPE documentata");
+        servlet.service(request, response);
+
+        // FIX: La servlet gestisce il null e risponde 400
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
     @Test
-    @DisplayName("Parametro 'nuovoPrezzo' null causa NPE (vulnerabilità documentata)")
-    void testNuovoPrezzoNullCausaNPE() {
+    @DisplayName("Parametro 'nuovoPrezzo' null risponde con 400 Bad Request")
+    void testNuovoPrezzoNullCausaNPE() throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(creaProdottoValido());
         when(request.getParameter("nuovoPrezzo")).thenReturn(null);
         when(request.getParameter("quantitaTotale")).thenReturn("5");
 
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "Il codice chiama .equals(\"\") su null: NPE documentata");
+        servlet.service(request, response);
+
+        // FIX: La servlet gestisce il null e risponde 400
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    // ====== 2. Documentazione NumberFormatException - Parameterized ======
+    // ====== 2. Input non numerico ======
 
-    @ParameterizedTest(name = "Parametro ''{0}'' = ''{1}'' causa NumberFormatException")
+    @ParameterizedTest(name = "Parametro ''{0}'' = ''{1}'' risponde con 400 Bad Request")
     @CsvSource({
             "nuovoPrezzo, abc",
             "quantitaTotale, abc",
             "nuovoPrezzo, '10; DROP TABLE Prodotto;'"
     })
-    @DisplayName("Input non numerico causa NumberFormatException (vulnerabilità documentata)")
-    void testInputNonNumericoCausaNumberFormatException(String paramName, String value) {
+    @DisplayName("Input non numerico risponde con 400 Bad Request")
+    void testInputNonNumericoCausaNumberFormatException(String paramName, String value) throws Exception {
         when(session.getAttribute("idModificaPrezzo")).thenReturn(creaProdottoValido());
         if ("nuovoPrezzo".equals(paramName)) {
             when(request.getParameter("nuovoPrezzo")).thenReturn(value);
@@ -94,11 +98,13 @@ class ModificaProdottiServletAmministratoreTest {
             when(request.getParameter("quantitaTotale")).thenReturn(value);
         }
 
-        assertThrows(NumberFormatException.class, () -> servlet.service(request, response),
-                "Parsing non protetto: NumberFormatException documentata per " + paramName);
+        servlet.service(request, response);
+
+        // FIX: La servlet cattura l'eccezione e risponde 400
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
 
-    // ====== 3. Documentazione mancanza controllo autorizzazione ======
+    // ====== 3. Autorizzazione ======
 
     @Test
     @DisplayName("Nessun controllo di autorizzazione presente (vulnerabilità documentata)")
@@ -116,7 +122,7 @@ class ModificaProdottiServletAmministratoreTest {
         verify(session, never()).getAttribute("Utente");
     }
 
-    // ====== 4. Documentazione mancanza validazione range ======
+    // ====== 4. Validazione range ======
 
     @Test
     @DisplayName("Prezzo negativo non viene validato (vulnerabilità documentata)")
@@ -150,7 +156,7 @@ class ModificaProdottiServletAmministratoreTest {
         verify(request, atLeastOnce()).getParameter("quantitaTotale");
     }
 
-    // ====== 5. Lettura dei parametri ======
+    // ====== 5. Lettura parametri ======
 
     @Test
     @DisplayName("I parametri 'nuovoPrezzo' e 'quantitaTotale' vengono letti")
@@ -169,7 +175,7 @@ class ModificaProdottiServletAmministratoreTest {
         verify(request, atLeastOnce()).getParameter("quantitaTotale");
     }
 
-    // ====== 6. Lettura prodotto dalla sessione ======
+    // ====== 6. Lettura sessione ======
 
     @Test
     @DisplayName("Il prodotto da modificare viene letto dalla sessione")
@@ -189,15 +195,6 @@ class ModificaProdottiServletAmministratoreTest {
 
     // ====== 7. Nessun ramo eseguito ======
 
-    /**
-     * Test del "silent drop": quando nuovoPrezzo="" e quantitaTotale="",
-     * nessuno dei 3 rami della Servlet viene eseguito.
-     *
-     * Aggiornato dopo refactoring: la Servlet legge i parametri una sola
-     * volta (in variabile locale), quindi verifichiamo:
-     *   - il parametro è stato letto almeno 1 volta
-     *   - NESSUN forward è stato eseguito (silent drop)
-     */
     @Test
     @DisplayName("Nessun ramo eseguito se entrambi i parametri sono vuoti (bug documentato)")
     void testNessunRamoEseguitoConParametriVuoti() throws Exception {
@@ -213,7 +210,6 @@ class ModificaProdottiServletAmministratoreTest {
 
         verify(request, atLeastOnce()).getParameter("nuovoPrezzo");
         verify(request, atLeastOnce()).getParameter("quantitaTotale");
-        // Silent drop: nessun forward eseguito
         verify(dispatcher, never()).forward(any(), any());
     }
 }
