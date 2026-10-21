@@ -73,11 +73,7 @@ public class LoginServlet extends HttpServlet {
                 dispatcher.forward(request, response);
             }
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del login.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del login.");
         }
     }
 

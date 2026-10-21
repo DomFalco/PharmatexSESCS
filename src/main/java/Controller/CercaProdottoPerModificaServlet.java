@@ -21,40 +21,24 @@ public class CercaProdottoPerModificaServlet extends HttpServlet {
         try {
             HttpSession session = request.getSession(false);
             if (session == null) {
-                try {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
-                } catch (IOException ex) {
-                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
-                }
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
                 return;
             }
             Utente admin = (Utente) session.getAttribute("Amministratore");
             if (admin == null || !admin.isAmministratore()) {
-                try {
-                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
-                } catch (IOException ex) {
-                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
-                }
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
                 return;
             }
 
             String x = request.getParameter("search");
             if (x == null || !x.matches("[a-zA-Z0-9\\s]+")) {
-                try {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'search' non valido.");
-                } catch (IOException ex) {
-                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
-                }
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'search' non valido.");
                 return;
             }
 
             Prodotto pmod = ProdottoDAO.doRetriveBySearch(x);
             if (pmod == null) {
-                try {
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Prodotto non trovato.");
-                } catch (IOException ex) {
-                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
-                }
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Prodotto non trovato.");
                 return;
             }
 
@@ -63,11 +47,7 @@ public class CercaProdottoPerModificaServlet extends HttpServlet {
             ds.forward(request, response);
 
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la visualizzazione del prodotto.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la visualizzazione del prodotto.");
         }
     }
 }

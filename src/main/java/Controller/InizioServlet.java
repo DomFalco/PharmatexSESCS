@@ -23,7 +23,7 @@ public class InizioServlet extends HttpServlet {
                 String valore = request.getParameter("valore");
                 if (valore != null) {
                     if (!valore.matches("[a-zA-Z0-9\\s]+")) {
-                        try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'valore' non valido."); } catch (IOException ex) { throw new ServletException(ex); }
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'valore' non valido.");
                         return;
                     }
 
@@ -34,13 +34,13 @@ public class InizioServlet extends HttpServlet {
                     dispatcher.forward(request, response);
                     return;
                 } else {
-                    try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti."); } catch (IOException ex) { throw new ServletException(ex); }
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
                     return;
                 }
             }
 
             if (!richiesta.matches("[a-zA-Z0-9\\s]+")) {
-                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' non valido."); } catch (IOException ex) { throw new ServletException(ex); }
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' non valido.");
                 return;
             }
 
@@ -66,11 +66,7 @@ public class InizioServlet extends HttpServlet {
             dispatcher.forward(request, response);
 
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro della richiesta.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro della richiesta.");
         }
     }
 

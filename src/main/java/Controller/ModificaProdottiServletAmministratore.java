@@ -33,7 +33,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
             Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);
 
             if (p == null) {
-                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato."); } catch (IOException ex) { throw new ServletException(ex); }
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato.");
                 return;
             }
 
@@ -41,7 +41,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
             String quantitaTotale = request.getParameter(PARAM_QUANTITA_TOTALE);
 
             if (nuovoPrezzo == null || quantitaTotale == null) {
-                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti."); } catch (IOException ex) { throw new ServletException(ex); }
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
                 return;
             }
 
@@ -62,18 +62,10 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
                 ProdottoDAO.doUpdateQuantita(quantita, p.getIdProdotto());
                 forward(request, response);
             }
-        } catch (NumberFormatException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+        } catch (NumberFormatException | NullPointerException e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");
         }
     }
 

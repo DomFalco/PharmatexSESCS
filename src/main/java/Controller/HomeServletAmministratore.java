@@ -17,12 +17,12 @@ public class HomeServletAmministratore extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante."); } catch (IOException ex) { throw new ServletException(ex); }
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
             return;
         }
         Utente admin = (Utente) session.getAttribute("Amministratore");
         if (admin == null || !admin.isAmministratore()) {
-            try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti."); } catch (IOException ex) { throw new ServletException(ex); }
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
             return;
         }
 
@@ -56,11 +56,7 @@ public class HomeServletAmministratore extends HttpServlet {
                 ds.forward(request, response);
             }
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento della pagina amministratore.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento della pagina amministratore.");
         }
     }
 

@@ -35,26 +35,22 @@ public class HomeServlet extends HttpServlet {
             else if (request.getParameter("valore").equals("home")) {
                 HttpSession session = request.getSession(false);
                 if (session == null) {
-                    try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante."); } catch (IOException ex) { throw new ServletException(ex); }
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
                     return;
                 }
                 Utente admin = (Utente) session.getAttribute("Amministratore");
                 if (admin == null || !admin.isAmministratore()) {
-                    try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti."); } catch (IOException ex) { throw new ServletException(ex); }
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
                     return;
                 }
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
                 dispatcher.forward(request, response);
             }
             else {
-                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta."); } catch (IOException ex) { throw new ServletException(ex); }
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
             }
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione della richiesta.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione della richiesta.");
         }
     }
 

@@ -17,11 +17,7 @@ public class Registrazione extends HttpServlet {
             RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/results/RegisterUser.jsp");
             ds.forward(request, response);
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento della pagina di registrazione.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento della pagina di registrazione.");
         }
     }
 }
