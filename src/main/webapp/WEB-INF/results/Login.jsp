@@ -14,31 +14,33 @@
 <body>
 <img src="immagini/logosito.png" class="sfondo" alt="Logo Pharmatex">
 
-<table>
-    <tr>
-        <th scope="col">
-            <form action="LoginServlet" method="post">
+<!-- Form spostato FUORI dalla tabella per una struttura HTML valida -->
+<form action="LoginServlet" method="post">
+    <table>
+        <tr>
+            <th scope="col">
                 <label for="email">Inserisci l'email</label><br>
-                <input type="email" placeholder="Inserisci l'email" name="Email" id="email" required><br>
+                <!-- Aggiunto aria-label per placare SonarQube -->
+                <input type="email" placeholder="Inserisci l'email" name="Email" id="email" aria-label="Inserisci l'email" required><br>
 
                 <label for="password"><b>Inserisci la password</b></label><br>
-                <input type="password" placeholder="Inserisci la password" name="Password" id="password" required><br>
+                <input type="password" placeholder="Inserisci la password" name="Password" id="password" aria-label="Inserisci la password" required><br>
 
                 <button onclick="confermaParametri()" type="submit" id="submit" class="cart" aria-label="Effettua il login">Login</button>
                 <p style="color: red; text-align: center"><%=x%></p>
                 <br>
-            </form>
-        </th>
-    </tr>
-    <tr>
-        <th scope="col">
-            <!-- Bottone per la registrazione fuori dal form di login -->
-            <a href="Registrazione" style="text-decoration: none;">
-                <button type="button" class="cart" aria-label="Vai alla registrazione">Registrati</button>
-            </a>
-        </th>
-    </tr>
-</table>
+            </th>
+        </tr>
+        <tr>
+            <th scope="col">
+                <!-- Bottone per la registrazione (type="button" per non inviare il form) -->
+                <a href="Registrazione" style="text-decoration: none;">
+                    <button type="button" class="cart" aria-label="Vai alla registrazione">Registrati</button>
+                </a>
+            </th>
+        </tr>
+    </table>
+</form>
 
 <script>
     function confermaParametri() {
