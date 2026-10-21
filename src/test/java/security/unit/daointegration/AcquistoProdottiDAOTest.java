@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("DAO Integration - AcquistoProdottiDAO")
 class AcquistoProdottiDAOTest {
 
-    private static final String SOURCE_PATH = "src/main/java/Model/AcquistoProdottiDAO.java";
+    private static final String SOURCE_PATH = "src/main/java/model/AcquistoProdottiDAO.java";
     private static final Pattern CONCATENAZIONE_QUERY =
             Pattern.compile("prepareStatement\\([^+)]*\\+[^+)]*\\)");
 

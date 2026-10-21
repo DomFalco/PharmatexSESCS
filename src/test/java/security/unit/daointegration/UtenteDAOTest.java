@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DisplayName("DAO Integration - UtenteDAO")
 class UtenteDAOTest {
 
-    private static final String SOURCE_PATH = "src/main/java/Model/UtenteDAO.java";
+    private static final String SOURCE_PATH = "src/main/java/model/UtenteDAO.java";
     private static final Pattern CONCATENAZIONE_QUERY =
             Pattern.compile("prepareStatement\\([^+)]*\\+[^+)]*\\)");
 

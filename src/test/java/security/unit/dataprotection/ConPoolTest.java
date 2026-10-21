@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Data Protection - ConPool credenziali DB")
 class ConPoolTest {
 
-    private static final String SOURCE_PATH = "src/main/java/Model/ConPool.java";
+    private static final String SOURCE_PATH = "src/main/java/model/ConPool.java";
 
     @BeforeEach
     @AfterEach
