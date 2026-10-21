@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import security.functional.BaseServletH2Test;
-import security.functional.TestFunctions;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 
@@ -251,7 +251,7 @@ class HomeServletAmministratoreH2Test extends BaseServletH2Test {
     }
 
     private String insertClienteCompleto(String email) {
-        String hashed = TestFunctions.sha1("password");
+        String hashed = BCrypt.hashpw("password", BCrypt.gensalt(12));
         return "INSERT INTO Cliente (email, passwordEmail, nome, cognome, "
                 + "dataDiNascita, numeroTelefono, codiceFiscale, via, citta, cap, "
                 + "provincia, nazione, amministratore) VALUES ("

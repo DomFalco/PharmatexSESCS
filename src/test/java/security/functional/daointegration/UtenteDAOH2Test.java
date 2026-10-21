@@ -4,8 +4,8 @@ import Model.Utente;
 import Model.UtenteDAO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import security.functional.BaseH2Test;
-import security.functional.TestFunctions;
 
 import java.util.ArrayList;
 
@@ -13,19 +13,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test funzionali dello UtenteDAO su H2 in-memory.
- * Il DAO usa la funzione SHA1() nel login, resa disponibile in H2 tramite
- * l'alias registrato in BaseH2Test -> TestFunctions.sha1.
+ * Il DAO usa BCrypt per il login, quindi i test inseriscono hash generati
+ * dinamicamente tramite BCrypt.hashpw().
  */
 class UtenteDAOH2Test extends BaseH2Test {
 
     // ==================================================================
-    // doLogin (usa SHA1)
+    // doLogin (usa BCrypt)
     // ==================================================================
 
     @Test
     @DisplayName("doLogin con credenziali corrette restituisce l'utente")
     void testDoLoginCorretto() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "mario@test.com", "password123", "Mario", "Rossi", false
         ));
 
@@ -41,7 +41,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("doLogin con password errata restituisce null")
     void testDoLoginPasswordErrata() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "mario@test.com", "password123", "Mario", "Rossi", false
         ));
 
@@ -60,7 +60,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("doLogin con utente admin restituisce amministratore=true")
     void testDoLoginAdmin() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "admin@test.com", "adminpass", "Admin", "Root", true
         ));
 
@@ -77,7 +77,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("controlloEmail restituisce true per email esistente")
     void testControlloEmailEsistente() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "mario@test.com", "password123", "Mario", "Rossi", false
         ));
 
@@ -100,10 +100,10 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("doRetriveUtente restituisce tutti gli utenti presenti")
     void testDoRetriveUtente() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "mario@test.com", "pass1", "Mario", "Rossi", false
         ));
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "luigi@test.com", "pass2", "Luigi", "Verdi", true
         ));
 
@@ -129,7 +129,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("rendiAmministratore promuove l'utente ad admin")
     void testRendiAmministratore() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "mario@test.com", "password123", "Mario", "Rossi", false
         ));
 
@@ -143,7 +143,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("rimuoviAmministratore degrada l'admin a utente normale")
     void testRimuoviAmministratore() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "admin@test.com", "adminpass", "Admin", "Root", true
         ));
 
@@ -163,7 +163,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     void testDoRegistrazione() {
         Utente u = new Utente();
         u.setEmail("nuovo@test.com");
-        u.setPassword("password123");
+        u.setPassword("password123"); // Questo applicherà BCrypt nel bean
         u.setNome("Nuovo");
         u.setCognome("Utente");
         u.setDataDiNascita("1990-01-01");
@@ -186,10 +186,6 @@ class UtenteDAOH2Test extends BaseH2Test {
 
     /**
      * Test end-to-end: registrazione + login funzionano in sequenza.
-     * Nota: il test verifica che la registrazione e il login siano COERENTI
-     * tra loro - se doRegistrazione salva una password, doLogin la deve
-     * trovare con lo stesso valore di input. Il test NON verifica il formato
-     * di hashing (che dipende dal bean/servlet chiamante).
      */
     @Test
     @DisplayName("Registrazione + Login end-to-end funzionano correttamente")
@@ -224,7 +220,7 @@ class UtenteDAOH2Test extends BaseH2Test {
     @Test
     @DisplayName("SQL Injection su doLogin viene neutralizzata dal PreparedStatement")
     void testSqlInjectionLogin() throws Exception {
-        executeSql(insertClienteConSha1(
+        executeSql(insertClienteConBcrypt(
                 "admin@test.com", "adminpass", "Admin", "Root", true
         ));
 
@@ -234,12 +230,12 @@ class UtenteDAOH2Test extends BaseH2Test {
     }
 
     // ==================================================================
-    // Helper: INSERT di un Cliente con password hashata SHA1
+    // Helper: INSERT di un Cliente con password hashata BCrypt
     // ==================================================================
 
-    private String insertClienteConSha1(String email, String passwordInChiaro,
-                                        String nome, String cognome, boolean admin) {
-        String hashed = TestFunctions.sha1(passwordInChiaro);
+    private String insertClienteConBcrypt(String email, String passwordInChiaro,
+                                          String nome, String cognome, boolean admin) {
+        String hashed = BCrypt.hashpw(passwordInChiaro, BCrypt.gensalt(12));
         return "INSERT INTO Cliente (email, passwordEmail, nome, cognome, "
                 + "dataDiNascita, numeroTelefono, codiceFiscale, via, citta, cap, "
                 + "provincia, nazione, amministratore) VALUES ("

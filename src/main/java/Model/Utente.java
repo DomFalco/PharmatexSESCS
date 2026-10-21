@@ -1,10 +1,7 @@
 package Model;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class Utente implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -69,13 +66,23 @@ public class Utente implements Serializable {
     }
 
     public void setPassword(String password) {
+        if (password != null && password.length() == 60 && password.startsWith("$2")) {
+            // È già un hash BCrypt (recuperato dal DB), non ri-hashare
+            this.password = password;
+        } else {
+            // È una password in chiaro (es. durante la registrazione), applica l'hash
+            this.password = BCrypt.hashpw(password, BCrypt.gensalt(12));
+        }
+    }
+
+    public boolean checkPassword(String plainPassword) {
+        if (this.password == null || plainPassword == null) {
+            return false;
+        }
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
-            digest.reset();
-            digest.update(password.getBytes(StandardCharsets.UTF_8));
-            this.password = String.format("%040x", new BigInteger(1, digest.digest()));
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            return BCrypt.checkpw(plainPassword, this.password);
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 

@@ -2,6 +2,7 @@ package Model;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -15,25 +16,30 @@ public class UtenteDAO extends HttpServlet {
              PreparedStatement ps = con.prepareStatement(
                      "SELECT email, passwordEmail, nome, cognome, dataDiNascita, numeroTelefono, "
                              + "codiceFiscale, via, citta, cap, provincia, nazione, amministratore "
-                             + "FROM Cliente WHERE email = ? AND passwordEmail = SHA1(?)")) {
+                             + "FROM Cliente WHERE email = ?")) {
+
             ps.setString(1, email);
-            ps.setString(2, password);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    utente.setEmail(rs.getString(1));
-                    utente.setPassword(rs.getString(2));
-                    utente.setNome(rs.getString(3));
-                    utente.setCognome(rs.getString(4));
-                    utente.setDataDiNascita(rs.getString(5));
-                    utente.setNumeroTelefono(rs.getString(6));
-                    utente.setCodiceFiscale(rs.getString(7));
-                    utente.setVia(rs.getString(8));
-                    utente.setCitta(rs.getString(9));
-                    utente.setCap(rs.getString(10));
-                    utente.setProvincia(rs.getString(11));
-                    utente.setNazione(rs.getString(12));
-                    utente.setAmministratore(rs.getBoolean(13));
-                    return utente;
+                    String storedHash = rs.getString(2);
+
+                    if (BCrypt.checkpw(password, storedHash)) {
+                        utente.setEmail(rs.getString(1));
+                        utente.setPassword(storedHash);
+                        utente.setNome(rs.getString(3));
+                        utente.setCognome(rs.getString(4));
+                        utente.setDataDiNascita(rs.getString(5));
+                        utente.setNumeroTelefono(rs.getString(6));
+                        utente.setCodiceFiscale(rs.getString(7));
+                        utente.setVia(rs.getString(8));
+                        utente.setCitta(rs.getString(9));
+                        utente.setCap(rs.getString(10));
+                        utente.setProvincia(rs.getString(11));
+                        utente.setNazione(rs.getString(12));
+                        utente.setAmministratore(rs.getBoolean(13));
+                        return utente;
+                    }
                 }
             }
             return null;

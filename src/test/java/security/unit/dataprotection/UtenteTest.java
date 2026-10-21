@@ -9,7 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test dell'area OWASP: Data Protection.
- * Verifica il comportamento del metodo {setPassword}
+ * Verifica il comportamento del metodo setPassword.
+ * Aggiornato per verificare l'uso di BCrypt al posto di SHA-1 (Fix CWE-916).
  */
 @DisplayName("Data Protection - Hashing password (CWE-916)")
 class UtenteTest {
@@ -33,28 +34,31 @@ class UtenteTest {
     }
 
     @Test
-    @DisplayName("L'hash SHA-1 ha 40 caratteri esadecimali")
-    void testHashHa40CaratteriEsadecimali() {
+    @DisplayName("L'hash BCrypt ha 60 caratteri e inizia con $2a$")
+    void testHashHa60CaratteriBCrypt() {
         utente.setPassword("password123");
         String hash = utente.getPassword();
 
-        assertEquals(40, hash.length(),
-                "L'hash SHA-1 deve avere esattamente 40 caratteri");
-        assertTrue(hash.matches("[0-9a-f]{40}"),
-                "L'hash SHA-1 deve contenere solo caratteri esadecimali [0-9a-f]");
+        assertEquals(60, hash.length(),
+                "L'hash BCrypt deve avere esattamente 60 caratteri");
+        assertTrue(hash.startsWith("$2a$"),
+                "L'hash BCrypt deve iniziare con il prefisso $2a$");
     }
 
     @Test
-    @DisplayName("La stessa password produce sempre lo stesso hash (mancanza di salt)")
-    void testStessaPasswordStessoHash() {
+    @DisplayName("Password identiche producono hash diversi (presenza di salt)")
+    void testStessaPasswordHashDiversi() {
         Utente u1 = new Utente();
         Utente u2 = new Utente();
         u1.setPassword("password123");
         u2.setPassword("password123");
 
-        assertEquals(u1.getPassword(), u2.getPassword(),
-                "SHA-1 senza salt produce lo stesso hash per password identiche " +
-                        "(documentazione della vulnerabilità CWE-916)");
+        assertNotEquals(u1.getPassword(), u2.getPassword(),
+                "BCrypt usa un salt casuale: password identiche devono produrre hash diversi!");
+
+        // Entrambi devono comunque validare correttamente
+        assertTrue(u1.checkPassword("password123"));
+        assertTrue(u2.checkPassword("password123"));
     }
 
     @Test
@@ -70,22 +74,26 @@ class UtenteTest {
     }
 
     @Test
-    @DisplayName("Password vuota produce l'hash SHA-1 noto di stringa vuota")
-    void testPasswordVuotaHashNoto() {
+    @DisplayName("Password vuota produce un hash BCrypt valido e non prevedibile")
+    void testPasswordVuotaHashNonPrevedibile() {
         utente.setPassword("");
-        assertEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709",
-                utente.getPassword(),
-                "L'hash SHA-1 della stringa vuota è un valore noto e " +
-                        "dimostra che l'algoritmo è prevedibile");
+
+        assertEquals(60, utente.getPassword().length(),
+                "Anche una stringa vuota produce un hash BCrypt di 60 caratteri");
+        assertFalse(utente.getPassword().equals("da39a3ee5e6b4b0d3255bfef95601890afd80709"),
+                "L'hash della stringa vuota NON deve essere quello noto di SHA-1");
+        assertTrue(utente.checkPassword(""), "La verifica di una password vuota deve funzionare");
     }
 
     @Test
-    @DisplayName("SHA-1 è insicuro per le password (documentazione vulnerabilità)")
-    void testDocumentazioneVulnerabilitaSha1() {
+    @DisplayName("Il metodo checkPassword verifica correttamente la password")
+    void testCheckPassword() {
         utente.setPassword("password123");
-        String hash = utente.getPassword();
-        assertEquals(40, hash.length(),
-                "Il progetto usa SHA-1 (vulnerabilità accettata come rischio residuo)");
+
+        assertTrue(utente.checkPassword("password123"),
+                "checkPassword deve restituire true per la password corretta");
+        assertFalse(utente.checkPassword("passwordErrata"),
+                "checkPassword deve restituire false per una password errata");
     }
 
     @Test
@@ -98,9 +106,13 @@ class UtenteTest {
     @Test
     @DisplayName("Il metodo gestisce password con caratteri Unicode (UTF-8)")
     void testPasswordConCaratteriUnicode() {
-        assertDoesNotThrow(() -> utente.setPassword("pàsswòrd€123"),
+        String pwdUnicode = "pàsswòrd€123";
+        assertDoesNotThrow(() -> utente.setPassword(pwdUnicode),
                 "setPassword deve gestire correttamente caratteri UTF-8");
-        assertEquals(40, utente.getPassword().length(),
-                "Anche con caratteri Unicode l'hash SHA-1 ha 40 caratteri");
+
+        assertEquals(60, utente.getPassword().length(),
+                "Anche con caratteri Unicode l'hash BCrypt ha 60 caratteri");
+        assertTrue(utente.checkPassword(pwdUnicode),
+                "checkPassword deve funzionare anche con caratteri Unicode");
     }
 }

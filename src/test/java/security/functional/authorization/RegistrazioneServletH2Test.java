@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
  * Verifica il comportamento runtime della Servlet contro un DB reale:
  * - Registrazione con email nuova: INSERT + forward Login.jsp
  * - Registrazione con email duplicata: forward RegisterUser.jsp
- * - Hashing automatico della password nel bean
+ * - Hashing automatico della password nel bean (BCrypt)
  * - Privilege escalation prevention (amministratore sempre false)
  * - Tutti i campi salvati correttamente
  */
@@ -108,7 +108,7 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
     // ==================================================================
 
     @Test
-    @DisplayName("Password hashata SHA-1 nel DB (grazie al setter del bean)")
+    @DisplayName("Password hashata BCrypt nel DB (grazie al setter del bean)")
     void testPasswordHashata() throws Exception {
         setParametriRegistrazione("mario@test.com", "password123");
         when(request.getRequestDispatcher("/WEB-INF/results/Login.jsp")).thenReturn(dispatcher);
@@ -119,11 +119,11 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
                 "SELECT passwordEmail FROM Cliente WHERE email = 'mario@test.com'");
 
         // La password salvata NON deve essere "password123" in chiaro
-        // e deve essere un hash SHA-1 (40 caratteri esadecimali)
+        // e deve essere un hash BCrypt (60 caratteri, inizia con $2a$)
         assertThat(passwordInDb)
                 .isNotEqualTo("password123")
-                .hasSize(40)
-                .matches("[0-9a-f]{40}");
+                .hasSize(60)
+                .startsWith("$2a$");
     }
 
     // ==================================================================

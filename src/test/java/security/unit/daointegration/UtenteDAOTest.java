@@ -61,25 +61,32 @@ class UtenteDAOTest {
     }
 
     @Test
-    @DisplayName("doLogin usa SHA1(?) nel database (vulnerabilita' documentata, CWE-916)")
-    void testUsoSha1NelLogin() {
-        assertTrue(sourceCode.contains("SHA1(?)"),
-                "Il login usa SHA1(?) nel database: algoritmo insicuro per le password. " +
-                        "Fix suggerito: usare BCrypt o Argon2 anche nel DAO.");
+    @DisplayName("Il DAO non usa piu' SHA1(?) nel login (fix CWE-916)")
+    void testNessunUsoSha1NelLogin() {
+        assertFalse(sourceCode.contains("SHA1(?)"),
+                "Il login NON deve piu' usare SHA1(?). " +
+                        "La verifica della password deve avvenire tramite BCrypt in Java.");
     }
 
     @Test
-    @DisplayName("doLogin cerca corrispondenza su passwordEmail con SHA1")
-    void testDoLoginQuerySha1() {
-        assertTrue(sourceCode.contains("passwordEmail = SHA1(?)"),
-                "La query di login confronta passwordEmail con SHA1 della password inserita");
+    @DisplayName("Il DAO usa BCrypt.checkpw per verificare la password")
+    void testUsoBCryptNelLogin() {
+        assertTrue(sourceCode.contains("BCrypt.checkpw"),
+                "Il DAO deve usare BCrypt.checkpw() per confrontare la password inserita con l'hash salvato.");
     }
 
     @Test
-    @DisplayName("doLogin restituisce null se l'utente non esiste")
+    @DisplayName("doLogin cerca corrispondenza solo sull'email")
+    void testDoLoginQueryEmail() {
+        assertTrue(sourceCode.contains("FROM Cliente WHERE email = ?"),
+                "La query di login deve cercare solo per email e lasciare il controllo della password a BCrypt in Java.");
+    }
+
+    @Test
+    @DisplayName("doLogin restituisce null se l'utente non esiste o la password è errata")
     void testDoLoginRestituisceNullSeNonTrovato() {
         assertTrue(sourceCode.contains("return null;"),
-                "doLogin deve restituire null se l'utente non viene trovato");
+                "doLogin deve restituire null se l'utente non viene trovato o la password non corrisponde");
     }
 
     @Test
@@ -140,7 +147,7 @@ class UtenteDAOTest {
     @Test
     @DisplayName("doLogin e doRetriveUtente espongono la password hashata (documentazione)")
     void testEsposizionePasswordHashata() {
-        int occurrences = countOccurrences(sourceCode, "setPassword(rs.getString(2))");
+        int occurrences = countOccurrences(sourceCode, "setPassword(");
         assertTrue(occurrences >= 2,
                 "Il DAO espone la password hashata sull'oggetto Utente: " +
                         "considerare di non restituirla mai al chiamante");

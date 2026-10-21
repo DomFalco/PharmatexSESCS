@@ -7,9 +7,9 @@ import jakarta.servlet.ServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.ArgumentCaptor;
 import security.functional.BaseServletH2Test;
-import security.functional.TestFunctions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,7 +47,7 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("Login utente normale: imposta 'Utente' in sessione e forwarda a HomePage")
     void testLoginUtenteNormale() throws Exception {
-        executeSql(insertClienteConSha1("mario@test.com", "password123", false));
+        executeSql(insertClienteConBcrypt("mario@test.com", "password123", false));
         when(request.getParameter("Email")).thenReturn("mario@test.com");
         when(request.getParameter("Password")).thenReturn("password123");
         when(request.getParameter("action")).thenReturn(null);
@@ -65,7 +65,7 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("Login admin: imposta 'Amministratore' in sessione e forwarda a HomeServletAmministratore")
     void testLoginAdmin() throws Exception {
-        executeSql(insertClienteConSha1("admin@test.com", "adminpass", true));
+        executeSql(insertClienteConBcrypt("admin@test.com", "adminpass", true));
         when(request.getParameter("Email")).thenReturn("admin@test.com");
         when(request.getParameter("Password")).thenReturn("adminpass");
         when(request.getParameter("action")).thenReturn(null);
@@ -86,7 +86,7 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("Password errata: imposta 'parametri' con messaggio di errore e include Login.jsp")
     void testLoginPasswordErrata() throws Exception {
-        executeSql(insertClienteConSha1("mario@test.com", "password123", false));
+        executeSql(insertClienteConBcrypt("mario@test.com", "password123", false));
         when(request.getParameter("Email")).thenReturn("mario@test.com");
         when(request.getParameter("Password")).thenReturn("wrongpassword");
         when(request.getParameter("action")).thenReturn(null);
@@ -137,7 +137,7 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("SQL Injection su email: il login fallisce, non imposta sessioni")
     void testSqlInjectionEmail() throws Exception {
-        executeSql(insertClienteConSha1("admin@test.com", "adminpass", true));
+        executeSql(insertClienteConBcrypt("admin@test.com", "adminpass", true));
         when(request.getParameter("Email")).thenReturn("admin@test.com' OR '1'='1");
         when(request.getParameter("Password")).thenReturn("qualsiasi");
         when(request.getParameter("action")).thenReturn(null);
@@ -153,7 +153,7 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("SQL Injection su password: il login fallisce, non imposta sessioni")
     void testSqlInjectionPassword() throws Exception {
-        executeSql(insertClienteConSha1("admin@test.com", "adminpass", true));
+        executeSql(insertClienteConBcrypt("admin@test.com", "adminpass", true));
         when(request.getParameter("Email")).thenReturn("admin@test.com");
         when(request.getParameter("Password")).thenReturn("' OR '1'='1");
         when(request.getParameter("action")).thenReturn(null);
@@ -166,11 +166,13 @@ class LoginServletH2Test extends BaseServletH2Test {
     }
 
     // ==================================================================
-    // Helper: INSERT cliente con password SHA1
+    // Helper: INSERT cliente con password BCrypt
     // ==================================================================
 
-    private String insertClienteConSha1(String email, String passwordInChiaro, boolean admin) {
-        String hashed = TestFunctions.sha1(passwordInChiaro);
+    private String insertClienteConBcrypt(String email, String passwordInChiaro, boolean admin) {
+        // Genera l'hash BCrypt usando la libreria
+        String hashed = BCrypt.hashpw(passwordInChiaro, BCrypt.gensalt(12));
+
         return "INSERT INTO Cliente (email, passwordEmail, nome, cognome, "
                 + "dataDiNascita, numeroTelefono, codiceFiscale, via, citta, cap, "
                 + "provincia, nazione, amministratore) VALUES ("

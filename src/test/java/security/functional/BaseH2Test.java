@@ -17,10 +17,9 @@ import java.sql.Statement;
  * Classe base per i test funzionali dei DAO con H2 in-memory.
  * Responsabilita':
  *   1. Attiva il test mode in ConPool (H2 invece di MySQL).
- *   2. Registra l'alias SHA1 in H2 (equivalente alla funzione SHA1() di MySQL).
- *   3. Esegue lo schema schema-h2.sql all'avvio.
- *   4. Pulisce il DB prima di ogni test (TRUNCATE + RESTART IDENTITY).
- *   5. Fornisce il metodo executeSql(...) per popolare i dati di test.
+ *   2. Esegue lo schema schema-h2.sql all'avvio.
+ *   3. Pulisce il DB prima di ogni test (TRUNCATE + RESTART IDENTITY).
+ *   4. Fornisce il metodo executeSql(...) per popolare i dati di test.
  * Le sottoclassi devono solo implementare i test; l'infrastruttura e' qui.
  */
 public abstract class BaseH2Test {
@@ -42,13 +41,7 @@ public abstract class BaseH2Test {
         try (Connection conn = ConPool.getConnection();
              Statement stmt = conn.createStatement()) {
 
-            // 2. Registra l'alias SHA1: ogni chiamata a SHA1(x) in H2 chiamera'
-            //    TestFunctions.sha1(x). Necessario per UtenteDAO.doLogin().
-            stmt.execute(
-                    "CREATE ALIAS IF NOT EXISTS SHA1 FOR \"security.functional.TestFunctions.sha1\""
-            );
-
-            // 3. Esegui lo schema H2
+            // 2. Esegui lo schema H2 (niente piu' alias SHA1 da registrare)
             executeSchemaFile(stmt);
         }
     }
