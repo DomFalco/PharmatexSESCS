@@ -27,7 +27,7 @@ public class FiltraggioServletMateriale extends HttpServlet {
     @SuppressWarnings("java:S1989")
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String mat = request.getParameter("prodotto");
-        String materiale = request.getParameter("materiale");
+        String materiale = request.getParameter(ATTR_MATERIALE); // <-- FIX SONARQUBE QUI
 
         // 1. CONTROLLO NULL (evita crash se i parametri non vengono inviati)
         if (mat == null) mat = "";

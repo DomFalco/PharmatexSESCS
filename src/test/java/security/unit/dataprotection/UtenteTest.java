@@ -56,7 +56,6 @@ class UtenteTest {
         assertNotEquals(u1.getPassword(), u2.getPassword(),
                 "BCrypt usa un salt casuale: password identiche devono produrre hash diversi!");
 
-        // Entrambi devono comunque validare correttamente
         assertTrue(u1.checkPassword("password123"));
         assertTrue(u2.checkPassword("password123"));
     }
@@ -80,8 +79,10 @@ class UtenteTest {
 
         assertEquals(60, utente.getPassword().length(),
                 "Anche una stringa vuota produce un hash BCrypt di 60 caratteri");
-        assertFalse(utente.getPassword().equals("da39a3ee5e6b4b0d3255bfef95601890afd80709"),
+
+        assertNotEquals("da39a3ee5e6b4b0d3255bfef95601890afd80709", utente.getPassword(),
                 "L'hash della stringa vuota NON deve essere quello noto di SHA-1");
+
         assertTrue(utente.checkPassword(""), "La verifica di una password vuota deve funzionare");
     }
 
