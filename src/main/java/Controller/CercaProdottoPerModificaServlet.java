@@ -21,35 +21,53 @@ public class CercaProdottoPerModificaServlet extends HttpServlet {
         try {
             HttpSession session = request.getSession(false);
             if (session == null) {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                try {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                } catch (IOException ex) {
+                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
+                }
                 return;
             }
             Utente admin = (Utente) session.getAttribute("Amministratore");
             if (admin == null || !admin.isAmministratore()) {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                try {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                } catch (IOException ex) {
+                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
+                }
                 return;
             }
 
             String x = request.getParameter("search");
             if (x == null || !x.matches("[a-zA-Z0-9\\s]+")) {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'search' non valido.");
+                try {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'search' non valido.");
+                } catch (IOException ex) {
+                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
+                }
                 return;
             }
 
             Prodotto pmod = ProdottoDAO.doRetriveBySearch(x);
             if (pmod == null) {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_NOT_FOUND, "Prodotto non trovato.");
+                try {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "Prodotto non trovato.");
+                } catch (IOException ex) {
+                    throw new ServletException("Impossibile inviare la risposta di errore", ex);
+                }
                 return;
             }
 
             request.setAttribute("prodottoModifica", pmod);
-
-            // FIX SONARQUBE: Gestione eccezioni sul forward
             RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/ModificaProdotto.jsp");
             ds.forward(request, response);
 
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la visualizzazione del prodotto.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la visualizzazione del prodotto.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 }

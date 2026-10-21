@@ -35,22 +35,26 @@ public class HomeServlet extends HttpServlet {
             else if (request.getParameter("valore").equals("home")) {
                 HttpSession session = request.getSession(false);
                 if (session == null) {
-                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                    try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante."); } catch (IOException ex) { throw new ServletException(ex); }
                     return;
                 }
                 Utente admin = (Utente) session.getAttribute("Amministratore");
                 if (admin == null || !admin.isAmministratore()) {
-                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                    try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti."); } catch (IOException ex) { throw new ServletException(ex); }
                     return;
                 }
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
                 dispatcher.forward(request, response);
             }
             else {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
+                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta."); } catch (IOException ex) { throw new ServletException(ex); }
             }
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione della richiesta.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione della richiesta.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 

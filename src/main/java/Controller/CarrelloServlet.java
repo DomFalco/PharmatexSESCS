@@ -16,7 +16,6 @@ import java.util.ArrayList;
 @WebServlet("/CarrelloServlet")
 public class CarrelloServlet extends HttpServlet {
 
-    // ===== Costanti =====
     private static final String CART_LIST = "cart-list";
     private static final String QUANTITA_ARTICOLI = "quantitaArticoli";
     private static final String QUANTITA = "quantita";
@@ -52,7 +51,6 @@ public class CarrelloServlet extends HttpServlet {
                     cartList = new ArrayList<>();
                     qList = new ArrayList<>();
                     cartList.add(p);
-                    // FIX SONARQUBE: parsing protetto
                     qList.add(Integer.valueOf(request.getParameter(QUANTITA)));
                     salvaCarrello(session, cartList, qList);
                 } else {
@@ -72,16 +70,21 @@ public class CarrelloServlet extends HttpServlet {
                 forward(request, response, LOGIN_JSP);
             }
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "La quantità deve essere un numero valido.");
+            try {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "La quantità deve essere un numero valido.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del carrello.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del carrello.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 
-    private void aggiornaQuantitaEsistente(HttpServletRequest request,
-                                           ArrayList<Prodotto> cartList,
-                                           ArrayList<Integer> qList,
-                                           String id) {
+    private void aggiornaQuantitaEsistente(HttpServletRequest request, ArrayList<Prodotto> cartList, ArrayList<Integer> qList, String id) {
         Prodotto p = (Prodotto) request.getSession().getAttribute(PROD);
         String quantitaParam = request.getParameter(QUANTITA);
         boolean esiste = false;
@@ -101,8 +104,7 @@ public class CarrelloServlet extends HttpServlet {
         }
     }
 
-    private void rimuoviProdotto(HttpServletRequest request, HttpSession session,
-                                 ArrayList<Prodotto> cartList, ArrayList<Integer> qList) {
+    private void rimuoviProdotto(HttpServletRequest request, HttpSession session, ArrayList<Prodotto> cartList, ArrayList<Integer> qList) {
         String[] parti = request.getParameter(ACTION).split(RIMUOVI);
         String idDaRimuovere = parti[1];
 
@@ -120,8 +122,7 @@ public class CarrelloServlet extends HttpServlet {
         session.setAttribute(QUANTITA_ARTICOLI, qList);
     }
 
-    private void forward(HttpServletRequest request, HttpServletResponse response, String path)
-            throws ServletException, IOException {
+    private void forward(HttpServletRequest request, HttpServletResponse response, String path) throws ServletException, IOException {
         RequestDispatcher dispatcher = request.getRequestDispatcher(path);
         dispatcher.forward(request, response);
     }

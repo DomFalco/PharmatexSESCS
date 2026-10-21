@@ -20,18 +20,18 @@ public class RendiAmministratoreServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+            try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante."); } catch (IOException ex) { throw new ServletException(ex); }
             return;
         }
         Utente admin = (Utente) session.getAttribute("Amministratore");
         if (admin == null || !admin.isAmministratore()) {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+            try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti."); } catch (IOException ex) { throw new ServletException(ex); }
             return;
         }
 
         String action = request.getParameter("action");
         if (action == null) {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' mancante.");
+            try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' mancante."); } catch (IOException ex) { throw new ServletException(ex); }
             return;
         }
 
@@ -39,7 +39,7 @@ public class RendiAmministratoreServlet extends HttpServlet {
             if (action.startsWith("amministratore")) {
                 String val = action.substring("amministratore".length());
                 if (val.isEmpty()) {
-                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
+                    try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante."); } catch (IOException ex) { throw new ServletException(ex); }
                     return;
                 }
                 UtenteDAO.rendiAmministratore(val);
@@ -51,7 +51,7 @@ public class RendiAmministratoreServlet extends HttpServlet {
             else if (action.startsWith("rimuovipermessi")) {
                 String val = action.substring("rimuovipermessi".length());
                 if (val.isEmpty()) {
-                    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante.");
+                    try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email utente mancante."); } catch (IOException ex) { throw new ServletException(ex); }
                     return;
                 }
                 UtenteDAO.rimuoviAmministratore(val);
@@ -61,10 +61,14 @@ public class RendiAmministratoreServlet extends HttpServlet {
                 dispatcher.forward(request, response);
             }
             else {
-                ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
+                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta."); } catch (IOException ex) { throw new ServletException(ex); }
             }
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'aggiornamento dei permessi.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'aggiornamento dei permessi.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 }

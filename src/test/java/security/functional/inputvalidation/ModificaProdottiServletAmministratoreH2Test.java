@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import security.functional.BaseServletH2Test;
 
 import java.sql.Connection;
@@ -20,9 +22,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-/**
- * Test funzionali di ModificaProdottiServletAmministratore con H2 in-memory.
- */
 @DisplayName("Functional - ModificaProdottiServletAmministratore (Input Validation)")
 class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
 
@@ -106,53 +105,23 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         verify(response, never()).sendError(eq(403), anyString());
     }
 
-    @Test
-    @DisplayName("FIX CWE-476: nuovoPrezzo null -> Bad Request 400")
-    void testNuovoPrezzoNull() throws Exception {
-        when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
-        when(request.getParameter("nuovoPrezzo")).thenReturn(null);
-        when(request.getParameter("quantitaTotale")).thenReturn("3");
-        ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
+    @ParameterizedTest(name = "Parametri non validi: id={0}, prezzo={1}, quantita={2} -> 400 Bad Request")
+    @CsvSource({
+            "null, 350.0, 3",     // prodotto null
+            "P0001, null, 3",     // prezzo null
+            "P0001, abc, 3"       // prezzo non numerico
+    })
+    @DisplayName("Parametri non validi rispondono con 400 Bad Request")
+    void testParametriInvalidi(String idProdotto, String prezzo, String quantita) throws Exception {
+        if ("null".equals(idProdotto)) {
+            when(session.getAttribute("idModificaPrezzo")).thenReturn(null);
+        } else {
+            when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione(idProdotto, 5));
+        }
 
-        invokeService(servlet);
+        when(request.getParameter("nuovoPrezzo")).thenReturn("null".equals(prezzo) ? null : prezzo);
+        when(request.getParameter("quantitaTotale")).thenReturn(quantita);
 
-        // FIX: La servlet ora cattura l'eccezione e risponde 400
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("FIX CWE-476: idModificaPrezzo null -> Bad Request 400")
-    void testIdModificaPrezzoNull() throws Exception {
-        when(session.getAttribute("idModificaPrezzo")).thenReturn(null);
-        when(request.getParameter("nuovoPrezzo")).thenReturn("350.0");
-        when(request.getParameter("quantitaTotale")).thenReturn("3");
-        ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
-
-        invokeService(servlet);
-
-        // FIX: La servlet ora cattura l'eccezione e risponde 400
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("nuovoPrezzo non numerico -> Bad Request 400")
-    void testNuovoPrezzoNonNumerico() throws Exception {
-        when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
-        when(request.getParameter("nuovoPrezzo")).thenReturn("abc");
-        when(request.getParameter("quantitaTotale")).thenReturn("3");
-        ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
-
-        invokeService(servlet);
-
-        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
-    }
-
-    @Test
-    @DisplayName("quantitaTotale non numerica -> Bad Request 400")
-    void testQuantitaTotaleNonNumerica() throws Exception {
-        when(session.getAttribute("idModificaPrezzo")).thenReturn(prodottoInSessione("P0001", 5));
-        when(request.getParameter("nuovoPrezzo")).thenReturn("");
-        when(request.getParameter("quantitaTotale")).thenReturn("dieci");
         ModificaProdottiServletAmministratore servlet = new ModificaProdottiServletAmministratore();
 
         invokeService(servlet);
@@ -169,7 +138,6 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
 
         invokeService(new ModificaProdottiServletAmministratore());
 
-        // FIX: Non c'è più il silent drop, ora la Servlet blocca l'esecuzione
         verify(dispatcher, never()).forward(any(), any());
         verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
     }
@@ -190,14 +158,9 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
         verify(dispatcher).forward(request, response);
     }
 
-    // ==================================================================
-    // Helper
-    // ==================================================================
-
     private double getPrezzo(String id) throws Exception {
         try (Connection conn = ConPool.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                     "SELECT prezzo FROM Prodotto WHERE idProdotto = ?")) {
+             PreparedStatement ps = conn.prepareStatement("SELECT prezzo FROM Prodotto WHERE idProdotto = ?")) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 rs.next();
@@ -208,8 +171,7 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
 
     private int getQuantita(String id) throws Exception {
         try (Connection conn = ConPool.getConnection();
-             PreparedStatement ps = conn.prepareStatement(
-                     "SELECT quantita FROM Prodotto WHERE idProdotto = ?")) {
+             PreparedStatement ps = conn.prepareStatement("SELECT quantita FROM Prodotto WHERE idProdotto = ?")) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 rs.next();
@@ -219,8 +181,7 @@ class ModificaProdottiServletAmministratoreH2Test extends BaseServletH2Test {
     }
 
     private String insertProdotto(String id, String nome, double prezzo, int quantita) {
-        return "INSERT INTO Prodotto (idProdotto, nomeCategoria, nomeProd, descrizione, "
-                + "prezzo, quantita) VALUES ('"
+        return "INSERT INTO Prodotto (idProdotto, nomeCategoria, nomeProd, descrizione, prezzo, quantita) VALUES ('"
                 + id + "', 'Test', '" + nome + "', 'Desc', " + prezzo + ", " + quantita + ")";
     }
 }

@@ -56,7 +56,11 @@ public class MaterialeServlet extends HttpServlet {
             ds.forward(request, response);
 
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento dei materiali.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante il caricamento dei materiali.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 

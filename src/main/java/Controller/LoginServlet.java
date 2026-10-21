@@ -15,7 +15,6 @@ import java.util.ArrayList;
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 
-    // ===== Costanti =====
     private static final String PARAM_ACTION = "action";
     private static final String PARAM_EMAIL = "Email";
     private static final String PARAM_PASSWORD = "Password";
@@ -38,18 +37,14 @@ public class LoginServlet extends HttpServlet {
     private static final String HOME_SERVLET_AMMINISTRATORE = "HomeServletAmministratore";
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             HttpSession session = request.getSession();
-            Utente u = UtenteDAO.doLogin(
-                    request.getParameter(PARAM_EMAIL),
-                    request.getParameter(PARAM_PASSWORD));
+            Utente u = UtenteDAO.doLogin(request.getParameter(PARAM_EMAIL), request.getParameter(PARAM_PASSWORD));
 
             String action = request.getParameter(PARAM_ACTION);
 
             if (action == null) {
-                // Login: nessuna action specificata
                 if (u == null) {
                     request.setAttribute(PARAM_PARAMETRI, MSG_CREDENZIALI_ERRATE);
                     RequestDispatcher rs = request.getRequestDispatcher(LOGIN_JSP);
@@ -72,14 +67,17 @@ public class LoginServlet extends HttpServlet {
                 dispatcher.forward(request, response);
             } else if (action.equals(ACTION_RIEPILOGO)) {
                 Utente utente = (Utente) session.getAttribute(ATTR_UTENTE);
-                ArrayList<AcquistoProdotti> riepilogoProdotti =
-                        AcquistoProdottiDAO.doRetriveAcquistoUtente(utente.getEmail());
+                ArrayList<AcquistoProdotti> riepilogoProdotti = AcquistoProdottiDAO.doRetriveAcquistoUtente(utente.getEmail());
                 request.setAttribute(ATTR_RIEPILOGO_ORDINE_UTENTE, riepilogoProdotti);
                 RequestDispatcher dispatcher = request.getRequestDispatcher(RIEPILOGO_ACQUISTI_JSP);
                 dispatcher.forward(request, response);
             }
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del login.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del login.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 

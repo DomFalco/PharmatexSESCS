@@ -24,19 +24,19 @@ public class DatiPagamentoServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+            try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante."); } catch (IOException ex) { throw new ServletException(ex); }
             return;
         }
         Utente u = (Utente) session.getAttribute("Utente");
         if (u == null) {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato.");
+            try { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato."); } catch (IOException ex) { throw new ServletException(ex); }
             return;
         }
 
         ArrayList<Prodotto> cart_list = (ArrayList<Prodotto>) session.getAttribute("cart-list");
         ArrayList<Integer> qList = (ArrayList<Integer>) session.getAttribute("quantitaArticoli");
         if (cart_list == null || qList == null || cart_list.isEmpty() || qList.isEmpty()) {
-            ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
+            try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto."); } catch (IOException ex) { throw new ServletException(ex); }
             return;
         }
 
@@ -65,7 +65,11 @@ public class DatiPagamentoServlet extends HttpServlet {
             dispatcher.forward(request, response);
 
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro dopo il pagamento.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'inoltro dopo il pagamento.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 }

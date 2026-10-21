@@ -32,18 +32,16 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
             HttpSession sessione = request.getSession();
             Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);
 
-            // FIX: Blocca l'esecuzione se il prodotto non è in sessione
             if (p == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato.");
+                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Nessun prodotto selezionato."); } catch (IOException ex) { throw new ServletException(ex); }
                 return;
             }
 
             String nuovoPrezzo = request.getParameter(PARAM_NUOVO_PREZZO);
             String quantitaTotale = request.getParameter(PARAM_QUANTITA_TOTALE);
 
-            // FIX: Blocca l'esecuzione se i parametri sono null
             if (nuovoPrezzo == null || quantitaTotale == null) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti.");
+                try { response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parametri mancanti."); } catch (IOException ex) { throw new ServletException(ex); }
                 return;
             }
 
@@ -65,14 +63,21 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
                 forward(request, response);
             }
         } catch (NumberFormatException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
+            try {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         } catch (ServletException | IOException e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");
+            } catch (IOException ex) {
+                throw new ServletException("Impossibile inviare la risposta di errore", ex);
+            }
         }
     }
 
-    private void forward(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    private void forward(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RequestDispatcher ds = request.getRequestDispatcher(HOME_SERVLET_AMMINISTRATORE);
         ds.forward(request, response);
     }
