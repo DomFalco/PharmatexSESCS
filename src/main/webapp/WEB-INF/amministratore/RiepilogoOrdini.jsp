@@ -3,12 +3,12 @@
 <%@ page import="Model.AcquistoProdotti" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/ParteHTML/navBarAmministratore.jsp" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <title>Riepilogo ordini</title>
     <%
         ArrayList<AcquistoProdotti> riepilogoProdotti = (ArrayList<AcquistoProdotti>) request.getAttribute("riepilogoProdotti");
-
     %>
     <link rel="stylesheet" type="text/css" href="ParteCSS/CategorieProdotti.css">
     <style>
@@ -24,8 +24,7 @@
     </style>
 </head>
 <body>
-<% if(riepilogoProdotti.size()<=0)
-{ %>
+<% if(riepilogoProdotti.size()<=0) { %>
 <h1>Nessuna spedizione in programma</h1>
 <%}
     for (int i =0;i<riepilogoProdotti.size();i++) {
@@ -39,7 +38,7 @@
 <div class="box-container">
     <div class="box">
         <div class="image">
-            <img src="<%=directory%>">
+            <img src="<%=directory%>" alt="Immagine ordine">
         </div>
         <div class="info">
             <p>Nome Prodotto: <%=riepilogoProdotti.get(i).getNomeProd()%></p>

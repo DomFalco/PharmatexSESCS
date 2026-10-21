@@ -2,7 +2,8 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/ParteHTML/navBarAmministratore.jsp" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <title>Prodotti esauriti</title>
     <%
@@ -27,7 +28,7 @@
     <div class="box">
         <div class="image">
             <a href="CercaProdottoPerModificaServlet?search=<%=prodEsauriti.get(i).getNomeProd()%>">
-                <img src="<%=directory%>">
+                <img src="<%=directory%>" alt="Immagine prodotto">
             </a>
         </div>
         <div class="info">

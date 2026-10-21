@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <title>Aggiunta nuovo prodotto</title>
     <link rel="stylesheet" type="text/css" href="ParteCSS/AggiuntaProdotto.css">
@@ -77,7 +78,6 @@
                 return false;
             }
 
-
             if(rivestimentoDivanoRGX.test(rivestimentoDivano)==false){
                 alert("Errore nella definizione del rivestimento del divano");
                 return false;
@@ -98,7 +98,6 @@
             }
 
             return true;
-
         }
     </script>
     <style>
@@ -122,12 +121,13 @@
 <form method="post" action="AggiuntaProdottoServlet">
     <table>
         <tr>
-            <th class="inserimento1">
-                <label>Per i prodotti la prima lettera rappresenta la categoria e la seconda il tipo: MM000 Materasso Matrimoniale</label><br>
+            <th class="inserimento1" scope="col">
+                <p>Per i prodotti la prima lettera rappresenta la categoria e la seconda il tipo: MM000 Materasso Matrimoniale</p>
                 <label for="idProdotto">Inserisci l'id del prodotto:</label>
                 <input type="text" name="idProdotto" id="idProdotto" required> <br>
-                <label>Scegli la categoria del prodotto:</label>
-                <select name="nomeCategoria">
+
+                <label for="nomeCategoria">Scegli la categoria del prodotto:</label>
+                <select name="nomeCategoria" id="nomeCategoria">
                     <option id="MaterassoMatrimoniale"> MaterassoMatrimoniale </option>
                     <option id="MaterassoSingolo"> MaterassoSingolo </option>
                     <option id="MaterassoPiazzaEMezzo"> MaterassoPiazzaEMezzo </option>
@@ -149,7 +149,7 @@
                 <label for="nomeProdotto">Inserisci il nome del prodotto</label>
                 <input type="text" name="nomeProdotto" id="nomeProdotto" required><br>
                 <label for="descrizione">Inserisci la descrizione del prodotto:</label>
-                <textarea type="text" name="descrizione" id="descrizione" rows="4" cols="80"></textarea><br>
+                <textarea name="descrizione" id="descrizione" rows="4" cols="80"></textarea><br>
                 <label for="larghezza">Inserisci la larghezza</label>
                 <input type="text" name="larghezza" id="larghezza"><br>
                 <label for="lunghezza">Inserisci la lunghezza</label>
@@ -159,8 +159,8 @@
                 <label for="quantita">Inserisci la quantità</label>
                 <input type="text" name="quantita" id="quantita"><br>
             </th>
-            <th class="inserimento">
-                <label>Inserire i parametri solo per i prodotti di appartenenza:</label><br>
+            <th class="inserimento" scope="col">
+                <p>Inserire i parametri solo per i prodotti di appartenenza:</p>
                 <label for="tipoMaterialeMaterasso">Inserire il tipo di materiale del materasso</label>
                 <input type="text" name="tipoMaterialeMaterasso" id="tipoMaterialeMaterasso"><br>
                 <label for="coloreLetto">Inserire il colore del letto</label>

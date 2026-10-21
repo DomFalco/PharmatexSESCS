@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="Model.Prodotto" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <link rel="stylesheet" type="text/css" href="ParteCSS/paginaProdotto.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/navBarAmministratore.css">
@@ -16,11 +16,9 @@
             directory = "immagini/fotoNonDisponibile.jpg";
         }
     %>
-    <title><%=prodottoModifica.getNomeProd()%>
-    </title>
+    <title><%=prodottoModifica.getNomeProd()%></title>
 
     <script>
-
         function validatePQ(){
             var quantita=document.getElementById("quantitaTotale").value;
             var prezzo=document.getElementById("nuovoPrezzo").value;
@@ -55,7 +53,6 @@
             }
             return true;
         }
-
     </script>
     <style>
         @media screen and (max-width: 1100px) {
@@ -102,47 +99,47 @@
                 top: 70%;
             }
         }
-
     </style>
 </head>
 <body>
 <div class="box-container">
     <div class="box">
         <div class="image">
-            <img style="border-style: solid;border-width: 2px;" src="<%=directory%>">
+            <img style="border-style: solid;border-width: 2px;" src="<%=directory%>" alt="Immagine prodotto">
         </div>
         <p><b>Quantità disponibile:<%=prodottoModifica.getQuantita()%></b></p>
         <p><b>Prezzo Attuale: <%=prodottoModifica.getPrezzo()%>€</b></p>
-    <table style="position: fixed; left: 7%; top: 70%; width: auto;" id="tabella">
-        <tr>
-            <th>
-                <% HttpSession sessionPrezzo= request.getSession();
-                    sessionPrezzo.setAttribute("idModificaPrezzo",prodottoModifica);
-                %>
-                <h1>Modello:<%=prodottoModifica.getNomeProd()%></h1>
-            </th>
-        </tr>
-        <th>
-            <form action="ModificaProdottiServletAmministratore">
-                <label>Inserisci nuovo prezzo:</label>
-                <input type="text" id="nuovoPrezzo" name="nuovoPrezzo">
-                <label>Inserisci la quantità:</label>
-                <input type="text" id="quantitaTotale" name="quantitaTotale">
-                <button type="submit" onclick="return(validatePQ())" class="cart">Premi</button>
-            </form>
+        <table style="position: fixed; left: 7%; top: 70%; width: auto;" id="tabella">
             <tr>
-                <th>
-                    <label></label>
+                <th scope="col">
+                    <% HttpSession sessionPrezzo= request.getSession();
+                        sessionPrezzo.setAttribute("idModificaPrezzo",prodottoModifica);
+                    %>
+                    <h1>Modello:<%=prodottoModifica.getNomeProd()%></h1>
+                </th>
+            </tr>
+            <tr>
+                <th scope="col">
+                    <form action="ModificaProdottiServletAmministratore">
+                        <label for="nuovoPrezzo">Inserisci nuovo prezzo:</label>
+                        <input type="text" id="nuovoPrezzo" name="nuovoPrezzo">
+                        <label for="quantitaTotale">Inserisci la quantità:</label>
+                        <input type="text" id="quantitaTotale" name="quantitaTotale">
+                        <button type="submit" onclick="return(validatePQ())" class="cart">Premi</button>
+                    </form>
+                </th>
+            </tr>
+            <tr>
+                <th scope="col">
                     <button class="cart" onclick="window.location.href='RimuoviProdottoServlet'"><i class="fa fa-trash-o"></i></button>
                 </th>
             </tr>
-        </th>
-        <tr>
-            <td>
-                <button class="cart" onclick="window.location.href='HomeServletAmministratore'"><i class="fa fa-home"></i></button>
-            </td>
-        </tr>
-    </table>
+            <tr>
+                <td>
+                    <button class="cart" onclick="window.location.href='HomeServletAmministratore'"><i class="fa fa-home"></i></button>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
 </body>

@@ -1,6 +1,7 @@
 <%@ page import="Model.Prodotto" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <link rel="stylesheet" type="text/css" href="ParteCSS/paginaProdotto.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/styleSito.css">
@@ -29,7 +30,7 @@
             margin-left: 40%;
             margin-right: 50%;
             float: left;
-            border: 0px;
+            /* Rimosso border: 0px; duplicato */
         }
     </style>
 </head>
@@ -38,7 +39,7 @@
 <div class="box-container" >
     <div class="box">
         <div class="image">
-            <img src="<%=directory%>">
+            <img src="<%=directory%>" alt="Immagine prodotto">
         </div>
         <div class="info">
             <p><%= p.getDescrizione() %>
@@ -75,32 +76,36 @@
     </div>
     <table>
         <tr>
-            <th>
+            <th scope="col">
                 <h1>Modello:<%=p.getNomeProd()%>
                 </h1>
                 <h2><%=String.format(java.util.Locale.ITALY, "%.2f", p.getPrezzo())%>€</h2>
             </th>
         </tr>
         <% if (p.getQuantita() == 0) {%>
-        <th>
-            <p style="color: red">Prodotto non disponibile</p>
-        </th>
+        <tr>
+            <th scope="col">
+                <p style="color: red">Prodotto non disponibile</p>
+            </th>
+        </tr>
         <%} else {%>
-        <th>
-            <form action="CarrelloServlet">
-                <label>Seleziona quantità:</label>
-                <select name="quantita" id="quantita">
-                    <% for(int i=1;i<=p.getQuantita();i++)
-                    {
-                        if(p.getQuantita()!=0)
-                        {%>
-                    <option value="<%=i%>"><%=i%></option>
-                    <%}%>
-                    <%}%>
-                </select>
-                <button class="cart" type="submit"><i class="fa fa-shopping-cart"></i></button>
-            </form>
-        </th>
+        <tr>
+            <th scope="col">
+                <form action="CarrelloServlet">
+                    <label for="quantita">Seleziona quantità:</label>
+                    <select name="quantita" id="quantita">
+                        <% for(int i=1;i<=p.getQuantita();i++)
+                        {
+                            if(p.getQuantita()!=0)
+                            {%>
+                        <option value="<%=i%>"><%=i%></option>
+                        <%}%>
+                        <%}%>
+                    </select>
+                    <button class="cart" type="submit"><i class="fa fa-shopping-cart"></i></button>
+                </form>
+            </th>
+        </tr>
         <%}%>
         <tr>
             <td>

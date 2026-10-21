@@ -35,7 +35,6 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 100%;
     color: #333;
-    font-family: sans-serif;
     background-image: linear-gradient(to right, rgba(255, 255, 255, 0.7) 0 100%), url('../immagini/Pagamento.jpg');
     background-size: cover;
 }

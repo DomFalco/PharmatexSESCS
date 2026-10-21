@@ -3,7 +3,8 @@
 <%@ page import="Model.AcquistoProdotti" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/ParteHTML/navBar.jsp" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <title>Riepilogo ordini</title>
     <%
@@ -23,8 +24,7 @@
     </style>
 </head>
 <body>
-<% if(riepilogoProdotti!=null && riepilogoProdotti.size()>0)
-{
+<% if(riepilogoProdotti!=null && riepilogoProdotti.size()>0) {
     for (int i =0;i<riepilogoProdotti.size();i++) {
         String val = riepilogoProdotti.get(i).getIdProdotto().substring(3);
         int x = Integer.parseInt(val);
@@ -36,7 +36,7 @@
 <div class="box-container">
     <div class="box">
         <div class="image">
-            <img src="<%=directory%>">
+            <img src="<%=directory%>" alt="Immagine prodotto">
         </div>
         <div class="info">
             <p>Nome Prodotto: <%=riepilogoProdotti.get(i).getNomeProd()%></p>
@@ -49,9 +49,8 @@
         </div>
     </div>
 </div>
-<%}
-}
-else { %>
+<%  }
+} else { %>
 <h1>Effettua degli ordini per visualizzarli</h1>
 <% } %>
 </body>

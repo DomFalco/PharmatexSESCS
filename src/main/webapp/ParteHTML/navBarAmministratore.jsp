@@ -1,8 +1,9 @@
 <%@ page import="Model.Utente" %>
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pharmatex - Area Amministratore</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/CategorieProdotti.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/navBarAmministratore.css">
@@ -18,42 +19,22 @@
     </script>
     <style>
         @media screen and (max-width: 1100px) {
-            .topnav a:not(:first-child), .dropdown .dropbtn {
-                display: none;
-            }
-            .topnav a.icon {
-                float: right;
-                display: block;
-            }
-            .topnav .search-container{
-                float: left;
-            }
+            .topnav a:not(:first-child), .dropdown .dropbtn { display: none; }
+            .topnav a.icon { float: right; display: block; }
+            .topnav .search-container{ float: left; }
         }
-
         @media screen and (max-width: 1100px) {
             .topnav.responsive {position: relative;}
-            .topnav.responsive .icon {
-                position: absolute;
-                right: 0;
-                top: 0;
-            }
-            .topnav.responsive a {
-                float: none;
-                display: block;
-                text-align: left;
-            }
+            .topnav.responsive .icon { position: absolute; right: 0; top: 0; }
+            .topnav.responsive a { float: none; display: block; text-align: left; }
             .topnav.responsive .dropdown {float: none;}
             .topnav.responsive .dropdown-content {position: relative;}
-            .topnav.responsive .dropdown .dropbtn {
-                display: block;
-                width: 100%;
-                text-align: left;
-            }
+            .topnav.responsive .dropdown .dropbtn { display: block; width: 100%; text-align: left; }
         }
     </style>
 </head>
 <body>
-<img src="immagini/logosito.png" class="sfondo">
+<img src="immagini/logosito.png" class="sfondo" alt="Logo Pharmatex">
 <div class="topnav" id="myTopnav">
     <a href="HomeServletAmministratore" class="active"><i class="fa fa-home"></i></a>
     <div class="dropdown">
@@ -67,7 +48,6 @@
             <a href="InizioServlet?valore=LettoContenitore">Letto contenitore</a>
         </div>
     </div>
-
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?valore=Materasso'">Materasso
             <i class="fa fa-caret-down"></i>
@@ -78,7 +58,6 @@
             <a href="InizioServlet?valore=MaterassoPiazzaEMezzo">Materasso piazza e mezzo</a>
         </div>
     </div>
-
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?valore=Rete'">Rete
             <i class="fa fa-caret-down"></i>
@@ -89,7 +68,6 @@
             <a href="InizioServlet?valore=RetePiazzaEMezzo">Rete piazza e mezzo</a>
         </div>
     </div>
-
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?valore=Divano'">Divano
             <i class="fa fa-caret-down"></i>
@@ -101,7 +79,6 @@
             <a href="InizioServlet?valore=DivanoPoltrona">Poltrona</a>
         </div>
     </div>
-
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?valore=Cuscino'">Cuscino
             <i class="fa fa-caret-down"></i>

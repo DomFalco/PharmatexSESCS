@@ -1,9 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <link rel="stylesheet" type="text/css" href="ParteCSS/styleSito.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/Registrazione.css">
-    <title>Registrazione</title>
+    <title>Registrazione Utente</title>
     <% String x=" ";
         if(request.getAttribute("controllo")!=null)
         {
@@ -64,7 +65,6 @@
                 return false;
             }
 
-
             var codiceFiscale=document.getElementById('codiceFiscale').value;
             var codiceFiscaleRGX=/^[A-Z0-9]*$/;
             if((codiceFiscaleRGX.test(codiceFiscale))==false){
@@ -110,21 +110,20 @@
             var nazioneRGX=/^[A-Za-z]*$/;
             if((nazioneRGX.test(nazione ))==false)
             {
-                alert("Nome nazione errato!Peppe Napolitano ricchione!");
+                alert("Nome nazione errato!"); // <--- Modificato qui
                 return false;
             }
 
             return true;
         }
-
     </script>
 </head>
 <body>
-<img src="immagini/logosito.png" class="sfondo">
+<img src="immagini/logosito.png" class="sfondo" alt="Logo Pharmatex">
 <form method="post" action="RegistrazioneServlet">
     <table>
         <tr>
-            <th>
+            <th scope="col">
                 <label for="nome">Inserisci il nome</label><br>
                 <input type="text" placeholder="Mario" name="nome" id="nome" required><br>
                 <label for="cognome">Inserisci il cognome</label><br>
@@ -139,7 +138,7 @@
                 <label for="passwordEmail">Inserisci la password</label><br>
                 <input type="password" placeholder="Esempio2!" name="passwordEmail" id="passwordEmail" required ><br>
             </th>
-            <th>
+            <th scope="col">
                 <label for="numeroTelefono">Inserisci il numero di cellulare</label><br>
                 <input type="tel"  id="numeroTelefono" name="numeroTelefono" required><br>
                 <label for="via">Inserisci la via</label><br>
@@ -160,8 +159,5 @@
     <p style="color: red; text-align: center"><%=x%></p>
 </form>
 <br>
-
 </body>
 </html>
-
-

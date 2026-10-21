@@ -3,7 +3,8 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ include file="/ParteHTML/navBar.jsp" %>
 <%@ include file="/ParteHTML/Filter.html" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/ParteCSS/CategorieProdotti.css">
     <title><c:out value="<%=JspHelper.estraiTitolo(request)%>"/></title>

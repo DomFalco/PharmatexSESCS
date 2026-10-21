@@ -2,7 +2,8 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ include file="/ParteHTML/navBarAmministratore.jsp" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <%
         ArrayList<Prodotto> tuttiProdotti = (ArrayList<Prodotto>) request.getAttribute("CategorieProdotti");
@@ -24,20 +25,17 @@
     <div class="box">
         <div class="image">
             <a href="CercaProdottoPerModificaServlet?search=<%=tuttiProdotti.get(i).getNomeProd()%>">
-                <img src="<%=directory%>">
+                <img src="<%=directory%>" alt="Immagine prodotto">
             </a>
         </div>
         <div class="info">
             <p><%=tuttiProdotti.get(i).getNomeProd()%></p>
             <p>Prezzo:<%=String.format(java.util.Locale.ITALY, "%.2f", tuttiProdotti.get(i).getPrezzo())%>€</p>
-            <% if(tuttiProdotti.get(i).getQuantita()!=0)
-            {%>
+            <% if(tuttiProdotti.get(i).getQuantita()!=0) { %>
             <p>In magazzino:<%=tuttiProdotti.get(i).getQuantita()%></p>
-            <%}
-            else
-            {%>
+            <% } else { %>
             <p style="color: red">Prodotto Esaurito</p>
-            <%}%>
+            <% } %>
         </div>
     </div>
 </div>

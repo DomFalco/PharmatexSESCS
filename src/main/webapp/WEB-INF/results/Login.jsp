@@ -1,23 +1,24 @@
 <%@ page import="Model.Prodotto" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<html>
+<!DOCTYPE html>
+<html lang="it">
 <head>
     <link rel="stylesheet" type="text/css" href="ParteCSS/styleSito.css">
     <link rel="stylesheet" type="text/css" href="ParteCSS/Login.css">
-    <title>Utente</title>
+    <title>Login Utente</title>
     <% String x=" ";
-    if(request.getAttribute("parametri")!=null)
-    {
-        x="Email o password errati!";
-    }%>
+        if(request.getAttribute("parametri")!=null)
+        {
+            x="Email o password errati!";
+        }%>
 </head>
-<img src="immagini/logosito.png" class="sfondo">
 <body>
+<img src="immagini/logosito.png" class="sfondo" alt="Logo Pharmatex">
 
 <table>
     <form action="LoginServlet" method="post">
         <tr>
-            <th>
+            <th scope="col">
                 <label for="email">Inserisci l'email</label><br>
                 <input type="email" placeholder="Inserisci l'email" name="Email" id="email" required><br>
                 <label for="password"><b>Inserisci la password</b></label><br>
@@ -28,9 +29,11 @@
             </th>
         </tr>
     </form>
-    <th>
-        <button type="submit" class="cart"><a style="text-decoration: none; color: white; text-underline: none" href="Registrazione">Registrati</a></button>
-    </th>
+    <tr>
+        <th scope="col">
+            <button type="submit" class="cart"><a style="text-decoration: none; color: white; text-underline: none" href="Registrazione">Registrati</a></button>
+        </th>
+    </tr>
 </table>
 
 <script>
@@ -59,8 +62,5 @@
         return true;
     }
 </script>
-
-
-
 </body>
 </html>
