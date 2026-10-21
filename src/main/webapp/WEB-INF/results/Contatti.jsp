@@ -49,10 +49,11 @@
         <th scope="col" style="font-size: 2vw">Orario:</th>
     </tr>
     <tr>
-        <th><p id="1">Via casa dell'acqua n.20 <br> 80013 Casalnuovo di Napoli (NA) <br> loc. Tavernanova</p></th>
-        <th><p id="2">Cellulare:3477386676<br>Fisso:0813184751</p></th>
-        <th><p id="3">pharmatex.materassi@libero.it</p></th>
-        <th><p id="4">Lun - Ven 09:30 - 18:00 <br> Sabato 09:00 - 13:00 <br> Domenica chiuso</p></th>
+        <!-- FIX SONARQUBE: I dati non devono usare <th>, ma <td> -->
+        <td><p id="1">Via casa dell'acqua n.20 <br> 80013 Casalnuovo di Napoli (NA) <br> loc. Tavernanova</p></td>
+        <td><p id="2">Cellulare:3477386676<br>Fisso:0813184751</p></td>
+        <td><p id="3">pharmatex.materassi@libero.it</p></td>
+        <td><p id="4">Lun - Ven 09:30 - 18:00 <br> Sabato 09:00 - 13:00 <br> Domenica chiuso</p></td>
         <td><button id="chiSiamo" class="cart">Chi siamo</button></td>
         <td><button class="cart" onclick="window.location.href='HomePage'">HomePage</button></td>
     </tr>
