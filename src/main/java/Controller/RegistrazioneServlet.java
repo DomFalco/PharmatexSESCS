@@ -10,9 +10,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/RegistrazioneServlet")
 public class RegistrazioneServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(RegistrazioneServlet.class.getName());
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -45,11 +50,11 @@ public class RegistrazioneServlet extends HttpServlet {
         }
     }
 
-    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) {
         try {
             response.sendError(status, messaggio);
         } catch (IOException e) {
-            throw new ServletException("Impossibile inviare la risposta di errore", e);
+            LOGGER.log(Level.SEVERE, "Impossibile inviare la risposta di errore", e);
         }
     }
 }

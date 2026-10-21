@@ -8,12 +8,15 @@ import jakarta.servlet.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/MaterialeServlet")
 public class MaterialeServlet extends HttpServlet {
 
     private static final String RICERCA_ERRATA_JSP = "/WEB-INF/results/RicercaErrata.jsp";
     private static final String PRODOTTI_MATERIALE_JSP = "/WEB-INF/results/ProdottiMateriale.jsp";
+    private static final Logger LOGGER = Logger.getLogger(MaterialeServlet.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -65,11 +68,11 @@ public class MaterialeServlet extends HttpServlet {
         doGet(request, response);
     }
 
-    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) {
         try {
             response.sendError(status, messaggio);
         } catch (IOException e) {
-            throw new ServletException("Impossibile inviare la risposta di errore", e);
+            LOGGER.log(Level.SEVERE, "Impossibile inviare la risposta di errore", e);
         }
     }
 }

@@ -7,9 +7,14 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/AggiuntaProdottoServlet")
 public class AggiuntaProdottoServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(AggiuntaProdottoServlet.class.getName());
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doPost(request,response);
@@ -23,12 +28,10 @@ public class AggiuntaProdottoServlet extends HttpServlet {
             p.setNomeCategoria(request.getParameter("nomeCategoria"));
             p.setNomeProd(request.getParameter("nomeProdotto"));
             p.setDescrizione(request.getParameter("descrizione"));
-
             p.setLarghezza(Double.parseDouble(request.getParameter("larghezza")));
             p.setLunghezza(Double.parseDouble(request.getParameter("lunghezza")));
             p.setPrezzo(Double.parseDouble(request.getParameter("prezzo")));
             p.setQuantita(Integer.parseInt(request.getParameter("quantita")));
-
             p.setTipoMaterialeMaterasso(request.getParameter("tipoMaterialeMaterasso"));
             p.setColoreLetto(request.getParameter("coloreLetto"));
             p.setMaterialeRete(request.getParameter("materialeRete"));
@@ -50,11 +53,11 @@ public class AggiuntaProdottoServlet extends HttpServlet {
         }
     }
 
-    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) {
         try {
             response.sendError(status, messaggio);
         } catch (IOException e) {
-            throw new ServletException("Impossibile inviare la risposta di errore", e);
+            LOGGER.log(Level.SEVERE, "Impossibile inviare la risposta di errore", e);
         }
     }
 }

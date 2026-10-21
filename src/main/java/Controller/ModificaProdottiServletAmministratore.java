@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/ModificaProdottiServletAmministratore")
 public class ModificaProdottiServletAmministratore extends HttpServlet {
@@ -19,6 +21,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
     private static final String PARAM_QUANTITA_TOTALE = "quantitaTotale";
     private static final String ATTR_ID_MODIFICA_PREZZO = "idModificaPrezzo";
     private static final String HOME_SERVLET_AMMINISTRATORE = "HomeServletAmministratore";
+    private static final Logger LOGGER = Logger.getLogger(ModificaProdottiServletAmministratore.class.getName());
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -74,11 +77,11 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
         ds.forward(request, response);
     }
 
-    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) {
         try {
             response.sendError(status, messaggio);
         } catch (IOException e) {
-            throw new ServletException("Impossibile inviare la risposta di errore", e);
+            LOGGER.log(Level.SEVERE, "Impossibile inviare la risposta di errore", e);
         }
     }
 }

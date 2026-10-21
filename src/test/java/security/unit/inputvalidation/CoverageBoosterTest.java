@@ -49,6 +49,7 @@ public class CoverageBoosterTest {
         admin.setAmministratore(true);
         when(session.getAttribute("Amministratore")).thenReturn(admin);
 
+        // Fa fallire il forward per scatenare il catch
         doThrow(new IOException("Errore simulato")).when(dispatcher).forward(any(), any());
 
         new HomeServlet().service(request, response);

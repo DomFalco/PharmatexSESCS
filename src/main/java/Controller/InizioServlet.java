@@ -12,9 +12,14 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/InizioServlet")
 public class InizioServlet extends HttpServlet {
+
+    private static final Logger LOGGER = Logger.getLogger(InizioServlet.class.getName());
+
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             String richiesta = request.getParameter("action");
@@ -75,11 +80,11 @@ public class InizioServlet extends HttpServlet {
         doGet(req, resp);
     }
 
-    private void inviaErrore(HttpServletResponse response, int status, String messaggio) throws ServletException {
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) {
         try {
             response.sendError(status, messaggio);
         } catch (IOException e) {
-            throw new ServletException("Impossibile inviare la risposta di errore", e);
+            LOGGER.log(Level.SEVERE, "Impossibile inviare la risposta di errore", e);
         }
     }
 }
