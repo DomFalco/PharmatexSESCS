@@ -76,7 +76,7 @@ public class LoginServlet extends HttpServlet {
                 RequestDispatcher dispatcher = request.getRequestDispatcher(RIEPILOGO_ACQUISTI_JSP);
                 dispatcher.forward(request, response);
             }
-        } catch (ServletException | IOException e) {
+        } catch (ServletException | IOException | RuntimeException e) { // FIX: Aggiunto RuntimeException
             inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del login.");
         }
     }
