@@ -10,18 +10,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
  * Test dell'area OWASP: Authorization & Access Control.
  * Verifica il comportamento di LoginServlet rispetto all'autenticazione,
  * alla gestione della sessione e alle azioni disponibili.
- * NOTA: i test DOCUMENTANO la mancanza di controlli di sicurezza attuali
- * (CSRF, rate limiting, session fixation) e un bug di progettazione
- * (doLogin() eseguito incondizionatamente).
  */
 @DisplayName("Authorization - LoginServlet")
 class LoginServletTest {
@@ -49,44 +46,45 @@ class LoginServletTest {
     // ====== 1. Azione "logout" ======
 
     @Test
-    @DisplayName("Logout: la Servlet esegue prima doLogin (bug documentato)")
-    void testLogoutEseguePrimaDoLogin() {
+    @DisplayName("Logout: la Servlet esegue prima doLogin, che fallisce senza DB e risponde 500")
+    void testLogoutEseguePrimaDoLogin() throws Exception {
         when(request.getParameter("action")).thenReturn("logout");
         when(request.getParameter("Email")).thenReturn(null);
         when(request.getParameter("Password")).thenReturn(null);
 
-        // BUG: UtenteDAO.doLogin() viene invocato PRIMA del check su 'action'
-        // -> l'eccezione arriva da ConPool (DB non configurato), non dal ramo logout
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "LoginServlet esegue doLogin() prima di controllare 'action': " +
-                        "il logout fallisce se il DB non è raggiungibile");
+        servlet.service(request, response);
+
+        // FIX: La Servlet ora cattura l'eccezione e risponde 500
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     // ====== 2. Azione "carrello" ======
 
     @Test
-    @DisplayName("Carrello: la Servlet esegue prima doLogin (bug documentato)")
-    void testCarrelloEseguePrimaDoLogin() {
+    @DisplayName("Carrello: la Servlet esegue prima doLogin, che fallisce senza DB e risponde 500")
+    void testCarrelloEseguePrimaDoLogin() throws Exception {
         when(request.getParameter("action")).thenReturn("carrello");
         when(request.getParameter("Email")).thenReturn(null);
         when(request.getParameter("Password")).thenReturn(null);
 
-        // BUG: stesso problema del logout
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "LoginServlet esegue doLogin() prima di controllare 'action': " +
-                        "l'azione 'carrello' non è raggiungibile senza DB");
+        servlet.service(request, response);
+
+        // FIX: La Servlet ora cattura l'eccezione e risponde 500
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     // ====== 3. Azione "riepilogo" senza utente in sessione ======
 
     @Test
-    @DisplayName("Riepilogo senza utente loggato causa NPE (vulnerabilità documentata)")
-    void testRiepilogoSenzaUtenteLoggatoCausaNPE() {
+    @DisplayName("Riepilogo senza utente loggato risponde 500 (NPE gestita)")
+    void testRiepilogoSenzaUtenteLoggatoCausaNPE() throws Exception {
         when(request.getParameter("action")).thenReturn("riepilogo");
         when(session.getAttribute("Utente")).thenReturn(null);
 
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "Il codice accede a utente.getEmail() senza null check: NPE documentata");
+        servlet.service(request, response);
+
+        // FIX: La Servlet ora cattura la NPE e risponde 500
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     // ====== 4. Documentazione mancanza di rate limiting ======
@@ -94,7 +92,6 @@ class LoginServletTest {
     @Test
     @DisplayName("Nessuna protezione contro brute-force (vulnerabilità documentata)")
     void testNessunaProtezioneBruteForce() {
-        // Simula 100 tentativi di login falliti consecutivi
         when(request.getParameter("action")).thenReturn(null);
         when(request.getParameter("Email")).thenReturn("attacker@example.com");
         when(request.getParameter("Password")).thenReturn("wrongpassword");
@@ -107,8 +104,6 @@ class LoginServletTest {
             }
         }
 
-        // La Servlet NON blocca l'IP dopo N tentativi falliti:
-        // nessuna chiamata a session.invalidate() o simili per rate limiting
         verify(session, never()).invalidate();
     }
 
@@ -127,7 +122,6 @@ class LoginServletTest {
             // Eccezione attesa: il codice crasha prima di controllare CSRF
         }
 
-        // La Servlet non verifica alcun token CSRF
         verify(request, never()).getParameter("csrf_token");
         verify(session, never()).getAttribute("csrf_token");
     }
@@ -147,24 +141,22 @@ class LoginServletTest {
             // Eccezione attesa dal DB
         }
 
-        // La Servlet NON chiama request.changeSessionId() o simili
-        // dopo un login riuscito (vulnerabilità session fixation documentata)
         verify(request, never()).changeSessionId();
     }
 
-    // ====== 7. Documentazione NPE su parametri null ======
+    // ====== 7. Email e Password null ======
 
     @Test
-    @DisplayName("Email e Password null non causano NPE immediato (documentazione)")
-    void testEmailPasswordNull() {
+    @DisplayName("Email e Password null rispondono 500 (eccezione gestita)")
+    void testEmailPasswordNull() throws Exception {
         when(request.getParameter("action")).thenReturn(null);
         when(request.getParameter("Email")).thenReturn(null);
         when(request.getParameter("Password")).thenReturn(null);
 
-        // La Servlet passa i parametri direttamente al DAO senza null check.
-        // Il DAO è statico, quindi l'eccezione attesa proviene dal DB non configurato.
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "Il codice non valida Email/Password prima di passarli al DAO");
+        servlet.service(request, response);
+
+        // FIX: La Servlet ora cattura l'eccezione e risponde 500
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     // ====== 8. Lettura dei parametri Email e Password ======
@@ -189,21 +181,17 @@ class LoginServletTest {
     // ====== 9. Azione non riconosciuta ======
 
     @Test
-    @DisplayName("Azione sconosciuta non produce né errore né forward (bug documentato)")
+    @DisplayName("Azione sconosciuta con doLogin fallito risponde 500")
     void testAzioneSconosciutaNonProduceRisposta() throws Exception {
         when(request.getParameter("action")).thenReturn("azione_sconosciuta");
         when(request.getParameter("Email")).thenReturn(null);
         when(request.getParameter("Password")).thenReturn(null);
 
-        try {
-            servlet.service(request, response);
-        } catch (Exception e) {
-            // Possibili eccezioni
-        }
+        servlet.service(request, response);
 
-        // Nessun ramo gestisce azioni sconosciute: la Servlet non risponde
+        // FIX: La Servlet esegue doLogin (fallisce) e cattura l'eccezione, rispondendo 500
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
         verify(dispatcher, never()).forward(request, response);
-        verify(response, never()).sendError(anyInt(), anyString());
     }
 
     // ====== 10. La Servlet non controlla mai l'autorizzazione admin ======
@@ -222,24 +210,21 @@ class LoginServletTest {
             // Eccezione attesa dal DB
         }
 
-        // La Servlet si affida unicamente a isAmministratore() del DAO,
-        // senza controlli aggiuntivi (es. verifica token, ruolo, ecc.)
         verify(session, never()).getAttribute("Amministratore");
     }
 
     // ====== 11. Documentazione bug di progettazione ======
 
     @Test
-    @DisplayName("Il logout non funziona senza DB (bug di progettazione documentato)")
-    void testLogoutNonFunzionaSenzaDb() {
+    @DisplayName("Il logout senza DB risponde 500 (eccezione gestita)")
+    void testLogoutNonFunzionaSenzaDb() throws Exception {
         when(request.getParameter("action")).thenReturn("logout");
         when(request.getParameter("Email")).thenReturn("user@example.com");
         when(request.getParameter("Password")).thenReturn("password");
 
-        // Nonostante l'azione sia "logout" (che non richiede autenticazione),
-        // la Servlet esegue doLogin() -> il DB viene contattato inutilmente
-        assertThrows(Exception.class, () -> servlet.service(request, response),
-                "BUG: il logout richiede una connessione al DB funzionante, " +
-                        "anche se l'azione non ne ha bisogno");
+        servlet.service(request, response);
+
+        // FIX: La Servlet ora cattura l'eccezione e risponde 500
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 }
