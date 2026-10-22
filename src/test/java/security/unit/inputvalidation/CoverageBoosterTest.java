@@ -1,7 +1,6 @@
 package security.unit.inputvalidation;
 
 import controller.*;
-import model.Utente;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,8 +15,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Test per massimizzare la copertura dei blocchi catch delle Servlet,
- * evitando in ogni modo di far connettere l'applicazione al database.
+ * Test per massimizzare la copertura dei blocchi catch delle Servlet.
  */
 public class CoverageBoosterTest {
 
@@ -38,7 +36,6 @@ public class CoverageBoosterTest {
         when(request.getRequestDispatcher(anyString())).thenReturn(dispatcher);
     }
 
-    // Metodo di supporto per far esplodere sendError e coprire il logger
     private void forceError() throws IOException {
         doThrow(new IOException("Simulazione errore")).when(response).sendError(anyInt(), anyString());
     }
@@ -47,7 +44,7 @@ public class CoverageBoosterTest {
     @DisplayName("Catch AggiuntaProdottoServlet")
     void testAggiunta() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getParameter("larghezza")).thenReturn("abc"); // Forza NumberFormatException
+        when(request.getParameter("larghezza")).thenReturn("abc");
         forceError();
         new AggiuntaProdottoServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
@@ -57,17 +54,18 @@ public class CoverageBoosterTest {
     @DisplayName("Catch CarrelloServlet")
     void testCarrello() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        // Forza IOException durante il forward (evita il DB)
         doThrow(new IOException("Simulazione")).when(dispatcher).forward(any(), any());
         forceError();
         new CarrelloServlet().service(request, response);
+        // FIX: Aggiunta verifica per evitare il Blocker
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     @Test
     @DisplayName("Catch CercaProdottoPerModificaServlet")
     void testCerca() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getSession(false)).thenReturn(null); // Forza errore 403
+        when(request.getSession(false)).thenReturn(null);
         forceError();
         new CercaProdottoPerModificaServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
@@ -77,7 +75,7 @@ public class CoverageBoosterTest {
     @DisplayName("Catch DatiPagamentoServlet")
     void testDatiPagamento() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getSession(false)).thenReturn(null); // Forza errore 403
+        when(request.getSession(false)).thenReturn(null);
         forceError();
         new DatiPagamentoServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
@@ -88,7 +86,7 @@ public class CoverageBoosterTest {
     void testHome() throws Exception {
         when(request.getMethod()).thenReturn("GET");
         when(request.getParameter("valore")).thenReturn("home");
-        when(request.getSession(false)).thenReturn(null); // Forza errore 403
+        when(request.getSession(false)).thenReturn(null);
         forceError();
         new HomeServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
@@ -98,7 +96,7 @@ public class CoverageBoosterTest {
     @DisplayName("Catch HomeServletAmministratore")
     void testHomeAdmin() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getSession(false)).thenReturn(null); // Forza errore 403
+        when(request.getSession(false)).thenReturn(null);
         forceError();
         new HomeServletAmministratore().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
@@ -109,7 +107,7 @@ public class CoverageBoosterTest {
     void testInizio() throws Exception {
         when(request.getMethod()).thenReturn("GET");
         when(request.getParameter("action")).thenReturn(null);
-        when(request.getParameter("valore")).thenReturn("!!!"); // Forza regex fail
+        when(request.getParameter("valore")).thenReturn("!!!");
         forceError();
         new InizioServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
@@ -123,13 +121,15 @@ public class CoverageBoosterTest {
         doThrow(new IOException("Simulazione")).when(dispatcher).forward(any(), any());
         forceError();
         new LoginServlet().service(request, response);
+        // FIX: Aggiunta verifica per evitare il Blocker
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     @Test
     @DisplayName("Catch PagamentoServlet")
     void testPagamento() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getSession(false)).thenReturn(null); // Forza errore 403
+        when(request.getSession(false)).thenReturn(null);
         forceError();
         new PagamentoServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
@@ -142,13 +142,15 @@ public class CoverageBoosterTest {
         doThrow(new IOException("Simulazione")).when(dispatcher).forward(any(), any());
         forceError();
         new Registrazione().service(request, response);
+        // FIX: Aggiunta verifica per evitare il Blocker
+        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     @Test
     @DisplayName("Catch RendiAmministratoreServlet")
     void testRendi() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getSession(false)).thenReturn(null); // Forza errore 403
+        when(request.getSession(false)).thenReturn(null);
         forceError();
         new RendiAmministratoreServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
@@ -158,7 +160,7 @@ public class CoverageBoosterTest {
     @DisplayName("Catch RimuoviProdottoServlet")
     void testRimuovi() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(request.getSession(false)).thenReturn(null); // Forza errore 403
+        when(request.getSession(false)).thenReturn(null);
         forceError();
         new RimuoviProdottoServlet().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_FORBIDDEN), anyString());
@@ -168,7 +170,7 @@ public class CoverageBoosterTest {
     @DisplayName("Catch ModificaProdottiServletAmministratore")
     void testModifica() throws Exception {
         when(request.getMethod()).thenReturn("POST");
-        when(session.getAttribute("idModificaPrezzo")).thenReturn(null); // Forza errore 400
+        when(session.getAttribute("idModificaPrezzo")).thenReturn(null);
         forceError();
         new ModificaProdottiServletAmministratore().service(request, response);
         verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
