@@ -11,19 +11,13 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.mockito.ArgumentCaptor;
 import security.functional.BaseServletH2Test;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-/**
- * Test funzionali di LoginServlet con H2 in-memory.
- * Verifica il comportamento runtime della Servlet contro un DB reale:
- * - Login con credenziali valide (utente normale e admin)
- * - Login con credenziali errate
- * - Logout (invalidazione sessione)
- * - SQL Injection su email/password (neutralizzata da PreparedStatement)
- */
 @DisplayName("Functional - LoginServlet (Authorization)")
 class LoginServletH2Test extends BaseServletH2Test {
 
@@ -32,24 +26,18 @@ class LoginServletH2Test extends BaseServletH2Test {
         setUpServletMocks();
     }
 
-    // ==================================================================
-    // Helper: invoca service() (metodo pubblico di HttpServlet)
-    // ==================================================================
-
     private void invokeService(LoginServlet servlet) throws Exception {
         servlet.service((ServletRequest) request, (ServletResponse) response);
     }
 
-    // ==================================================================
-    // Login con credenziali valide
-    // ==================================================================
-
     @Test
     @DisplayName("Login utente normale: imposta 'Utente' in sessione e forwarda a HomePage")
     void testLoginUtenteNormale() throws Exception {
-        executeSql(insertClienteConBcrypt("mario@test.com", "password123", false));
+        // FIX SNYK: Password generata a runtime
+        String randomPassword = UUID.randomUUID().toString();
+        executeSql(insertClienteConBcrypt("mario@test.com", randomPassword, false));
         when(request.getParameter("Email")).thenReturn("mario@test.com");
-        when(request.getParameter("Password")).thenReturn("password123");
+        when(request.getParameter("Password")).thenReturn(randomPassword);
         when(request.getParameter("action")).thenReturn(null);
         when(request.getRequestDispatcher("HomePage")).thenReturn(dispatcher);
 
@@ -65,9 +53,10 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("Login admin: imposta 'Amministratore' in sessione e forwarda a HomeServletAmministratore")
     void testLoginAdmin() throws Exception {
-        executeSql(insertClienteConBcrypt("admin@test.com", "adminpass", true));
+        String randomPassword = UUID.randomUUID().toString();
+        executeSql(insertClienteConBcrypt("admin@test.com", randomPassword, true));
         when(request.getParameter("Email")).thenReturn("admin@test.com");
-        when(request.getParameter("Password")).thenReturn("adminpass");
+        when(request.getParameter("Password")).thenReturn(randomPassword);
         when(request.getParameter("action")).thenReturn(null);
         when(request.getRequestDispatcher("HomeServletAmministratore")).thenReturn(dispatcher);
 
@@ -79,14 +68,11 @@ class LoginServletH2Test extends BaseServletH2Test {
         verify(dispatcher).forward(request, response);
     }
 
-    // ==================================================================
-    // Login con credenziali errate
-    // ==================================================================
-
     @Test
     @DisplayName("Password errata: imposta 'parametri' con messaggio di errore e include Login.jsp")
     void testLoginPasswordErrata() throws Exception {
-        executeSql(insertClienteConBcrypt("mario@test.com", "password123", false));
+        String randomPassword = UUID.randomUUID().toString();
+        executeSql(insertClienteConBcrypt("mario@test.com", randomPassword, false));
         when(request.getParameter("Email")).thenReturn("mario@test.com");
         when(request.getParameter("Password")).thenReturn("wrongpassword");
         when(request.getParameter("action")).thenReturn(null);
@@ -114,10 +100,6 @@ class LoginServletH2Test extends BaseServletH2Test {
         verify(dispatcher).include(request, response);
     }
 
-    // ==================================================================
-    // Logout
-    // ==================================================================
-
     @Test
     @DisplayName("Logout: invalida la sessione e forwarda a HomePage")
     void testLogout() throws Exception {
@@ -130,14 +112,11 @@ class LoginServletH2Test extends BaseServletH2Test {
         verify(dispatcher).forward(request, response);
     }
 
-    // ==================================================================
-    // SQL Injection (neutralizzata da PreparedStatement)
-    // ==================================================================
-
     @Test
     @DisplayName("SQL Injection su email: il login fallisce, non imposta sessioni")
     void testSqlInjectionEmail() throws Exception {
-        executeSql(insertClienteConBcrypt("admin@test.com", "adminpass", true));
+        String randomPassword = UUID.randomUUID().toString();
+        executeSql(insertClienteConBcrypt("admin@test.com", randomPassword, true));
         when(request.getParameter("Email")).thenReturn("admin@test.com' OR '1'='1");
         when(request.getParameter("Password")).thenReturn("qualsiasi");
         when(request.getParameter("action")).thenReturn(null);
@@ -153,7 +132,8 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("SQL Injection su password: il login fallisce, non imposta sessioni")
     void testSqlInjectionPassword() throws Exception {
-        executeSql(insertClienteConBcrypt("admin@test.com", "adminpass", true));
+        String randomPassword = UUID.randomUUID().toString();
+        executeSql(insertClienteConBcrypt("admin@test.com", randomPassword, true));
         when(request.getParameter("Email")).thenReturn("admin@test.com");
         when(request.getParameter("Password")).thenReturn("' OR '1'='1");
         when(request.getParameter("action")).thenReturn(null);
@@ -165,12 +145,7 @@ class LoginServletH2Test extends BaseServletH2Test {
         verify(request).setAttribute("parametri", "Email o password errati!");
     }
 
-    // ==================================================================
-    // Helper: INSERT cliente con password BCrypt
-    // ==================================================================
-
     private String insertClienteConBcrypt(String email, String passwordInChiaro, boolean admin) {
-        // Genera l'hash BCrypt usando la libreria
         String hashed = BCrypt.hashpw(passwordInChiaro, BCrypt.gensalt(12));
 
         return "INSERT INTO Cliente (email, passwordEmail, nome, cognome, "

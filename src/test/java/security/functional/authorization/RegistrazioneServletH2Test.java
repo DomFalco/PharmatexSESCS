@@ -12,19 +12,11 @@ import security.functional.BaseServletH2Test;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-/**
- * Test funzionali di RegistrazioneServlet con H2 in-memory.
- * Verifica il comportamento runtime della Servlet contro un DB reale:
- * - Registrazione con email nuova: INSERT + forward Login.jsp
- * - Registrazione con email duplicata: forward RegisterUser.jsp
- * - Hashing automatico della password nel bean (BCrypt)
- * - Privilege escalation prevention (amministratore sempre false)
- * - Tutti i campi salvati correttamente
- */
 @DisplayName("Functional - RegistrazioneServlet (Authorization)")
 class RegistrazioneServletH2Test extends BaseServletH2Test {
 
@@ -33,17 +25,9 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
         setUpServletMocks();
     }
 
-    // ==================================================================
-    // Helper: invoca service() (metodo pubblico di HttpServlet)
-    // ==================================================================
-
     private void invokeService(RegistrazioneServlet servlet) throws Exception {
         servlet.service((ServletRequest) request, (ServletResponse) response);
     }
-
-    // ==================================================================
-    // Helper: configura tutti i parametri della richiesta
-    // ==================================================================
 
     private void setParametriRegistrazione(String email, String password) {
         when(request.getParameter("email")).thenReturn(email);
@@ -60,57 +44,40 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
         when(request.getParameter("nazione")).thenReturn("Italia");
     }
 
-    // ==================================================================
-    // Registrazione con email nuova
-    // ==================================================================
-
     @Test
     @DisplayName("Email nuova: INSERT nel DB + forward a Login.jsp")
     void testRegistrazioneEmailNuova() throws Exception {
-        setParametriRegistrazione("mario@test.com", "password123");
+        String randomPassword = UUID.randomUUID().toString();
+        setParametriRegistrazione("mario@test.com", randomPassword);
         when(request.getRequestDispatcher("/WEB-INF/results/Login.jsp")).thenReturn(dispatcher);
 
         invokeService(new RegistrazioneServlet());
 
-        // Verifica INSERT
         assertThat(countClienti("mario@test.com")).isEqualTo(1);
-        // Verifica forward
         verify(dispatcher).forward(request, response);
-        // Verifica che NON sia stato impostato l'attributo di errore
         verify(request, never()).setAttribute(eq("controllo"), any());
     }
-
-    // ==================================================================
-    // Registrazione con email duplicata
-    // ==================================================================
 
     @Test
     @DisplayName("Email duplicata: NO INSERT, forward a RegisterUser.jsp con 'Email già presente'")
     void testRegistrazioneEmailDuplicata() throws Exception {
-        // Pre-inserisci l'utente
         executeSql(insertCliente("mario@test.com"));
-
-        setParametriRegistrazione("mario@test.com", "password123");
+        String randomPassword = UUID.randomUUID().toString();
+        setParametriRegistrazione("mario@test.com", randomPassword);
         when(request.getRequestDispatcher("/WEB-INF/results/RegisterUser.jsp")).thenReturn(dispatcher);
 
         invokeService(new RegistrazioneServlet());
 
-        // Verifica che NON sia stato inserito un secondo utente
         assertThat(countClienti("mario@test.com")).isEqualTo(1);
-        // Verifica attributo errore
         verify(request).setAttribute("controllo", "Email già presente");
-        // Verifica forward
         verify(dispatcher).forward(request, response);
     }
-
-    // ==================================================================
-    // Hashing automatico della password
-    // ==================================================================
 
     @Test
     @DisplayName("Password hashata BCrypt nel DB (grazie al setter del bean)")
     void testPasswordHashata() throws Exception {
-        setParametriRegistrazione("mario@test.com", "password123");
+        String randomPassword = UUID.randomUUID().toString();
+        setParametriRegistrazione("mario@test.com", randomPassword);
         when(request.getRequestDispatcher("/WEB-INF/results/Login.jsp")).thenReturn(dispatcher);
 
         invokeService(new RegistrazioneServlet());
@@ -118,40 +85,31 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
         String passwordInDb = queryString(
                 "SELECT passwordEmail FROM Cliente WHERE email = 'mario@test.com'");
 
-        // La password salvata NON deve essere "password123" in chiaro
-        // e deve essere un hash BCrypt (60 caratteri, inizia con $2a$)
         assertThat(passwordInDb)
-                .isNotEqualTo("password123")
+                .isNotEqualTo(randomPassword)
                 .hasSize(60)
                 .startsWith("$2a$");
     }
 
-    // ==================================================================
-    // Privilege escalation prevention
-    // ==================================================================
-
     @Test
     @DisplayName("Amministratore forzato a false (privilege escalation prevention)")
     void testAmministratoreForzatoFalse() throws Exception {
-        setParametriRegistrazione("mario@test.com", "password123");
+        String randomPassword = UUID.randomUUID().toString();
+        setParametriRegistrazione("mario@test.com", randomPassword);
         when(request.getRequestDispatcher("/WEB-INF/results/Login.jsp")).thenReturn(dispatcher);
 
         invokeService(new RegistrazioneServlet());
 
-        // Anche se un utente tentasse di inviare "amministratore=true", la Servlet lo ignora
         String isAdmin = queryString(
                 "SELECT amministratore FROM Cliente WHERE email = 'mario@test.com'");
         assertThat(isAdmin).isEqualToIgnoringCase("false");
     }
 
-    // ==================================================================
-    // Integrità dei dati salvati
-    // ==================================================================
-
     @Test
     @DisplayName("Tutti i campi della registrazione sono salvati correttamente")
     void testTuttiCampiSalvati() throws Exception {
-        setParametriRegistrazione("mario@test.com", "password123");
+        String randomPassword = UUID.randomUUID().toString();
+        setParametriRegistrazione("mario@test.com", randomPassword);
         when(request.getRequestDispatcher("/WEB-INF/results/Login.jsp")).thenReturn(dispatcher);
 
         invokeService(new RegistrazioneServlet());
@@ -177,28 +135,19 @@ class RegistrazioneServletH2Test extends BaseServletH2Test {
         }
     }
 
-    // ==================================================================
-    // End-to-end: registrazione + login
-    // ==================================================================
-
     @Test
     @DisplayName("End-to-end: registrazione + login funzionano in sequenza")
     void testRegistrazionePoiLogin() throws Exception {
-        setParametriRegistrazione("mario@test.com", "password123");
+        String randomPassword = UUID.randomUUID().toString();
+        setParametriRegistrazione("mario@test.com", randomPassword);
         when(request.getRequestDispatcher("/WEB-INF/results/Login.jsp")).thenReturn(dispatcher);
 
         invokeService(new RegistrazioneServlet());
 
-        // Ora verifica che il login funzioni con le stesse credenziali
-        // (usando direttamente il DAO, perché il flusso è stato già testato)
-        model.Utente utente = model.UtenteDAO.doLogin("mario@test.com", "password123");
+        model.Utente utente = model.UtenteDAO.doLogin("mario@test.com", randomPassword);
         assertThat(utente).isNotNull();
         assertThat(utente.getEmail()).isEqualTo("mario@test.com");
     }
-
-    // ==================================================================
-    // Helper
-    // ==================================================================
 
     private int countClienti(String email) throws Exception {
         try (Connection conn = ConPool.getConnection();

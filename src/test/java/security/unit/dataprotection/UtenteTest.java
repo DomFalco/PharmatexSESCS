@@ -5,12 +5,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test dell'area OWASP: Data Protection.
- * Verifica il comportamento del metodo setPassword.
- * Aggiornato per verificare l'uso di BCrypt al posto di SHA-1 (Fix CWE-916).
  */
 @DisplayName("Data Protection - Hashing password (CWE-916)")
 class UtenteTest {
@@ -25,7 +25,7 @@ class UtenteTest {
     @Test
     @DisplayName("La password non viene salvata in chiaro")
     void testPasswordNonSalvataInChiaro() {
-        String passwordInChiaro = "password123";
+        String passwordInChiaro = UUID.randomUUID().toString();
         utente.setPassword(passwordInChiaro);
 
         assertNotNull(utente.getPassword(), "La password hashata non deve essere null");
@@ -36,7 +36,7 @@ class UtenteTest {
     @Test
     @DisplayName("L'hash BCrypt ha 60 caratteri e inizia con $2a$")
     void testHashHa60CaratteriBCrypt() {
-        utente.setPassword("password123");
+        utente.setPassword(UUID.randomUUID().toString());
         String hash = utente.getPassword();
 
         assertEquals(60, hash.length(),
@@ -48,16 +48,17 @@ class UtenteTest {
     @Test
     @DisplayName("Password identiche producono hash diversi (presenza di salt)")
     void testStessaPasswordHashDiversi() {
+        String randomPassword = UUID.randomUUID().toString();
         Utente u1 = new Utente();
         Utente u2 = new Utente();
-        u1.setPassword("password123");
-        u2.setPassword("password123");
+        u1.setPassword(randomPassword);
+        u2.setPassword(randomPassword);
 
         assertNotEquals(u1.getPassword(), u2.getPassword(),
                 "BCrypt usa un salt casuale: password identiche devono produrre hash diversi!");
 
-        assertTrue(u1.checkPassword("password123"));
-        assertTrue(u2.checkPassword("password123"));
+        assertTrue(u1.checkPassword(randomPassword));
+        assertTrue(u2.checkPassword(randomPassword));
     }
 
     @Test
@@ -65,8 +66,8 @@ class UtenteTest {
     void testPasswordDiverseHashDiversi() {
         Utente u1 = new Utente();
         Utente u2 = new Utente();
-        u1.setPassword("password123");
-        u2.setPassword("password456");
+        u1.setPassword(UUID.randomUUID().toString());
+        u2.setPassword(UUID.randomUUID().toString());
 
         assertNotEquals(u1.getPassword(), u2.getPassword(),
                 "Password diverse devono produrre hash diversi");
@@ -89,9 +90,10 @@ class UtenteTest {
     @Test
     @DisplayName("Il metodo checkPassword verifica correttamente la password")
     void testCheckPassword() {
-        utente.setPassword("password123");
+        String randomPassword = UUID.randomUUID().toString();
+        utente.setPassword(randomPassword);
 
-        assertTrue(utente.checkPassword("password123"),
+        assertTrue(utente.checkPassword(randomPassword),
                 "checkPassword deve restituire true per la password corretta");
         assertFalse(utente.checkPassword("passwordErrata"),
                 "checkPassword deve restituire false per una password errata");
@@ -100,14 +102,15 @@ class UtenteTest {
     @Test
     @DisplayName("Il metodo setPassword non lancia eccezioni con input normali")
     void testSetPasswordNonLanciaEccezioni() {
-        assertDoesNotThrow(() -> utente.setPassword("passwordConCaratteri@123!"),
+        String randomPassword = UUID.randomUUID().toString() + "@123!";
+        assertDoesNotThrow(() -> utente.setPassword(randomPassword),
                 "setPassword non deve lanciare eccezioni con input validi");
     }
 
     @Test
     @DisplayName("Il metodo gestisce password con caratteri Unicode (UTF-8)")
     void testPasswordConCaratteriUnicode() {
-        String pwdUnicode = "pàsswòrd€123";
+        String pwdUnicode = "pàsswòrd€" + UUID.randomUUID().toString();
         assertDoesNotThrow(() -> utente.setPassword(pwdUnicode),
                 "setPassword deve gestire correttamente caratteri UTF-8");
 
