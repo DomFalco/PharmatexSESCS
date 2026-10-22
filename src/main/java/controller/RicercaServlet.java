@@ -20,13 +20,13 @@ public class RicercaServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(RicercaServlet.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         try {
             String nomeProdotto = request.getParameter("search");
             if (nomeProdotto == null) {
                 nomeProdotto = "";
             }
-            Prodotto p = null;
+            Prodotto p;
             String nProd = nomeProdotto.toUpperCase();
             HttpSession session = request.getSession();
             String address;

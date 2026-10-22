@@ -16,12 +16,12 @@ public class AggiuntaProdottoServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(AggiuntaProdottoServlet.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPost(request,response);
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+        doPost(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             Prodotto p = new Prodotto();
             p.setIdProdotto(request.getParameter("idProdotto"));

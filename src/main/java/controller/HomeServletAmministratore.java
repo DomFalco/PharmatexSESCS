@@ -6,7 +6,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,39 +17,39 @@ public class HomeServletAmministratore extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(HomeServletAmministratore.class.getName());
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
-            return;
-        }
-        Utente admin = (Utente) session.getAttribute("Amministratore");
-        if (admin == null || !admin.isAmministratore()) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
-            return;
-        }
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                return;
+            }
+            Utente admin = (Utente) session.getAttribute("Amministratore");
+            if (admin == null || !admin.isAmministratore()) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                return;
+            }
+
             if (request.getParameter(PARAM_VALORE) == null) {
-                List<Prodotto> tuttiProdotti = ProdottoDAO.doRetriveAll();
+                ArrayList<Prodotto> tuttiProdotti = (ArrayList<Prodotto>) ProdottoDAO.doRetriveAll();
                 request.setAttribute("tuttiProdotti", tuttiProdotti);
                 RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VediTuttiIProdotti.jsp");
                 ds.forward(request, response);
             }
             else if (request.getParameter(PARAM_VALORE).equals("quantita")) {
-                List<Prodotto> prodottiEsauriti = ProdottoDAO.doRetriveQuantitaEsaurita();
+                ArrayList<Prodotto> prodottiEsauriti = (ArrayList<Prodotto>) ProdottoDAO.doRetriveQuantitaEsaurita();
                 request.setAttribute("prodottiEsauriti", prodottiEsauriti);
                 RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/QuantitaEsaurita.jsp");
                 ds.forward(request, response);
             }
             else if (request.getParameter(PARAM_VALORE).equals("ordine")) {
-                List<AcquistoProdotti> riepilogoProdotti = AcquistoProdottiDAO.doRetriveAcquisto();
+                ArrayList<AcquistoProdotti> riepilogoProdotti = (ArrayList<AcquistoProdotti>) AcquistoProdottiDAO.doRetriveAcquisto();
                 request.setAttribute("riepilogoProdotti", riepilogoProdotti);
                 RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/RiepilogoOrdini.jsp");
                 ds.forward(request, response);
             }
             else if (request.getParameter(PARAM_VALORE).equals("clienti")) {
-                List<Utente> riepilogoUtente = UtenteDAO.doRetriveUtente();
+                ArrayList<Utente> riepilogoUtente = (ArrayList<Utente>) UtenteDAO.doRetriveUtente();
                 request.setAttribute("riepilogoUtente", riepilogoUtente);
                 RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
                 ds.forward(request, response);
@@ -64,7 +64,7 @@ public class HomeServletAmministratore extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         doPost(request, response);
     }
 

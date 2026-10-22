@@ -19,7 +19,7 @@ public class RegistrazioneServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(RegistrazioneServlet.class.getName());
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             Utente u = new Utente();
             u.setEmail(request.getParameter("email"));

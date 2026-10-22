@@ -8,8 +8,9 @@ table, td, th {
     width: 35%;
 }
 
+/* FIX SONARQUBE: Scurito lo sfondo */
 .cart {
-    background: #058c42;
+    background: #046b32;
     border-radius: 10px;
     color: white;
     font-size: 15px;

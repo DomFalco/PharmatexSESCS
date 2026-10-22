@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,7 +41,7 @@ public class LoginServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(LoginServlet.class.getName());
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession();
             Utente u = UtenteDAO.doLogin(request.getParameter(PARAM_EMAIL), request.getParameter(PARAM_PASSWORD));
@@ -71,7 +71,7 @@ public class LoginServlet extends HttpServlet {
                 dispatcher.forward(request, response);
             } else if (action.equals(ACTION_RIEPILOGO)) {
                 Utente utente = (Utente) session.getAttribute(ATTR_UTENTE);
-                List<AcquistoProdotti> riepilogoProdotti = AcquistoProdottiDAO.doRetriveAcquistoUtente(utente.getEmail());
+                ArrayList<AcquistoProdotti> riepilogoProdotti = (ArrayList<AcquistoProdotti>) AcquistoProdottiDAO.doRetriveAcquistoUtente(utente.getEmail());
                 request.setAttribute(ATTR_RIEPILOGO_ORDINE_UTENTE, riepilogoProdotti);
                 RequestDispatcher dispatcher = request.getRequestDispatcher(RIEPILOGO_ACQUISTI_JSP);
                 dispatcher.forward(request, response);
@@ -82,7 +82,7 @@ public class LoginServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         doPost(req, resp);
     }
 

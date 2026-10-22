@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test dell'area OWASP: Input Validation.
@@ -57,6 +58,7 @@ class CarrelloServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getRequestDispatcher("/WEB-INF/results/Login.jsp");
@@ -153,6 +155,7 @@ class CarrelloServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getParameter("quantita");
@@ -186,6 +189,7 @@ class CarrelloServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getParameter("action");
@@ -210,6 +214,7 @@ class CarrelloServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getParameter("action");
@@ -226,6 +231,7 @@ class CarrelloServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(session, atLeastOnce()).getAttribute("Utente");

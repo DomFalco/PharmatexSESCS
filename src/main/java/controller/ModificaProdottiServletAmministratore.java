@@ -24,13 +24,13 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(ModificaProdottiServletAmministratore.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         doPost(request, response);
     }
 
     @Override
     @SuppressWarnings("java:S1989")
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession sessione = request.getSession();
             Prodotto p = (Prodotto) sessione.getAttribute(ATTR_ID_MODIFICA_PREZZO);
@@ -65,7 +65,7 @@ public class ModificaProdottiServletAmministratore extends HttpServlet {
                 ProdottoDAO.doUpdateQuantita(quantita, p.getIdProdotto());
                 forward(request, response);
             }
-        } catch (NumberFormatException | NullPointerException e) {
+        } catch (NumberFormatException e) {
             inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Formato numerico non valido per prezzo o quantità.");
         } catch (ServletException | IOException e) {
             inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante la modifica del prodotto.");

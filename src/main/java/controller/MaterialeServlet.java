@@ -8,7 +8,6 @@ import jakarta.servlet.annotation.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,7 +19,7 @@ public class MaterialeServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(MaterialeServlet.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession(false);
 
@@ -39,14 +38,14 @@ public class MaterialeServlet extends HttpServlet {
                 return;
             }
 
-            List<Prodotto> prodottiMateriale = new ArrayList<>();
+            ArrayList<Prodotto> prodottiMateriale = new ArrayList<>();
 
             if (mat.equalsIgnoreCase("materasso")) {
-                prodottiMateriale = ProdottoDAO.doRetriveMaterialeMaterasso(materiale);
+                prodottiMateriale = (ArrayList<Prodotto>) ProdottoDAO.doRetriveMaterialeMaterasso(materiale);
             } else if (mat.equalsIgnoreCase("rete")) {
-                prodottiMateriale = ProdottoDAO.doRetriveMaterialeRete(materiale);
+                prodottiMateriale = (ArrayList<Prodotto>) ProdottoDAO.doRetriveMaterialeRete(materiale);
             } else if (mat.equalsIgnoreCase("cuscino")) {
-                prodottiMateriale = ProdottoDAO.doRetriveMaterialeCuscino(materiale);
+                prodottiMateriale = (ArrayList<Prodotto>) ProdottoDAO.doRetriveMaterialeCuscino(materiale);
             }
 
             if (prodottiMateriale.isEmpty()) {
@@ -65,7 +64,7 @@ public class MaterialeServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         doGet(request, response);
     }
 

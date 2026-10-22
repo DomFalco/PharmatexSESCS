@@ -5,6 +5,7 @@ table, tr, th {
     margin-top: 9%;
     margin-left: 41.5%;
 }
+
 table tr th button {
     cursor: pointer;
     margin: 5px;
@@ -20,8 +21,9 @@ table tr th button {
     width: 50%;
 }
 
+/* FIX SONARQUBE: Scurito lo sfondo */
 .cart {
-    background: #058c42;
+    background: #046b32;
     border-radius: 10px;
     color: white;
     font-size: 15px;

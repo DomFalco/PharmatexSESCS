@@ -15,24 +15,24 @@ public class PagamentoServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(PagamentoServlet.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         doPost(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
-            return;
-        }
-        Utente utente = (Utente) session.getAttribute("Utente");
-        if (utente == null) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato.");
-            return;
-        }
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                return;
+            }
+            Utente utente = (Utente) session.getAttribute("Utente");
+            if (utente == null) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato.");
+                return;
+            }
+
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Pagamento.jsp");
             dispatcher.forward(request, response);
         } catch (ServletException | IOException e) {

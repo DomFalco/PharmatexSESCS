@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet("/CarrelloServlet")
 public class CarrelloServlet extends HttpServlet {
@@ -25,14 +27,16 @@ public class CarrelloServlet extends HttpServlet {
     private static final String RIMUOVI = "rimuovi";
     private static final String PROD = "prod";
 
+    private static final Logger LOGGER = Logger.getLogger(CarrelloServlet.class.getName());
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         doPost(request, response);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "java:S1989"})
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession();
             Utente u = (Utente) session.getAttribute("Utente");
@@ -69,18 +73,11 @@ public class CarrelloServlet extends HttpServlet {
             } else {
                 forward(request, response, LOGIN_JSP);
             }
+
         } catch (NumberFormatException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "La quantità deve essere un numero valido.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "La quantità deve essere un numero valido.");
         } catch (ServletException | IOException e) {
-            try {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del carrello.");
-            } catch (IOException ex) {
-                throw new ServletException("Impossibile inviare la risposta di errore", ex);
-            }
+            inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del carrello.");
         }
     }
 
@@ -125,5 +122,13 @@ public class CarrelloServlet extends HttpServlet {
     private void forward(HttpServletRequest request, HttpServletResponse response, String path) throws ServletException, IOException {
         RequestDispatcher dispatcher = request.getRequestDispatcher(path);
         dispatcher.forward(request, response);
+    }
+
+    private void inviaErrore(HttpServletResponse response, int status, String messaggio) {
+        try {
+            response.sendError(status, messaggio);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Impossibile inviare la risposta di errore", e);
+        }
     }
 }

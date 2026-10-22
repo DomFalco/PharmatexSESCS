@@ -7,7 +7,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,30 +17,30 @@ public class RendiAmministratoreServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(RendiAmministratoreServlet.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         doPost(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
-            return;
-        }
-        Utente admin = (Utente) session.getAttribute("Amministratore");
-        if (admin == null || !admin.isAmministratore()) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
-            return;
-        }
-
-        String action = request.getParameter("action");
-        if (action == null) {
-            inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' mancante.");
-            return;
-        }
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                return;
+            }
+            Utente admin = (Utente) session.getAttribute("Amministratore");
+            if (admin == null || !admin.isAmministratore()) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: privilegi insufficienti.");
+                return;
+            }
+
+            String action = request.getParameter("action");
+            if (action == null) {
+                inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'action' mancante.");
+                return;
+            }
+
             if (action.startsWith("amministratore")) {
                 String val = action.substring("amministratore".length());
                 if (val.isEmpty()) {
@@ -48,7 +48,7 @@ public class RendiAmministratoreServlet extends HttpServlet {
                     return;
                 }
                 UtenteDAO.rendiAmministratore(val);
-                List<Utente> u = UtenteDAO.doRetriveUtente();
+                ArrayList<Utente> u = (ArrayList<Utente>) UtenteDAO.doRetriveUtente();
                 request.setAttribute("riepilogoUtente", u);
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
                 dispatcher.forward(request, response);
@@ -60,7 +60,7 @@ public class RendiAmministratoreServlet extends HttpServlet {
                     return;
                 }
                 UtenteDAO.rimuoviAmministratore(val);
-                List<Utente> u = UtenteDAO.doRetriveUtente();
+                ArrayList<Utente> u = (ArrayList<Utente>) UtenteDAO.doRetriveUtente();
                 request.setAttribute("riepilogoUtente", u);
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/VisualizzaUtenti.jsp");
                 dispatcher.forward(request, response);

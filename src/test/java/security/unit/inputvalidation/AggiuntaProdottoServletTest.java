@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test dell'area OWASP: Input Validation.
@@ -109,6 +110,7 @@ class AggiuntaProdottoServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getParameter(paramName);
@@ -124,6 +126,7 @@ class AggiuntaProdottoServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(session, never()).getAttribute("Utente");
@@ -139,6 +142,7 @@ class AggiuntaProdottoServletTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getParameter("idProdotto");

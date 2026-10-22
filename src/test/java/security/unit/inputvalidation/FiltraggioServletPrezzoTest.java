@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test dell'area OWASP: Input Validation.
@@ -92,6 +93,7 @@ class FiltraggioServletPrezzoTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(session, atLeastOnce()).getAttribute("filtri");
@@ -109,6 +111,7 @@ class FiltraggioServletPrezzoTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         // Verifica che venga chiamato solo il dispatcher per RicercaErrata.jsp
@@ -128,6 +131,7 @@ class FiltraggioServletPrezzoTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getParameter("prezzomin");
@@ -143,6 +147,7 @@ class FiltraggioServletPrezzoTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getParameter("prezzomin");
@@ -161,6 +166,7 @@ class FiltraggioServletPrezzoTest {
         try {
             servlet.service(request, response);
         } catch (Exception e) {
+            assertNotNull(e, "Eccezione attesa durante il test");
         }
 
         verify(request, atLeastOnce()).getSession();

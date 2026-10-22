@@ -17,7 +17,7 @@ public class Registrazione extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(Registrazione.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         try {
             RequestDispatcher ds = request.getRequestDispatcher("/WEB-INF/results/RegisterUser.jsp");
             ds.forward(request, response);

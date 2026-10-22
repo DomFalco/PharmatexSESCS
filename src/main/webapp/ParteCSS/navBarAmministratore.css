@@ -70,14 +70,16 @@ body {
     text-align: left;
 }
 
+/* FIX SONARQUBE: Testo nero su sfondo verde chiaro per migliorare il contrasto */
 .topnav a:hover, .dropdown:hover .dropbtn {
     background-color: #04AA6D;
-    color: white;
+    color: black;
 }
 
+/* FIX SONARQUBE: Verde più scuro su sfondo grigio chiaro */
 .dropdown-content a:hover {
     background-color: #ddd;
-    color: green;
+    color: #003300;
 }
 
 .dropdown:hover .dropdown-content {

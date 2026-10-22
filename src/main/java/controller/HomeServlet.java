@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,12 +25,12 @@ public class HomeServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(HomeServlet.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         try {
             if (request.getParameter("valore") == null) {
                 int randomNum = ThreadLocalRandom.current().nextInt(MIN_VAL, MAX_VAL + 1);
                 request.setAttribute("Valore", randomNum);
-                List<Prodotto> prodotti = ProdottoDAO.doRetriveAll();
+                ArrayList<Prodotto> prodotti = (ArrayList<Prodotto>) ProdottoDAO.doRetriveAll();
                 request.setAttribute("prodotti", prodotti);
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/HomePage.jsp");
                 dispatcher.forward(request, response);
@@ -58,7 +58,7 @@ public class HomeServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         doGet(req, resp);
     }
 

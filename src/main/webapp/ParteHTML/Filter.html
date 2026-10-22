@@ -9,7 +9,6 @@
 <body>
 <div id="mySidebar" class="sidebar">
     <form action="FiltraggioServletPrezzo">
-        <!-- FIX SONARQUBE: Sostituito <a> con <button> -->
         <button type="button" class="closebtn" onclick="closeNav()"
                 style="background: none; border: none; cursor: pointer; text-decoration: none; width: 5px; height: 5px; color: white; padding: 0; font-size: 1.5em;">&#x2715</button>
 
@@ -60,16 +59,18 @@
     function validate() {
         var min = document.getElementById('prezzomin').value;
         var max = document.getElementById('prezzomax').value;
-        var minRGEX = /^[0-9]*$/;
-        var maxRGEX = /^[0-9]*$/;
+        // FIX SONARQUBE: \d al posto di [0-9]
+        var minRGEX = /^\d*$/;
+        var maxRGEX = /^\d*$/;
         var minResult = minRGEX.test(min);
         var maxResult = maxRGEX.test(max);
 
-        if (minResult == false) {
+        // FIX SONARQUBE: ! al posto di == false
+        if (!minResult) {
             alert("Inserire un valore valido per il valore minimo");
             return false;
         }
-        if (maxResult == false) {
+        if (!maxResult) {
             alert("Inserire un valore valido per il valore massimo");
             return false;
         }

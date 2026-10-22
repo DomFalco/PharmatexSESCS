@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,7 +21,7 @@ public class InizioServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(InizioServlet.class.getName());
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) {
         try {
             String richiesta = request.getParameter("action");
 
@@ -33,7 +33,7 @@ public class InizioServlet extends HttpServlet {
                         return;
                     }
 
-                    List<Prodotto> prodottiCategoriaAmministratore = ProdottoDAO.doRetriveByCategoria(valore);
+                    ArrayList<Prodotto> prodottiCategoriaAmministratore = (ArrayList<Prodotto>) ProdottoDAO.doRetriveByCategoria(valore);
                     request.setAttribute("CategorieProdotti", prodottiCategoriaAmministratore);
                     request.setAttribute("Categoria", valore);
                     RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/amministratore/CategorieProdotti.jsp");
@@ -65,7 +65,7 @@ public class InizioServlet extends HttpServlet {
             HttpSession session = request.getSession();
             session.setAttribute("filtri", richiesta);
 
-            List<Prodotto> prodottiCategoria = ProdottoDAO.doRetriveByCategoria(richiesta);
+            ArrayList<Prodotto> prodottiCategoria = (ArrayList<Prodotto>) ProdottoDAO.doRetriveByCategoria(richiesta);
             request.setAttribute(richiesta, prodottiCategoria);
 
             RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/Prodotti.jsp");
@@ -77,7 +77,7 @@ public class InizioServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         doGet(req, resp);
     }
 

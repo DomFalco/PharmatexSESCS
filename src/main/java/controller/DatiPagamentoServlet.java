@@ -20,46 +20,45 @@ public class DatiPagamentoServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(DatiPagamentoServlet.class.getName());
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         doPost(request, response);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
-            return;
-        }
-        Utente u = (Utente) session.getAttribute("Utente");
-        if (u == null) {
-            inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato.");
-            return;
-        }
-
-        // Questa variabile rimane ArrayList perché è un cast diretto da Object della sessione
-        ArrayList<Prodotto> cart_list = (ArrayList<Prodotto>) session.getAttribute("cart-list");
-        ArrayList<Integer> qList = (ArrayList<Integer>) session.getAttribute("quantitaArticoli");
-
-        if (cart_list == null || qList == null || cart_list.isEmpty() || qList.isEmpty()) {
-            inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
-            return;
-        }
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
-            int x;
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: sessione mancante.");
+                return;
+            }
+            Utente u = (Utente) session.getAttribute("Utente");
+            if (u == null) {
+                inviaErrore(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato: utente non autenticato.");
+                return;
+            }
+
+            ArrayList<Prodotto> cart_list = (ArrayList<Prodotto>) session.getAttribute("cart-list");
+            ArrayList<Integer> qList = (ArrayList<Integer>) session.getAttribute("quantitaArticoli");
+
+            if (cart_list == null || qList == null || cart_list.isEmpty() || qList.isEmpty()) {
+                inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
+                return;
+            }
+
+            int quantitaAggiornata;
             for (int i = 0; i < cart_list.size(); i++) {
                 AcquistoProdottiDAO.acquistaProdotto(u.getEmail(), cart_list.get(i).getIdProdotto(), qList.get(i));
-                x = cart_list.get(i).getQuantita() - qList.get(i);
-                ProdottoDAO.doUpdateQuantita(x, cart_list.get(i).getIdProdotto());
+                quantitaAggiornata = cart_list.get(i).getQuantita() - qList.get(i);
+                ProdottoDAO.doUpdateQuantita(quantitaAggiornata, cart_list.get(i).getIdProdotto());
             }
 
             Carta c = new Carta(u);
             c.setNumeroCarta(request.getParameter("NCarta"));
-            c.setNomeIntestatario(request.getParameter("credenziali")); // FIX: getNomeIntestatario
+            c.setNomeIntestatario(request.getParameter("credenziali"));
             c.setDataScadenza(request.getParameter("dataScadenza"));
-            c.setCvv(request.getParameter("cvv")); // FIX: getCvv
+            c.setCvv(request.getParameter("cvv"));
             c.setEmailProprietario(u.getEmail());
             CartaDAO.aggiuntaCredenzialiPagamento(c, u.getEmail());
 
