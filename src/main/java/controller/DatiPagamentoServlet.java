@@ -39,19 +39,20 @@ public class DatiPagamentoServlet extends HttpServlet {
                 return;
             }
 
-            ArrayList<Prodotto> cart_list = (ArrayList<Prodotto>) session.getAttribute("cart-list");
+            // FIX SONARQUBE: Rinominato da cart_list a cartList
+            ArrayList<Prodotto> cartList = (ArrayList<Prodotto>) session.getAttribute("cart-list");
             ArrayList<Integer> qList = (ArrayList<Integer>) session.getAttribute("quantitaArticoli");
 
-            if (cart_list == null || qList == null || cart_list.isEmpty() || qList.isEmpty()) {
+            if (cartList == null || qList == null || cartList.isEmpty() || qList.isEmpty()) {
                 inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Carrello vuoto.");
                 return;
             }
 
             int quantitaAggiornata;
-            for (int i = 0; i < cart_list.size(); i++) {
-                AcquistoProdottiDAO.acquistaProdotto(u.getEmail(), cart_list.get(i).getIdProdotto(), qList.get(i));
-                quantitaAggiornata = cart_list.get(i).getQuantita() - qList.get(i);
-                ProdottoDAO.doUpdateQuantita(quantitaAggiornata, cart_list.get(i).getIdProdotto());
+            for (int i = 0; i < cartList.size(); i++) {
+                AcquistoProdottiDAO.acquistaProdotto(u.getEmail(), cartList.get(i).getIdProdotto(), qList.get(i));
+                quantitaAggiornata = cartList.get(i).getQuantita() - qList.get(i);
+                ProdottoDAO.doUpdateQuantita(quantitaAggiornata, cartList.get(i).getIdProdotto());
             }
 
             Carta c = new Carta(u);
@@ -62,9 +63,9 @@ public class DatiPagamentoServlet extends HttpServlet {
             c.setEmailProprietario(u.getEmail());
             CartaDAO.aggiuntaCredenzialiPagamento(c, u.getEmail());
 
-            cart_list.clear();
+            cartList.clear();
             qList.clear();
-            session.setAttribute("cart-list", cart_list);
+            session.setAttribute("cart-list", cartList);
             session.setAttribute("quantitaArticoli", qList);
 
             RequestDispatcher dispatcher = request.getRequestDispatcher("HomePage");
