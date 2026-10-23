@@ -4,11 +4,14 @@
 <%@ page import="model.Utente" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
-<html>
+<html lang="it"> <!-- FIX 1: Aggiunto lang="it" -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- FIX 2: Aggiunti integrity e crossorigin per la sicurezza (Snyk/Sonar) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <link rel="stylesheet" href="ParteCSS/CategorieProdotti.css">
     <link rel="stylesheet" href="ParteCSS/styleSito.css">
     <title>Pharmatex</title>
@@ -31,18 +34,43 @@
     </script>
     <style>
         @media screen and (max-width: 1482px) {
-            .topnav a:not(:first-child), .dropdown .dropbtn { display: none; }
-            .topnav a.icon { float: right; display: block; }
-            .topnav .search-container{ float: right; margin-top: 8px; margin-right: 10px; }
-            *{ zoom: normal; }
+            /* FIX 3: Modificato il selettore per il pulsante hamburger */
+            .topnav a:not(:first-child), .dropdown .dropbtn {
+                display: none;
+            }
+            .topnav button.icon {
+                float: right;
+                display: block;
+            }
+            .topnav .search-container{
+                float: right;
+                margin-top: 8px;
+                margin-right: 10px;
+            }
+            *{
+                zoom: normal;
+            }
         }
+
         @media screen and (max-width: 1482px) {
             .topnav.responsive {position: relative;}
-            .topnav.responsive .icon { position: absolute; right: 0; top: 0; }
-            .topnav.responsive a { float: none; display: block; text-align: left; }
+            .topnav.responsive button.icon { /* FIX 3 */
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+            .topnav.responsive a {
+                float: none;
+                display: block;
+                text-align: left;
+            }
             .topnav.responsive .dropdown {float: none;}
             .topnav.responsive .dropdown-content {position: relative;}
-            .topnav.responsive .dropdown .dropbtn { display: block; width: 100%; text-align: left; }
+            .topnav.responsive .dropdown .dropbtn {
+                display: block;
+                width: 100%;
+                text-align: left;
+            }
         }
     </style>
 </head>
@@ -100,12 +128,14 @@
         </button>
         <div class="dropdown-content">
             <a href="InizioServlet?action=Cuscinoguanciale">Guanciale</a>
-            <a href="InizioServlet?action=CuscinoRelax">Relax</a>
+            <a href="InizioServlet?action=Cuscinorex">Relax</a>
             <a href="InizioServlet?action=CuscinoViaggio">Viaggio</a>
         </div>
     </div>
 
-    <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="myFunction()">&#9776;</a>
+    <!-- FIX 3: Sostituito <a> con <button> per il menu mobile -->
+    <button type="button" class="icon" onclick="myFunction()">&#9776;</button>
+
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?action=contatti'">
             <i class="fa fa-phone"></i>
@@ -128,6 +158,7 @@
         <a style="text-decoration: none; pointer-events: none">Bentornato, <c:out value="<%=u.getNome()%>"/></a>
     </div>
     <% } %>
+
     <% if(session.getAttribute("Utente")!=null) { %>
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='LoginServlet?action=carrello'">
@@ -141,9 +172,11 @@
     </div>
     <% } %>
 
+    <!-- FIX 4: Aggiunto id all'input e label nascosta per l'accessibilità -->
     <div class="search-container">
         <form action="RicercaServlet">
-            <input type="text" placeholder="Cerca per nome" name="search">
+            <label for="searchInput" style="display: none;">Cerca per nome</label>
+            <input type="text" id="searchInput" placeholder="Cerca per nome" name="search">
             <button type="submit" value="Cerca" class="cerca">
                 <i class="fa fa-search"></i>
             </button>
@@ -151,7 +184,7 @@
     </div>
 </div>
 
-<!-- FIX: Controllo per lista vuota o nulla -->
+<!-- CONTENITORE PRODOTTI CON FIX PER LISTE VUOTE -->
 <%
     if (prod != null && !prod.isEmpty() && n >= 0) {
         int startIndex = Math.min(n, prod.size() - 1);
