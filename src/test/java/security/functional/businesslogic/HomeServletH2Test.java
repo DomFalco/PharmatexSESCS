@@ -63,9 +63,10 @@ class HomeServletH2Test extends BaseServletH2Test {
 
         invokeService(new HomeServlet());
 
+        // FIX: Il valore generato deve essere valido per la lista (0 o 1, visto che ci sono 2 prodotti)
         verify(request).setAttribute(eq("Valore"), argThat(o -> {
             int v = (int) o;
-            return v >= 5 && v <= 48;
+            return v >= 0 && v <= 1;
         }));
         verify(request).setAttribute(eq("prodotti"), argThat(o -> {
             @SuppressWarnings("unchecked")

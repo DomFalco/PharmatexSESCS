@@ -2,19 +2,22 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="model.Utente" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
-<html lang="it">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- FIX SONARQUBE: Aggiunto integrity e crossorigin -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha512-SfTiTlX6kk+qitfevl/7LibUOeJWlt9rbyDn92a1DqWOw9vWG2MFoays0sgObmWazO5BQPiFucnnEAjpAB+/4Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="ParteCSS/CategorieProdotti.css">
     <link rel="stylesheet" href="ParteCSS/styleSito.css">
-    <title>Pharmatex - Homepage</title>
+    <title>Pharmatex</title>
     <%
         List<Prodotto> prod = (ArrayList<Prodotto>) request.getAttribute("prodotti");
-        int n = (int) request.getAttribute("Valore");
+        int n = 0;
+        if (request.getAttribute("Valore") != null) {
+            n = (int) request.getAttribute("Valore");
+        }
     %>
     <script>
         function myFunction() {
@@ -28,19 +31,81 @@
     </script>
     <style>
         @media screen and (max-width: 1482px) {
-            .topnav a:not(:first-child), .dropdown .dropbtn { display: none; }
-            .topnav a.icon { float: right; display: block; }
-            .topnav .search-container{ float: left; }
-            *{ zoom: normal; }
+            .topnav a:not(:first-child), .dropdown .dropbtn {
+                display: none;
+            }
+            .topnav a.icon {
+                float: right;
+                display: block;
+            }
+            .topnav .search-container{
+                float: left;
+            }
+            *{
+                zoom: normal;
+            }
         }
 
         @media screen and (max-width: 1482px) {
             .topnav.responsive {position: relative;}
-            .topnav.responsive .icon { position: absolute; right: 0; top: 0; }
-            .topnav.responsive a { float: none; display: block; text-align: left; }
+            .topnav.responsive .icon {
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+            .topnav.responsive a {
+                float: none;
+                display: block;
+                text-align: left;
+            }
             .topnav.responsive .dropdown {float: none;}
             .topnav.responsive .dropdown-content {position: relative;}
-            .topnav.responsive .dropdown .dropbtn { display: block; width: 100%; text-align: left; }
+            .topnav.responsive .dropdown .dropbtn {
+                display: block;
+                width: 100%;
+                text-align: left;
+            }
+        }
+
+        /* FIX: Stile pulito per la barra di ricerca e per il logo */
+        .search-container {
+            float: right;
+            margin-top: 8px;
+            margin-right: 15px;
+        }
+        .search-container form {
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+        .search-container input[type="text"] {
+            padding: 0 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px 0 0 4px;
+            width: 15em;
+            height: 36px; /* Altezza fissa */
+            box-sizing: border-box; /* Include i bordi nell'altezza */
+            margin: 0;
+            outline: none;
+        }
+        .search-container .cerca {
+            width: 40px; /* Larghezza proporzionata */
+            height: 36px; /* STESSA ALTEZZA DELL'INPUT */
+            border: none;
+            background-color: white;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            color: #006600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            box-sizing: border-box; /* Include i bordi nell'altezza */
+        }
+        .sfondo {
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
@@ -58,6 +123,7 @@
             <a href="InizioServlet?action=LettoContenitore">Letto contenitore</a>
         </div>
     </div>
+
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?action=Materasso'">Materasso
             <i class="fa fa-caret-down"></i>
@@ -78,6 +144,7 @@
             <a href="InizioServlet?action=RetePiazzaEMezzo">Rete piazza e mezzo</a>
         </div>
     </div>
+
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?action=Divano'">Divano
             <i class="fa fa-caret-down"></i>
@@ -89,6 +156,7 @@
             <a href="InizioServlet?action=DivanoPoltrona">Poltrona</a>
         </div>
     </div>
+
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?action=Cuscino'">Cuscino
             <i class="fa fa-caret-down"></i>
@@ -100,22 +168,23 @@
         </div>
     </div>
 
-    <!-- FIX SONARQUBE: Sostituito <a> con <button> -->
-    <button type="button" style="font-size:15px; background:none; border:none; cursor:pointer; padding: 14px 16px; float:right;" class="icon" onclick="myFunction()">&#9776;</button>
-
+    <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="myFunction()">&#9776;</a>
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?action=contatti'">
             <i class="fa fa-phone"></i>
         </button>
     </div>
     <%
-        if(session.getAttribute("Utente")==null) { %>
+        if(session.getAttribute("Utente")==null)
+        {%>
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='InizioServlet?action=login'">
             <i class="fa fa-user-circle"></i>
         </button>
     </div>
-    <% } else { %>
+    <%}
+    else
+    {%>
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='LoginServlet?action=logout'">
             <i class="fa fa-sign-out"></i>
@@ -123,10 +192,11 @@
     </div>
     <div class="dropdown">
         <%Utente u = (Utente) session.getAttribute("Utente");%>
-        <a style="text-underline: none; pointer-events: none">Bentornato, <%=u.getNome()%></a>
+        <a style="text-decoration: none; pointer-events: none">Bentornato, <c:out value="<%=u.getNome()%>"/></a>
     </div>
-    <% } %>
-    <% if(session.getAttribute("Utente")!=null) { %>
+    <%}%>
+    <%if(session.getAttribute("Utente")!=null)
+    {%>
     <div class="dropdown">
         <button class="dropbtn" onclick="window.location.href='LoginServlet?action=carrello'">
             <i class="fa fa-shopping-cart"></i>
@@ -137,29 +207,20 @@
             <i class="fa fa-truck"></i>
         </button>
     </div>
-    <% } %>
+    <%}%>
 
+    <!-- FIX RICERCA: Rimossi gli stili inline, ora è gestita dal CSS pulito sopra -->
     <div class="search-container">
         <form action="RicercaServlet">
-            <button type="submit" value="Cerca" class="cerca" aria-label="Cerca" style="margin-right: 30px;
-    margin-top: 8px;
-    width: 32px;
-    height: 32px;
-    margin-left: 3px;
-    float: right;"><i class="fa fa-search"></i></button>
-
-            <label for="searchInput" style="display: none;">Cerca per nome</label>
-            <input type="text" id="searchInput" placeholder="Cerca per nome" name="search" style="padding: 6px;
-    font-size: 17px;
-    border: none;
-    margin-left: 3px;
-    margin-right: auto;
-    margin-top: 8px;
-    width: 15em;
-    float: right;">
+            <input type="text" placeholder="Cerca per nome" name="search">
+            <button type="submit" value="Cerca" class="cerca" aria-label="Cerca">
+                <i class="fa fa-search"></i>
+            </button>
         </form>
     </div>
 </div>
+
+<!-- HO RIPRISTINATO ESATTAMENTE LA TUA STRUTTURA ORIGINALE -->
 <%
     for (int i = 0; i < 5; i++,n--) {
         String directory = "immagini/" + prod.get(n).getIdProdotto() + ".jpg";
@@ -171,14 +232,13 @@
 <div class="box-container">
     <div class="box">
         <div class="image">
-            <a href="RicercaServlet?search=<%=prod.get(n).getNomeProd()%>">
-                <img src="<%=directory%>" alt="Immagine prodotto">
+            <a href="RicercaServlet?search=<c:out value="<%=prod.get(n).getNomeProd()%>"/>">
+                <img src="<c:out value="<%=directory%>"/>">
             </a>
         </div>
         <div class="info">
-            <b style="text-align: center;">Modello:<%=prod.get(n).getNomeProd()%>
-            </b><br>
-            <b style="text-align: center;color: red"><%=String.format(java.util.Locale.ITALY, "%.2f", prod.get(n).getPrezzo())%>&#8364;</b>
+            <b style="text-align: center;">Modello:<c:out value="<%=prod.get(n).getNomeProd()%>"/></b><br>
+            <b style="text-align: center;color: red;"><c:out value="<%=prod.get(n).getPrezzo()%>"/>&#8364;</b>
         </div>
     </div>
 </div>

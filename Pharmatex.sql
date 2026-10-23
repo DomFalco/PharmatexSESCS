@@ -4,7 +4,7 @@ use Pharmatex;
 
 CREATE TABLE Cliente(
                         email varchar(50) primary key,
-                        passwordEmail varchar(60) not null,
+                        passwordEmail varchar(255) not null,
                         nome varchar(30) not null,
                         cognome varchar(30) not null,
                         dataDiNascita char(10) not null,
@@ -55,9 +55,9 @@ CREATE TABLE CartaDiCredito(
 -- NOTA: Gli hash BCrypt sottostanti corrispondono alle password:
 -- admin001, Cliente1, Cliente2
 INSERT INTO Cliente VALUES
-                        ("admin@gmail.com",'$2a$12$6vZ1eZ1eZ1eZ1eZ1eZ1eZu5Hq3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3',"Nome","Cognome","2021-07-01","1234567890","ABCDE25F67G160H","Indirizzo, civico","Città","12345","NA","Italia",1),
-                        ("cliente1@gmail.com",'$2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',"Nome","Cognome","2021-07-01","1234567890","ABCDE25F67G160H","Indirizzo, civico","Città","12345","AV","Italia",0),
-                        ("cliente2@gmail.com",'$2a$12$5Z2vQ5jz5F5v5Z2vQ5jz5u5Z2vQ5jz5F5v5Z2vQ5jz5F5v5Z2vQ5jz5',"Nome","Cognome","2021-07-01","1234567890","ABCDE25F67G160H","Indirizzo, civico","Città","12345","AV","Italia",0);
+                        ("admin@gmail.com",'$2a$12$bbzZ9FMsxp1aFGtFw.kKtub9dQ70hW1t7oN2.t6qAGGlp992U.Km2',"Nome","Cognome","2021-07-01","1234567890","ABCDE25F67G160H","Indirizzo, civico","Città","12345","NA","Italia",1),
+                        ("cliente1@gmail.com",'$2a$12$raOPcH09QPNBjPeODWFCpePC4qT4gU7.7Tpq4oJz.ywZr6NHo1UIO',"Nome","Cognome","2021-07-01","1234567890","ABCDE25F67G160H","Indirizzo, civico","Città","12345","AV","Italia",0),
+                        ("cliente2@gmail.com",'$2a$12$1CJY2VuCpXL1o8bcZMIKa.Mc6QN9WxfZ1pZVN5lIWLVAFYeX46SPm',"Nome","Cognome","2021-07-01","1234567890","ABCDE25F67G160H","Indirizzo, civico","Città","12345","AV","Italia",0);
 
 insert INTO Prodotto values
                          ("MM001","MaterassoMatrimoniale","Nuvola","1800 molle insacchettate e 7 cm di memory, da 30 cm. Completamente sfoderabile com doppia fascia 3D made in italy e doppia cerniera.Le molle insacchettate mantengono la schiena dritta e il memory da la giusta morbidezza per un giusto sostegno",180,190,400,5,"Memory",null,null,null,null,null,null,null),

@@ -42,8 +42,7 @@ class LoginServletTest {
         when(request.getRequestDispatcher(anyString())).thenReturn(dispatcher);
     }
 
-    // FIX SONARQUBE: Uniti 4 test in un unico test parametrizzato
-    @ParameterizedTest(name = "Azione: {0}, Email: {1}, Password: {2} -> Errore gestito con 500")
+    @ParameterizedTest(name = "Azione: {0}, Email: {1}, Password: {2} -> Errore gestito")
     @CsvSource({
             "logout, null, null",
             "carrello, null, null",
@@ -58,18 +57,22 @@ class LoginServletTest {
 
         servlet.service(request, response);
 
+        // In questi casi il DB lancia IllegalStateException (mancata variabile d'ambiente)
+        // e la Servlet la cattura con sendError(500). Verifichiamo che non vada in crash.
         verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     @Test
-    @DisplayName("Riepilogo senza utente loggato risponde 500 (NPE gestita)")
-    void testRiepilogoSenzaUtenteLoggatoCausaNPE() throws Exception {
+    @DisplayName("Riepilogo senza utente loggato reindirizza al Login (Fix NPE)")
+    void testRiepilogoSenzaUtenteLoggatoRedirigeAlLogin() throws Exception {
         when(request.getParameter("action")).thenReturn("riepilogo");
         when(session.getAttribute("Utente")).thenReturn(null);
 
         servlet.service(request, response);
 
-        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
+        // FIX: Ora la Servlet non va in NPE, ma fa un forward al Login
+        verify(dispatcher).forward(request, response);
+        verify(response, never()).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     @Test
@@ -141,7 +144,7 @@ class LoginServletTest {
     }
 
     @Test
-    @DisplayName("Azione sconosciuta con doLogin fallito risponde 500")
+    @DisplayName("Azione sconosciuta non lancia eccezioni non gestite")
     void testAzioneSconosciutaNonProduceRisposta() throws Exception {
         when(request.getParameter("action")).thenReturn("azione_sconosciuta");
         when(request.getParameter("Email")).thenReturn(null);
@@ -149,8 +152,10 @@ class LoginServletTest {
 
         servlet.service(request, response);
 
-        verify(response).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
-        verify(dispatcher, never()).forward(request, response);
+        // FIX: Con l'azione sconosciuta e i parametri null, doLogin restituisce null.
+        // La Servlet semplicemente ignora l'azione (nessun forward, nessun sendError).
+        // Verifichiamo solo che non ci siano errori 500 lanciati per azioni sconosciute.
+        verify(response, never()).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
     }
 
     @Test

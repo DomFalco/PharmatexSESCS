@@ -1,51 +1,99 @@
-table, td, th {
-    border: 3px solid green;
-    padding: 5px;
-    border-collapse: collapse;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 15%;
-    width: 35%;
+/* =========================================
+   RESET E FORZATURA FONT GLOBALE
+   ========================================= */
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif !important;
 }
 
-button {
-    cursor: pointer;
-    margin: 5px;
-    background: none;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    left: auto;
-    right: auto;
-    top: 20%;
-    width: 50%;
-}
-
-/* FIX SONARQUBE: Scurito lo sfondo */
-.cart {
-    background: #046b32;
-    border-radius: 10px;
-    color: white;
-    font-size: 15px;
-    border: 2px solid black;
-    display: block;
-    left: 30%;
-    right: 30%;
-}
-
-input[type="email"], input[type="password"] {
-    width: 100%;
-    padding: 20px;
-    margin: 5px 0 22px 0;
-    display: inline-block;
-    border: none;
-    background-color: white;
+body {
+    margin: 0;
+    padding: 0;
 }
 
 .sfondo {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+/* =========================================
+   TABELLA E CONTENITORE
+   ========================================= */
+table {
+    width: 35%;
+    min-width: 350px;
+    border-collapse: collapse;
+    margin: 10% auto;
+}
+
+table, td, th {
+    border: 3px solid green;
+    padding: 20px;
+}
+
+th {
+    text-align: center;
+    font-weight: normal; /* Rimuove il grassetto di default del th */
+}
+
+/* =========================================
+   LABEL E INPUT
+   ========================================= */
+label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    font-size: 16px !important;
+    font-weight: bold !important; /* FIX: Ora tutte le label sono in grassetto */
+    color: #333;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0 15px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+
+    font-size: 16px !important;
+    font-weight: normal !important; /* Il testo digitato rimane normale */
+    color: #333;
+}
+
+/* FORZATURA PLACEHOLDER (Rimane normale per distinguerlo) */
+input::placeholder {
+    font-size: 16px !important;
+    font-weight: normal !important;
+    color: #888;
+    opacity: 1 !important;
+}
+
+/* Safari/Chrome/Firefox */
+input::-webkit-input-placeholder { font-family: Arial, Helvetica, sans-serif !important; }
+input::-moz-placeholder { font-family: Arial, Helvetica, sans-serif !important; }
+input:-ms-input-placeholder { font-family: Arial, Helvetica, sans-serif !important; }
+
+/* =========================================
+   PULSANTI
+   ========================================= */
+.cart {
+    background: #046b32;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid black;
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.cart:hover {
+    background: #035627;
 }

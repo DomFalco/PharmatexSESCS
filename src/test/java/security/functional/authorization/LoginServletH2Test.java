@@ -33,7 +33,6 @@ class LoginServletH2Test extends BaseServletH2Test {
     @Test
     @DisplayName("Login utente normale: imposta 'Utente' in sessione e forwarda a HomePage")
     void testLoginUtenteNormale() throws Exception {
-        // FIX SNYK: Password generata a runtime
         String randomPassword = UUID.randomUUID().toString();
         executeSql(insertClienteConBcrypt("mario@test.com", randomPassword, false));
         when(request.getParameter("Email")).thenReturn("mario@test.com");
@@ -69,7 +68,7 @@ class LoginServletH2Test extends BaseServletH2Test {
     }
 
     @Test
-    @DisplayName("Password errata: imposta 'parametri' con messaggio di errore e include Login.jsp")
+    @DisplayName("Password errata: imposta 'parametri' con messaggio di errore e forwarda a Login.jsp")
     void testLoginPasswordErrata() throws Exception {
         String randomPassword = UUID.randomUUID().toString();
         executeSql(insertClienteConBcrypt("mario@test.com", randomPassword, false));
@@ -81,13 +80,14 @@ class LoginServletH2Test extends BaseServletH2Test {
         invokeService(new LoginServlet());
 
         verify(request).setAttribute("parametri", "Email o password errati!");
-        verify(dispatcher).include(request, response);
+        // FIX: Ora la Servlet usa forward (più sicuro) invece di include
+        verify(dispatcher).forward(request, response);
         verify(session, never()).setAttribute(eq("Utente"), any());
         verify(session, never()).setAttribute(eq("Amministratore"), any());
     }
 
     @Test
-    @DisplayName("Email inesistente: imposta 'parametri' con messaggio di errore")
+    @DisplayName("Email inesistente: imposta 'parametri' con messaggio di errore e forwarda a Login.jsp")
     void testLoginEmailInesistente() throws Exception {
         when(request.getParameter("Email")).thenReturn("nessuno@test.com");
         when(request.getParameter("Password")).thenReturn("qualsiasi");
@@ -97,7 +97,8 @@ class LoginServletH2Test extends BaseServletH2Test {
         invokeService(new LoginServlet());
 
         verify(request).setAttribute("parametri", "Email o password errati!");
-        verify(dispatcher).include(request, response);
+        // FIX: Ora la Servlet usa forward (più sicuro) invece di include
+        verify(dispatcher).forward(request, response);
     }
 
     @Test

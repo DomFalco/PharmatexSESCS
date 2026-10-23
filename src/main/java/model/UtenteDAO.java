@@ -15,6 +15,12 @@ public class UtenteDAO extends HttpServlet {
     }
 
     public static Utente doLogin(String email, String password) {
+        // Controllo di sicurezza per evitare crash se i campi sono vuoti
+        if (email == null || password == null || email.trim().isEmpty() || password.trim().isEmpty()) {
+            System.out.println("DEBUG LOGIN: Email o password nulli/vuoti.");
+            return null;
+        }
+
         Utente utente = new Utente();
         try (Connection con = ConPool.getConnection();
              PreparedStatement ps = con.prepareStatement(
@@ -28,26 +34,41 @@ public class UtenteDAO extends HttpServlet {
                 if (rs.next()) {
                     String storedHash = rs.getString(2);
 
-                    if (BCrypt.checkpw(password, storedHash)) {
-                        utente.setEmail(rs.getString(1));
-                        utente.setPassword(storedHash);
-                        utente.setNome(rs.getString(3));
-                        utente.setCognome(rs.getString(4));
-                        utente.setDataDiNascita(rs.getString(5));
-                        utente.setNumeroTelefono(rs.getString(6));
-                        utente.setCodiceFiscale(rs.getString(7));
-                        utente.setVia(rs.getString(8));
-                        utente.setCitta(rs.getString(9));
-                        utente.setCap(rs.getString(10));
-                        utente.setProvincia(rs.getString(11));
-                        utente.setNazione(rs.getString(12));
-                        utente.setAmministratore(rs.getBoolean(13));
-                        return utente;
+                    // STAMPE DI DEBUG
+                    System.out.println("DEBUG LOGIN: Utente trovato! Email: " + email);
+                    System.out.println("DEBUG LOGIN: Hash recuperato: " + storedHash);
+                    System.out.println("DEBUG LOGIN: Password inserita: " + password);
+
+                    if (storedHash != null && storedHash.startsWith("$2a$")) {
+                        boolean match = BCrypt.checkpw(password, storedHash);
+                        System.out.println("DEBUG LOGIN: Risultato BCrypt.checkpw: " + match);
+
+                        if (match) {
+                            utente.setEmail(rs.getString(1));
+                            utente.setPassword(storedHash);
+                            utente.setNome(rs.getString(3));
+                            utente.setCognome(rs.getString(4));
+                            utente.setDataDiNascita(rs.getString(5));
+                            utente.setNumeroTelefono(rs.getString(6));
+                            utente.setCodiceFiscale(rs.getString(7));
+                            utente.setVia(rs.getString(8));
+                            utente.setCitta(rs.getString(9));
+                            utente.setCap(rs.getString(10));
+                            utente.setProvincia(rs.getString(11));
+                            utente.setNazione(rs.getString(12));
+                            utente.setAmministratore(rs.getBoolean(13));
+                            return utente;
+                        }
+                    } else {
+                        System.out.println("DEBUG LOGIN: Errore! L'hash nel DB non è valido o non inizia con $2a$");
                     }
+                } else {
+                    System.out.println("DEBUG LOGIN: Nessun utente trovato per l'email: " + email);
                 }
             }
             return null;
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new DataAccessException("Errore in doLogin", e);
         }
     }

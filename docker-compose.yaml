@@ -1,5 +1,6 @@
 services:
   app:
+    build: .
     image: domfalco/pharmatex:latest
     container_name: pharmatex-app
     restart: unless-stopped

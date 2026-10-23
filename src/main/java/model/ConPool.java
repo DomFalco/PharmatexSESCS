@@ -78,8 +78,10 @@ public class ConPool {
             throw new IllegalStateException("MYSQL_PASSWORD environment variable not set.");
         }
 
+        // FIX ENCODING: Aggiunti useUnicode=true e characterEncoding=UTF-8
         String url = "jdbc:mysql://" + host + ":" + port + "/" + database
-                + "?serverTimezone=" + TimeZone.getDefault().getID();
+                + "?serverTimezone=" + TimeZone.getDefault().getID()
+                + "&useUnicode=true&characterEncoding=UTF-8";
 
         p.setUrl(url);
         p.setDriverClassName("com.mysql.cj.jdbc.Driver");

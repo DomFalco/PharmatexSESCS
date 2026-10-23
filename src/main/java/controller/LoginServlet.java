@@ -44,7 +44,10 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
         try {
             HttpSession session = request.getSession();
-            Utente u = UtenteDAO.doLogin(request.getParameter(PARAM_EMAIL), request.getParameter(PARAM_PASSWORD));
+            String email = request.getParameter(PARAM_EMAIL);
+            String password = request.getParameter(PARAM_PASSWORD);
+
+            Utente u = UtenteDAO.doLogin(email, password);
 
             String action = request.getParameter(PARAM_ACTION);
 
@@ -52,7 +55,7 @@ public class LoginServlet extends HttpServlet {
                 if (u == null) {
                     request.setAttribute(PARAM_PARAMETRI, MSG_CREDENZIALI_ERRATE);
                     RequestDispatcher rs = request.getRequestDispatcher(LOGIN_JSP);
-                    rs.include(request, response);
+                    rs.forward(request, response); // Meglio forward che include
                 } else if (!u.isAmministratore()) {
                     session.setAttribute(ATTR_UTENTE, u);
                     RequestDispatcher ds = request.getRequestDispatcher(HOME_PAGE);
@@ -71,12 +74,22 @@ public class LoginServlet extends HttpServlet {
                 dispatcher.forward(request, response);
             } else if (action.equals(ACTION_RIEPILOGO)) {
                 Utente utente = (Utente) session.getAttribute(ATTR_UTENTE);
+
+                // PROTEZIONE: Se non sei loggato, non cercare l'email (evita NullPointerException)
+                if (utente == null) {
+                    request.setAttribute(PARAM_PARAMETRI, "Devi effettuare il login per vedere il riepilogo.");
+                    RequestDispatcher dispatcher = request.getRequestDispatcher(LOGIN_JSP);
+                    dispatcher.forward(request, response);
+                    return;
+                }
+
                 ArrayList<AcquistoProdotti> riepilogoProdotti = (ArrayList<AcquistoProdotti>) AcquistoProdottiDAO.doRetriveAcquistoUtente(utente.getEmail());
                 request.setAttribute(ATTR_RIEPILOGO_ORDINE_UTENTE, riepilogoProdotti);
                 RequestDispatcher dispatcher = request.getRequestDispatcher(RIEPILOGO_ACQUISTI_JSP);
                 dispatcher.forward(request, response);
             }
-        } catch (ServletException | IOException | RuntimeException e) { // FIX: Aggiunto RuntimeException
+        } catch (ServletException | IOException | RuntimeException e) {
+            e.printStackTrace(); // FONDAMENTALE: Stampa l'errore vero nella console di Tomcat
             inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del login.");
         }
     }

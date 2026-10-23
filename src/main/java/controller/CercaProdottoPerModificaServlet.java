@@ -36,7 +36,8 @@ public class CercaProdottoPerModificaServlet extends HttpServlet {
             }
 
             String x = request.getParameter("search");
-            if (x == null || !x.matches("[a-zA-Z0-9\\s]+")) {
+            // FIX: Aggiunto il punto '.' per far passare nomi come "3.1", "4.0", ecc.
+            if (x == null || !x.matches("[a-zA-Z0-9\\s\\-'.]+")) {
                 inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro 'search' non valido.");
                 return;
             }
