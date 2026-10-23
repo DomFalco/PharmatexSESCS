@@ -41,78 +41,75 @@ public class CarrelloServlet extends HttpServlet {
             HttpSession session = request.getSession();
             Utente u = (Utente) session.getAttribute("Utente");
 
-            // 1. Se l'utente non è loggato, vai al login e FERMATI
-            if (u == null) {
+            ArrayList<Prodotto> cartList;
+            ArrayList<Integer> qList;
+
+            if (u != null) {
+                cartList = (ArrayList<Prodotto>) session.getAttribute(CART_LIST);
+                qList = (ArrayList<Integer>) session.getAttribute(QUANTITA_ARTICOLI);
+                Prodotto p = (Prodotto) session.getAttribute(PROD);
+
+                String id = p.getIdProdotto();
+
+                if (cartList == null && qList == null) {
+                    cartList = new ArrayList<>();
+                    qList = new ArrayList<>();
+                    cartList.add(p);
+                    qList.add(Integer.valueOf(request.getParameter(QUANTITA)));
+                    salvaCarrello(session, cartList, qList);
+                } else {
+                    aggiornaQuantitaEsistente(request, cartList, qList, id);
+                }
+                forward(request, response, HOME_PAGE);
+            } else {
+                cartList = new ArrayList<>();
+                qList = new ArrayList<>();
                 forward(request, response, LOGIN_JSP);
-                return;
             }
 
-            // Recupera o crea le liste del carrello
-            ArrayList<Prodotto> cartList = (ArrayList<Prodotto>) session.getAttribute(CART_LIST);
-            ArrayList<Integer> qList = (ArrayList<Integer>) session.getAttribute(QUANTITA_ARTICOLI);
-
-            if (cartList == null) cartList = new ArrayList<>();
-            if (qList == null) qList = new ArrayList<>();
-
-            String action = request.getParameter(ACTION);
-
-            // 2. Gestione RIMOZIONE
-            if (action != null && action.contains(RIMUOVI)) {
+            if (request.getParameter(ACTION) != null && request.getParameter(ACTION).contains(RIMUOVI)) {
                 rimuoviProdotto(request, session, cartList, qList);
                 forward(request, response, HOME_PAGE);
-                return; // FERMATI QUI
+            } else {
+                forward(request, response, LOGIN_JSP);
             }
-
-            // 3. Gestione AGGIUNTA
-            Prodotto p = (Prodotto) session.getAttribute(PROD);
-
-            // Se non c'è nessun prodotto in sessione, torna alla home
-            if (p == null) {
-                forward(request, response, HOME_PAGE);
-                return;
-            }
-
-            String id = p.getIdProdotto();
-            String quantitaParam = request.getParameter(QUANTITA);
-
-            if (quantitaParam != null) {
-                boolean esiste = false;
-                for (int i = 0; i < cartList.size(); i++) {
-                    if (cartList.get(i).getIdProdotto().equals(id)) {
-                        esiste = true;
-                        int qval = qList.get(i) + Integer.parseInt(quantitaParam);
-                        qList.set(i, qval);
-                        break;
-                    }
-                }
-                if (!esiste) {
-                    cartList.add(p);
-                    qList.add(Integer.parseInt(quantitaParam));
-                }
-            }
-
-            salvaCarrello(session, cartList, qList);
-            forward(request, response, HOME_PAGE);
 
         } catch (NumberFormatException e) {
             inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "La quantità deve essere un numero valido.");
         } catch (ServletException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Errore durante l'elaborazione del carrello.", e);
             inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione del carrello.");
+        }
+    }
+
+    private void aggiornaQuantitaEsistente(HttpServletRequest request, ArrayList<Prodotto> cartList, ArrayList<Integer> qList, String id) {
+        Prodotto p = (Prodotto) request.getSession().getAttribute(PROD);
+        String quantitaParam = request.getParameter(QUANTITA);
+        boolean esiste = false;
+
+        for (int i = 0; i < cartList.size(); i++) {
+            if (cartList.get(i).getIdProdotto().equals(id) && quantitaParam != null) {
+                esiste = true;
+                int qval = qList.get(i);
+                qval += Integer.parseInt(quantitaParam);
+                qList.set(i, qval);
+            }
+        }
+
+        if (!esiste && quantitaParam != null) {
+            cartList.add(p);
+            qList.add(Integer.parseInt(quantitaParam));
         }
     }
 
     private void rimuoviProdotto(HttpServletRequest request, HttpSession session, ArrayList<Prodotto> cartList, ArrayList<Integer> qList) {
         String[] parti = request.getParameter(ACTION).split(RIMUOVI);
-        if (parti.length > 1) {
-            String idDaRimuovere = parti[1];
-            for (int i = 0; i < cartList.size(); i++) {
-                if (cartList.get(i).getIdProdotto().equalsIgnoreCase(idDaRimuovere)) {
-                    cartList.remove(i);
-                    qList.remove(i);
-                    salvaCarrello(session, cartList, qList);
-                    break; // Esci dal ciclo dopo aver rimosso
-                }
+        String idDaRimuovere = parti[1];
+
+        for (int i = 0; i < cartList.size(); i++) {
+            if (cartList.get(i).getIdProdotto().equalsIgnoreCase(idDaRimuovere)) {
+                cartList.remove(i);
+                qList.remove(i);
+                salvaCarrello(session, cartList, qList);
             }
         }
     }

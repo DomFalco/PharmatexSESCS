@@ -1,73 +1,31 @@
-/* =========================================
-   RESET E STILI BASE
-   ========================================= */
-* {
-    box-sizing: border-box;
-}
-
-/* Stile per la tabella e i bordi */
 table, td, th {
     border: 3px solid green;
     border-collapse: collapse;
-    text-align: center;
 }
 
-/* Stile specifico per i pulsanti con solo icone */
+button{
+    cursor: pointer;
+    margin: 5px;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    left: auto;
+    right: auto;
+    top: 20%;
+    width: 50%;
+}
+
+/* FIX SONARQUBE: Scurito lo sfondo */
 .cart {
     background: #046b32;
     border-radius: 10px;
     color: white;
-    font-size: 20px;
+    font-size: 15px;
     border: 2px solid black;
-    padding: 10px 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.3s;
-    margin: 5px;
-}
-
-.cart:hover {
-    background: #035627;
-}
-
-/* =========================================
-   FORM DI MODIFICA (Compattato)
-   ========================================= */
-.form-edit {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-}
-
-.form-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end; /* Allinea gli input */
-    width: 100%;
-    max-width: 400px;
-}
-
-.form-row label {
-    font-size: 16px;
-    font-weight: bold;
-    margin-right: 15px;
-    width: 150px; /* Larghezza fissa per allineare gli input */
-    text-align: right;
-}
-
-.form-row input[type="text"] {
-    width: 150px; /* Larghezza fissa per gli input */
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-/* Stile base per altri eventuali pulsanti (se presenti) */
-button {
-    cursor: pointer;
+    display: block;
+    left: 30%;
+    right: 30%;
 }

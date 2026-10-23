@@ -81,7 +81,7 @@ La scansione iniziale (Fase 1) non ha prodotto alert. Tuttavia, l'analisi manual
 
 ## 5. Processo di Remediation
 
-1. **Rimozione dal codice sorgente.** La password è stata eliminata da [`ConPool.java`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/model/ConPool.java), [`Dockerfile`](https://github.com/DomFalco/PharmatexSESCS/blob/master/Dockerfile) e [`docker-compose.yml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docker-compose.yaml).
+1. **Rimozione dal codice sorgente.** La password è stata eliminata da [`ConPool.java`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Model/ConPool.java), [`Dockerfile`](https://github.com/DomFalco/PharmatexSESCS/blob/master/Dockerfile) e [`docker-compose.yml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docker-compose.yaml).
 2. **Esternalizzazione della configurazione.** Il codice Java è stato modificato per leggere host, porta, database, utente e password tramite `System.getenv()` (`MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`), applicando il principio **fail-fast**: se `MYSQL_PASSWORD` non è impostata, l'applicazione lancia un'eccezione e non parte.
 3. **Configurazione locale sicura.** Le variabili sono fornite tramite un file `.env`, aggiunto a `.gitignore` per impedirne il commit.
 4. **Configurazione CI/CD sicura.** I valori sono stati salvati come GitHub Actions Secrets (`MYSQL_PASSWORD`, `MYSQL_USER`, `MYSQL_DATABASE`) e iniettati nei job.

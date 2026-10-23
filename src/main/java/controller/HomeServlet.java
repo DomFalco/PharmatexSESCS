@@ -28,30 +28,10 @@ public class HomeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         try {
             if (request.getParameter("valore") == null) {
-                ArrayList<Prodotto> prodotti = new ArrayList<>();
-
-                // FIX PER IL TEST: Catturiamo l'eccezione del DB internamente
-                // così la Servlet non va in crash e può impostare l'attributo "Valore"
-                try {
-                    prodotti = (ArrayList<Prodotto>) ProdottoDAO.doRetriveAll();
-                } catch (Exception dbEx) {
-                    LOGGER.log(Level.WARNING, "Impossibile recuperare i prodotti dal DB", dbEx);
-                }
-
+                int randomNum = ThreadLocalRandom.current().nextInt(MIN_VAL, MAX_VAL + 1);
+                request.setAttribute("Valore", randomNum);
+                ArrayList<Prodotto> prodotti = (ArrayList<Prodotto>) ProdottoDAO.doRetriveAll();
                 request.setAttribute("prodotti", prodotti);
-
-                // 2. Generiamo un numero casuale SICURO in base ai prodotti effettivamente presenti
-                if (prodotti != null && !prodotti.isEmpty()) {
-                    int maxSize = Math.min(MAX_VAL, prodotti.size() - 1);
-                    int minSize = Math.min(MIN_VAL, maxSize);
-
-                    int randomNum = ThreadLocalRandom.current().nextInt(minSize, maxSize + 1);
-                    request.setAttribute("Valore", randomNum);
-                } else {
-                    // Se la lista è vuota (o il DB non risponde), mettiamo 0 per evitare crash
-                    request.setAttribute("Valore", 0);
-                }
-
                 RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/results/HomePage.jsp");
                 dispatcher.forward(request, response);
             }
@@ -73,7 +53,6 @@ public class HomeServlet extends HttpServlet {
                 inviaErrore(response, HttpServletResponse.SC_BAD_REQUEST, "Azione non riconosciuta.");
             }
         } catch (ServletException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Errore durante l'elaborazione della richiesta in HomeServlet", e);
             inviaErrore(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Errore durante l'elaborazione della richiesta.");
         }
     }

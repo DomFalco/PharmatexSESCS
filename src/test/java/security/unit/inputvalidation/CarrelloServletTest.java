@@ -64,32 +64,26 @@ class CarrelloServletTest {
         verify(request, atLeastOnce()).getRequestDispatcher("/WEB-INF/results/Login.jsp");
     }
 
-    // ====== 2. FIX: Action null ora reindirizza alla Home ======
+    // ====== 2. Documentazione NPE su action null ======
 
     @Test
-    @DisplayName("Action null viene gestita e reindirizza alla Home (Fix NPE)")
-    void testActionNullRedirigeAllaHome() throws Exception {
+    @DisplayName("Action null causa NullPointerException (vulnerabilità documentata)")
+    void testActionNullCausaNPE() {
         Utente utente = new Utente();
-        Prodotto p = new Prodotto();
-        p.setIdProdotto("PROD001");
-
         when(session.getAttribute("Utente")).thenReturn(utente);
-        when(session.getAttribute("prod")).thenReturn(p);
+        when(session.getAttribute("prod")).thenReturn(null);
         when(request.getParameter("action")).thenReturn(null);
         when(request.getParameter("quantita")).thenReturn("1");
 
-        servlet.service(request, response);
-
-        // FIX: Ora non va più in crash, ma fa un forward alla Home
-        verify(request, atLeastOnce()).getRequestDispatcher("HomePage");
-        verify(response, never()).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
+        assertThrows(Exception.class, () -> servlet.service(request, response),
+                "Il codice attuale chiama action.contains() senza null check: NPE documentata");
     }
 
-    // ====== 3. FIX: Prodotto null ora reindirizza alla Home ======
+    // ====== 3. Documentazione NPE su prodotto null ======
 
     @Test
-    @DisplayName("Prodotto null in sessione reindirizza alla Home (Fix NPE)")
-    void testProdottoNullRedirigeAllaHome() throws Exception {
+    @DisplayName("Prodotto null in sessione causa NPE (vulnerabilità documentata)")
+    void testProdottoNullCausaNPE() {
         Utente utente = new Utente();
         when(session.getAttribute("Utente")).thenReturn(utente);
         when(session.getAttribute("prod")).thenReturn(null);
@@ -98,14 +92,11 @@ class CarrelloServletTest {
         when(request.getParameter("quantita")).thenReturn("1");
         when(request.getParameter("action")).thenReturn("aggiungi");
 
-        servlet.service(request, response);
-
-        // FIX: Ora non va più in crash, ma fa un forward alla Home
-        verify(request, atLeastOnce()).getRequestDispatcher("HomePage");
-        verify(response, never()).sendError(eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
+        assertThrows(Exception.class, () -> servlet.service(request, response),
+                "Il codice accede a p.getIdProdotto() senza null check: NPE documentata");
     }
 
-    // ====== 4. Quantità non numerica (GESTITA CON 400) ======
+    // ====== 4. Quantità non numerica (ORA GESTITA CON 400) ======
 
     @Test
     @DisplayName("Quantità non numerica risponde con 400 Bad Request")

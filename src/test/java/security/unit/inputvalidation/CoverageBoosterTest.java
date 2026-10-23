@@ -1,4 +1,4 @@
-package security.unit.coverage;
+package security.unit.inputvalidation;
 
 import controller.*;
 import jakarta.servlet.RequestDispatcher;
