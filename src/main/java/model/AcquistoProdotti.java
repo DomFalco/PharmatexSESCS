@@ -6,8 +6,10 @@ public class AcquistoProdotti implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private int quantitaAcquistata;
-    private Utente u;
-    private Prodotto p;
+    // FIX SONARQUBE: Aggiunto 'final'
+    private final Utente u;
+    // FIX SONARQUBE: Aggiunto 'final'
+    private final Prodotto p;
 
     public AcquistoProdotti(Utente ut, Prodotto pr) {
         u = ut;

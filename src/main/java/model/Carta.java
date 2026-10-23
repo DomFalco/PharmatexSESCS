@@ -9,7 +9,8 @@ public class Carta implements Serializable {
     private String nomeIntestatario;
     private String dataScadenza;
     private String cvv;
-    private Utente u;
+
+    private final Utente u;
 
     public Carta(Utente ut) {
         u = ut;
