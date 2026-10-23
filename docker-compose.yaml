@@ -21,6 +21,8 @@ services:
     image: mysql:8
     container_name: mysql-pharmatex
     restart: unless-stopped
+    # FIX ENCODING: Forza MySQL a usare UTF-8
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-Password}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-Pharmatex}
