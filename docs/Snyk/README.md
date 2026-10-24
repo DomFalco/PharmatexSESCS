@@ -1,11 +1,13 @@
 # Snyk — Software Composition Analysis & Static Code Analysis
 
-**Strumento:** Snyk 
+**Strumento:** Snyk  
 **Tipi di analisi:**
 - **Snyk Open Source** — analisi delle dipendenze (Maven, Docker) per vulnerabilità note (CVE)
 - **Snyk Code** — analisi statica del codice sorgente (SAST) per identificare pattern insicuri
 
 **Data di integrazione:** 01/10/2026
+
+**Data ultima modifica:** 22/10/2026
 
 ---
 
@@ -45,9 +47,12 @@
         - [4.4.3 Verifica](#443-verifica)
     - [4.5 Use of Password Hash With Insufficient Computational Effort](#45-use-of-password-hash-with-insufficient-computational-effort)
         - [4.5.1 Descrizione](#451-descrizione)
-        - [4.5.2 Decisione: rischio accettato](#452-decisione-rischio-accettato)
+        - [4.5.2 Remediation applicata](#452-remediation-applicata)
+        - [4.5.3 Verifica](#453-verifica)
+    - [4.6 Risoluzione delle vulnerabilità Low](#46-risoluzione-delle-vulnerabilità-low)
 
 ---
+
 ## 1. Introduzione
 
 Snyk è una piattaforma di sicurezza per lo sviluppo software che analizza il codice sorgente, le dipendenze e le immagini container alla ricerca di vulnerabilità note. Snyk si integra nativamente con i repository Git e con le pipeline di CI/CD, consentendo di individuare e correggere i problemi di sicurezza prima che raggiungano la produzione.
@@ -65,10 +70,10 @@ Snyk è stato integrato nel progetto in due modalità complementari:
 
 ---
 
-
 ## 2. Analisi delle dipendenze Maven (`pom.xml`)
 
 ### 2.1 Configurazione
+
 Il file [`pom.xml`](../../pom.xml) definisce le dipendenze Maven del progetto. Snyk Open Source ha scansionato le librerie dichiarate e ha rilevato **1 dipendenza vulnerabile** con **6 problemi associati** (2 diretti + 4 transitivi), oltre a una problematica di configurazione (dipendenza duplicata).
 
 ### 2.2 Vulnerabilità rilevate
@@ -97,7 +102,7 @@ Le tre CVE sono **High/Medium con fix disponibile** e riguardano una libreria di
 
 #### 2.4.1 Aggiornamento del driver MySQL
 
-L'aggiornamento nel [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L43-L47) dalla versione **8.0.18** alla versione **8.0.33** di `mysql-connector-java` risolve tutte e tre le CVE (XXE → fixata dalla 8.0.27; Improper Authorization → dalla 8.0.28; DoS transitiva su protobuf → dalla 8.0.29). È stata scelta la 8.0.33 perché è l'ultima versione della serie 8.0.x mantenuta stabile, con **compatibilità garantita** con il codice esistente (`ConPool.java` utilizza la classe `com.mysql.cj.jdbc.Driver`, invariata tra le due versioni).
+L'aggiornamento nel [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L50-L54) dalla versione **8.0.18** alla versione **8.0.33** di `mysql-connector-java` risolve tutte e tre le CVE (XXE → fixata dalla 8.0.27; Improper Authorization → dalla 8.0.28; DoS transitiva su protobuf → dalla 8.0.29). È stata scelta la 8.0.33 perché è l'ultima versione della serie 8.0.x mantenuta stabile, con **compatibilità garantita** con il codice esistente (`ConPool.java` utilizza la classe `com.mysql.cj.jdbc.Driver`, invariata tra le due versioni).
 
 #### 2.4.2 Vulnerabilità emerse dopo l'analisi iniziale
 
@@ -114,7 +119,8 @@ Dopo il primo aggiornamento alla versione **8.0.33**, la pipeline CI/CD di Snyk 
 - la 9.3.0 non presenta vulnerabilità dirette note;
 - la 9.3.0 dipende da `protobuf-java 4.29.0`, che non è affetto dalla CWE-121.
 
-**Verifica:** dopo il push e il rescan automatico, gli alert corrispondenti sono scomparsi dalla dashboard di GitHub Security.
+**Verifica:** dopo il push e il rescan automatico, gli alert corrispondenti sono scomparsi dalla dashboard di GitHub Security. È stata inoltre verificata la compatibilità della versione **9.3.0** con il codice esistente: la classe `com.mysql.cj.jdbc.Driver` è rimasta invariata e il test di connessione tramite `ConPool.java` ha avuto esito positivo.
+
 ---
 
 ## 3. Analisi del Dockerfile
@@ -164,16 +170,16 @@ La vulnerabilità di severità **High** identificata da Snyk è **CVE-2026-84782
 
 ##### 3.3.1.2 Dettagli della vulnerabilità
 
-| Campo | Valore                                                                |
-| :--- |:----------------------------------------------------------------------|
-| **CVE** | CVE-2026-84782                                                        |
-| **SNYK ID** | SNYK-UBUNTU2204-OPENSSL-20266990                                      |
-| **Pacchetto** | `openssl@3.0.2-0ubuntu1.26`, `openssl/libssl3@3.0.2-0ubuntu1.26`      |
+| Campo | Valore |
+| :--- | :--- |
+| **CVE** | CVE-2026-84782 |
+| **SNYK ID** | SNYK-UBUNTU2204-OPENSSL-20266990 |
+| **Pacchetto** | `openssl@3.0.2-0ubuntu1.26`, `openssl/libssl3@3.0.2-0ubuntu1.26` |
 | **Severità** | High (Snyk: High, Ubuntu Security Rating: High, Red Hat: Important) |
-| **CVSS v3** | 7.4 (Red Hat), 8.2 (cve.org)                                          |
-| **CWE** | CWE-125: Out-of-bounds Read                                           |
-| **Exploit maturity** | No known exploit                                                      |
-| **Fixed in** | `openssl@3.0.2-0ubuntu1.30` (per Ubuntu 22.04)                        |
+| **CVSS v3** | 7.4 (Red Hat), 8.2 (cve.org) |
+| **CWE** | CWE-125: Out-of-bounds Read |
+| **Exploit maturity** | No known exploit |
+| **Fixed in** | `openssl@3.0.2-0ubuntu1.30` (per Ubuntu 22.04) |
 
 **Descrizione tecnica:** la vulnerabilità risiede nella logica di ritrasmissione del protocollo **DTLS** (Datagram Transport Layer Security). Quando un messaggio di handshake viene scritto in modo frammentato e la scrittura viene sospesa (a causa di un buffer di trasporto momentaneamente pieno), il timer di ritrasmissione DTLS può erroneamente riutilizzare lo stesso buffer e la stessa posizione di tracking della scrittura sospesa, senza resettare la posizione all'inizio del messaggio. Ciò può causare una lettura oltre i limiti del buffer (out-of-bounds read), con potenziale **divulgazione di memoria heap** al peer come dati di handshake in chiaro, oppure un **crash del processo** (Denial of Service) se la lettura raggiunge una regione di memoria non mappata.
 
@@ -204,29 +210,30 @@ Questa modifica applica il principio di **"least functionality"** (minima funzio
 
 Il builder continua a usare il JDK (necessario per la compilazione Maven).
 
-### 3.4 Dopo la remediation
+### 3.4 Stato attuale dopo la remediation e il monitoraggio continuo
 
-Dopo le modifiche, la dashboard Snyk riporta:
+Dopo le modifiche iniziali, la dashboard di Snyk ha continuato a monitorare l'immagine. A causa della natura dinamica di Snyk, che aggiorna quotidianamente il suo database di vulnerabilità, **sono state scoperte nuove CVE nei pacchetti di sistema di Ubuntu 22.04** (upstream).
 
-| Severità | Prima | Dopo | Variazione |
-|----------|-------|------|------------|
-| Critical | 0 | 0 | — |
-| High | 1 | 1 | — |
-| **Medium** | **83** | **68** | **~15** |
-| Low | 19 | 20 | +1 |
-| **Totale** | **103** | **89** | **~14** |
+Attualmente, la dashboard riporta i seguenti numeri per il `Dockerfile`:
 
-**Riduzione complessiva:** ~14 vulnerabilità totali, di cui **~15 Medium**.
+| Severità | Iniziale | Attuale |
+|----------|---------------------|----------------|
+| Critical | 0 | 0 |
+| High | 1 | 1 |
+| **Medium** | **83** | **83** |
+| Low | 19 | 28 |
+| **Totale** | **103** | **112** |
 
-**CVE eliminate dal passaggio a JRE:** principalmente quelle relative al pacchetto `binutils` e alle librerie di sviluppo incluse nel JDK (`gcc-12`, `libstdc++6`, `binutils-common`, `libbinutils`, `libctf0`). Il JRE non le include, quindi le relative occorrenze sono scomparse dalla dashboard.
+*Nota:* Il numero di vulnerabilità è "risalito" nonostante le ottimizzazioni (JRE invece di JDK), perché Snyk ha rilevato nuove vulnerabilità nei pacchetti Ubuntu che prima non erano note. Questo evidenzia l'importanza del monitoraggio continuo.
 
 ### 3.5 Vulnerabilità residue — Rischio accettato
 
-Le **89 vulnerabilità residue** sono tutte nei pacchetti di sistema Ubuntu dell'immagine base `tomcat:10.1-jre17-temurin-jammy`. Snyk conferma:
+Le **112 vulnerabilità attuali** (1 High, 83 Medium, 28 Low) sono tutte nei pacchetti di sistema Ubuntu dell'immagine base `tomcat:10.1-jre17-temurin-jammy`. Snyk conferma:
 
 > *"According to our scan, you are currently using the most secure version of the selected base image."*
 
 **Non esiste una versione più sicura del tag `tomcat:10.1-jre17-temurin-jammy`.**
+
 
 #### 3.5.1 Motivazione dell'accettazione
 
@@ -236,26 +243,28 @@ Le vulnerabilità residue sono state accettate come **rischio residuo controllat
 2. **No fix disponibile**: per la maggior parte di esse Snyk riporta `Fixed in: []`, ovvero Ubuntu non ha ancora rilasciato una patch. Aggiornare il tag dell'immagine non risolverebbe la situazione.
 3. **Contesto di deployment**: l'applicazione è eseguita in un contesto didattico, non esposta su rete pubblica.
 4. **Exploit complesso**: le CVE residue richiedono in genere accesso locale o input controllato per essere sfruttate (come confermato dal campo *"Exploit maturity: NO KNOWN EXPLOIT"* in quasi tutte le schede).
-5. **Cambiare immagine non risolve**: testare varianti alternative di Ubuntu (Noble, Jammy) o Tomcat 11 ha evidenziato un **aumento** delle CVE, non una riduzione.
+5. **Cambiare immagine non risolve**: sono state testate varianti alternative basate su Ubuntu Noble/Jammy e Tomcat 11; in alcuni casi è stato evidenziato un **aumento** delle CVE, non una riduzione.
 
 ### 3.6 Considerazioni finali
 
 L'analisi del [`Dockerfile`](https://github.com/DomFalco/PharmatexSESCS/blob/master/Dockerfile) ha permesso di applicare due miglioramenti concreti:
+
 1. **Aggiornamento dei pacchetti di sistema** tramite `apt-get upgrade`: risolve le vulnerabilità fixabili upstream e garantisce che il container usi le versioni più recenti disponibili per Ubuntu 22.04.
 2. **Riduzione della superficie d'attacco** tramite JRE invece di JDK: elimina 15 CVE Medium legate a `binutils` e ai tool di sviluppo, senza impatti funzionali.
 
-Le 89 vulnerabilità residue non sono risolvibili dal progetto: dipendono da pacchetti upstream di Ubuntu per cui non esiste ancora una patch. Sono state pertanto **accettate come rischio residuo controllato**.
+Le 112 vulnerabilità residue non sono risolvibili dal progetto: dipendono da pacchetti upstream di Ubuntu per cui non esiste ancora una patch. Sono state pertanto **accettate come rischio residuo controllato**.
 
 ---
+
 ## 4. Analisi statica del codice sorgente (Snyk Code)
 
 ### 4.1 Configurazione
 
 Snyk Code è il motore di analisi statica del codice (SAST) di Snyk. Analizza il codice sorgente Java e JSP del progetto alla ricerca di pattern insicuri — input non validati, output non sanitizzato, uso di algoritmi crittografici deboli, gestione errata delle sessioni — **senza eseguire il codice**.
 
-Snyk Code ha rilevato **8 problemi** nel codice del progetto: **7 risolti** e **1 accettato come rischio residuo**.
+Snyk Code ha rilevato **37 problemi** nel codice del progetto: **8 di severità High/Medium** e **29 di severità Low**. Tutti i 37 problemi sono stati **risolti** e **0 accettati come rischio residuo**.
 
-### 4.2 Vulnerabilità rilevate
+### 4.2 Vulnerabilità rilevate (High/Medium)
 
 | ID | Categoria (CWE) | File | Severità | Score | Stato |
 |----|-----------------|------|----------|-------|-------|
@@ -266,8 +275,7 @@ Snyk Code ha rilevato **8 problemi** nel codice del progetto: **7 risolti** e **
 | SEC-C05 | [CWE-501](https://cwe.mitre.org/data/definitions/501.html) — Trust Boundary Violation | `InizioServlet.java` | Low | 225 | Risolto |
 | SEC-C06 | [CWE-501](https://cwe.mitre.org/data/definitions/501.html) — Trust Boundary Violation | `FiltraggioServletMateriale.java` | Low | 275 | Risolto |
 | SEC-C07 | [CWE-501](https://cwe.mitre.org/data/definitions/501.html) — Trust Boundary Violation | `FiltraggioServletMateriale.java` | Low | 275 | Risolto |
-| SEC-C08 | [CWE-916](https://cwe.mitre.org/data/definitions/916.html) — Use of Password Hash With Insufficient Computational Effort | `Utente.java` | Low | 175 | Rischio accettato |
-
+| SEC-C08 | [CWE-916](https://cwe.mitre.org/data/definitions/916.html) — Use of Password Hash With Insufficient Computational Effort | `Utente.java` | Low | 175 | Risolto |
 
 ### 4.3 Cross-Site Scripting (XSS)
 
@@ -290,17 +298,20 @@ Le 4 occorrenze corrispondono a:
 
 Per risolvere le vulnerabilità sono state adottate **due misure complementari**:
 
-1. **Aggiornamento delle dipendenze Maven [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L30-L40)** Sono state aggiunte le dipendenze **JSTL (Jakarta Standard Tag Library)**.
+1. **Aggiornamento delle dipendenze Maven [`pom.xml`](https://github.com/DomFalco/PharmatexSESCS/blob/master/pom.xml#L30-L40)** — Sono state aggiunte le dipendenze **JSTL (Jakarta Standard Tag Library)**:
+    - `jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0`
+    - `org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1`
+
 2. **Nel file [`Prodotti.jsp`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L3)** è stata inoltre aggiornata la direttiva taglib alla nuova URI Jakarta.
 
 Gli scriptlet `<%= ... %>` sono stati sostituiti con il tag `<c:out>`, che esegue automaticamente l'escaping dei caratteri HTML speciali (`<`, `>`, `"`, `'`, `&`), neutralizzando qualsiasi tentativo di iniezione di script.
 
-| Riga | Prima | Dopo |
-|------|-------|------|
-| 21 | `<title><%=x%></title>` | `<title><c:out value="<%=x%>"/></title>` 🔗 [Vedi la riga 9](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L9)|
-| 38 | `<a href="RicercaServlet?search=<%=p.getNomeProd()%>">` | `<a href="RicercaServlet?search=<c:out value='<%=p.getNomeProd()%>'/>">` 🔗 [Vedi la riga 25](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L25)|
-| 39 | `<img src="<%=directory%>">` | `<img src="<c:out value='<%=directory%>'/>">` 🔗 [Vedi la riga 26](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L26)|
-| 43 | `Modello:<%=p.getNomeProd()%>` | `Modello:<c:out value="<%=p.getNomeProd()%>"/>`  🔗 [Vedi la riga 30](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L30)|
+|Prima | Dopo |
+|-------|------|
+|`<title><%=x%></title>` | `<title><c:out value="<%=x%>"/></title>` 🔗 [Vedi la riga 10](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L10) |
+|`<a href="RicercaServlet?search=<%=p.getNomeProd()%>">` | `<a href="RicercaServlet?search=<c:out value='<%=p.getNomeProd()%>'/>">` 🔗 [Vedi la riga 26](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L26) |
+|`<img src="<%=directory%>">` | `<img src="<c:out value='<%=directory%>'/>">` 🔗 [Vedi la riga 27](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L27) |
+|`Modello:<%=p.getNomeProd()%>` | `Modello:<c:out value="<%=p.getNomeProd()%>"/>` 🔗 [Vedi la riga 31](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/webapp/WEB-INF/results/Prodotti.jsp#L31) |
 
 #### 4.3.3 Verifica
 
@@ -325,15 +336,15 @@ Le **3 vulnerabilità** rilevate sono state risolte introducendo opportune misur
 
 **In `FiltraggioServletMateriale.java`:**
 
-1. **Null check** — verifica esplicita che i parametri `mat` e `materiale` non siano `null`, evitando NullPointerException. 🔗 [Vedi le righe 32-34](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L32-L34)
-2. **Sanitizzazione con whitelist** — rimozione di tutti i caratteri non alfanumerici tramite `replaceAll("[^a-zA-Z0-9\\s]", "")`, creando le variabili sicure `matSicuro` e `materialeSicuro`. 🔗 [Vedi le righe 36-38](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L36-L38)
-3. **Inserimento sicuro in sessione** — uso delle variabili sanitizzate (`matSicuro`, `materialeSicuro`) in `setAttribute`, invece degli input originali.🔗 [Vedi le righe 60-63](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/FiltraggioServletMateriale.java#L60-L63)
+1. **Null check** — verifica esplicita che i parametri `mat` e `materiale` non siano `null`, evitando NullPointerException. 🔗 [Vedi le righe 33-34](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/controller/FiltraggioServletMateriale.java#L33-L34)
+2. **Sanitizzazione con whitelist** — rimozione di tutti i caratteri non alfanumerici tramite `replaceAll("[^a-zA-Z0-9\\s]", "")`, creando le variabili sicure `matSicuro` e `materialeSicuro`. 🔗 [Vedi le righe 36-37](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/controller/FiltraggioServletMateriale.java#L36-L37)
+3. **Inserimento sicuro in sessione** — uso delle variabili sanitizzate (`matSicuro`, `materialeSicuro`) in `setAttribute`, invece degli input originali. 🔗 [Vedi le righe 58-60](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/controller/FiltraggioServletMateriale.java#L58-L60)
 
 **In `InizioServlet.java`:**
 
-1. **Null check e validazione di `valore`** — se `richiesta` è `null`, il parametro `valore` viene validato con regex `matches("[a-zA-Z0-9\\s]+")`. Se non conforme, `sendError(SC_BAD_REQUEST)`. 🔗 [Vedi le righe 21-27](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L21-L27)
-2. **Validazione di `richiesta`** — verifica con la stessa regex prima di qualsiasi utilizzo, con `sendError(SC_BAD_REQUEST)` se non conforme. 🔗 [Vedi le righe 41-44](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L41-L44)
-3. **Inserimento sicuro in sessione** — `setAttribute` avviene solo dopo la validazione, quindi il valore è ormai sicuro. 🔗 [Vedi le righe 58-62](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Controller/InizioServlet.java#L58-L62)
+1. **Null check e validazione di `valore`** — se `richiesta` è `null`, il parametro `valore` viene validato con regex `matches("[a-zA-Z0-9\\s]+")`. Se non conforme, `sendError(SC_BAD_REQUEST)`. 🔗 [Vedi le righe 30-34](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/controller/InizioServlet.java#L30-L34)
+2. **Validazione di `richiesta`** — verifica con la stessa regex prima di qualsiasi utilizzo, con `sendError(SC_BAD_REQUEST)` se non conforme. 🔗 [Vedi le righe 31-34](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/controller/InizioServlet.java#L31-L34)
+3. **Inserimento sicuro in sessione** — `setAttribute` avviene solo dopo la validazione, quindi il valore è ormai sicuro. 🔗 [Vedi le righe 65-72](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/controller/InizioServlet.java#L65-L72)
 
 #### 4.4.3 Verifica
 
@@ -345,7 +356,7 @@ Dopo il rescan di Snyk Code, le **3 occorrenze** di Trust Boundary Violation non
 
 **Categoria:** [CWE-916: Use of Password Hash With Insufficient Computational Effort](https://cwe.mitre.org/data/definitions/916.html)
 
-Il metodo `setPassword()` in [`Utente.java`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/Model/Utente.java#L73) utilizza **SHA-1** tramite `MessageDigest.getInstance("SHA-1")` per hashare le password degli utenti.
+Il metodo `setPassword()` in [`Utente.java`](https://github.com/DomFalco/PharmatexSESCS/blob/master/src/main/java/model/Utente.java#L79) utilizzava **SHA-1** tramite `MessageDigest.getInstance("SHA-1")` per hashare le password degli utenti.
 
 **SHA-1 è inadatto all'hashing di password** perché:
 
@@ -354,17 +365,40 @@ Il metodo `setPassword()` in [`Utente.java`](https://github.com/DomFalco/Pharmat
 3. È **crittograficamente debole** dal 2017 (attacco SHAttered di Google).
 4. Un attaccante con accesso al database può eseguire un attacco a dizionario o brute-force in tempi molto brevi.
 
-#### 4.5.2 Decisione: rischio accettato
+#### 4.5.2 Remediation applicata
 
-La vulnerabilità è stata **accettata come rischio residuo controllato**, non risolta.
+La vulnerabilità è stata **risolta** sostituendo SHA-1 con **BCrypt**, un algoritmo di hashing progettato specificamente per le password, con salt automatico e cost factor configurabile.
 
-**Motivazione:**
+Il fix ha richiesto un intervento coordinato su più componenti del progetto:
 
-Il fix corretto richiede un refactoring strutturale che coinvolge più componenti del progetto:
+1. **Modifica del codice Java** — in `Utente.java` è stata introdotta la libreria BCrypt; `setPassword()` non usa più `MessageDigest.getInstance("SHA-1")` ma genera un hash BCrypt con salt casuale.
+2. **Modifica dello schema database** — la colonna `passwordEmail` è stata estesa a `varchar(255)`, dimensione compatibile con un hash BCrypt.
+3. **Rigenerazione degli hash esistenti** — tutti i record in `Pharmatex.sql` sono stati aggiornati con hash BCrypt generati a partire dalle password originali.
+4. **Aggiornamento del flusso di login** — il confronto tra hash SHA-1 è stato sostituito con il metodo `BCrypt.checkpw()`.
+5. **Test end-to-end** — sono stati verificati tutti i flussi di autenticazione (registrazione, login, gestione utente).
 
-1. **Modifica del codice Java** — introdurre una libreria di hashing sicura (BCrypt, Argon2id o PBKDF2).
-2. **Modifica dello schema database** — la colonna `passwordEmail` deve essere estesa a `varchar(60)` (dimensione di un hash BCrypt).
-3. **Rigenerazione degli hash esistenti** — tutti i record in `Pharmatex.sql` vanno aggiornati con hash BCrypt generati a partire dalle password originali.
-4. **Aggiornamento del flusso di login** — sostituire il confronto tra hash SHA-1 con il metodo `BCrypt.checkpw()`.
-5. **Test end-to-end** — verificare tutti i flussi di autenticazione.
+#### 4.5.3 Verifica
 
+Dopo il rescan di Snyk Code, l'alert **CWE-916** su `Utente.java` non compare più nel report. La vulnerabilità non è quindi più presente e non è stato necessario accettarla come rischio residuo.
+
+### 4.6 Risoluzione delle vulnerabilità Low
+
+Oltre alle vulnerabilità di severità High e Medium, Snyk Code ha identificato **29 vulnerabilità di severità Low** (con Score inferiore a 300). Queste problematiche non rappresentano rischi critici per l'applicazione in produzione, ma sono state comunque **tutte risolte** per garantire i più alti standard di qualità e sicurezza del codice.
+
+La maggior parte di queste segnalazioni era localizzata nei **file di test** (es. `LoginServletTest.java`, `LoginServletH2Test.java`, `HomeServletTest.java`) e rientrava nella categoria **Hardcoded Credentials (CWE-798)**. Snyk Code segnalava la presenza di password e credenziali scritte in chiaro direttamente nel codice sorgente dei test.
+
+Per risolvere queste segnalazioni, sono state valutate due possibili strade:
+
+1. **Etichettarle come "Falsi Positivi"**: poiché si trattava di file di test isolati e non di codice di produzione, si sarebbe potuto documentare la scelta di ignorarle direttamente sulla dashboard di Snyk.
+2. **Risolvere strutturalmente il problema (Strada scelta)**: per non lasciare debito tecnico e garantire che anche i test seguissero le best practice di sicurezza, si è deciso di intervenire sul codice.
+
+**Remediation applicata:**
+Nei file di test è stata eliminata la pratica di inserire password in chiaro, sostituendola con la **generazione dinamica di password casuali a runtime** tramite l'uso di `UUID.randomUUID().toString()`. Questo approccio garantisce che non vi siano più stringhe hardcoded, rendendo i test più sicuri e robusti.
+
+Oltre a questo, le altre vulnerabilità Low rientravano nelle seguenti categorie ed erano così distribuite:
+
+*   **Information Exposure (CWE-200)** — alcuni log mostravano dettagli interni. Sono stati ripuliti i messaggi di errore restituiti al client.
+*   **Insecure Randomness (CWE-330)** — l'uso di `Math.random()` è stato sostituito con `java.security.SecureRandom` (o `ThreadLocalRandom` dove appropriato).
+
+**Verifica:**
+Dopo il rescan di Snyk Code, la dashboard riporta **0 vulnerabilità** residue sulla  `Code analysis`, confermando la completa pulizia del codice sotto ogni profilo di severità.

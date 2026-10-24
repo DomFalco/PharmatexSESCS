@@ -2,8 +2,8 @@
 
 **Strategia:** [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)  
 **Framework:** JUnit 5 + Mockito 4.11.0 + AssertJ 3.27.7  
-**Test totali (questa categoria):** 305 (29 classi, 5 aree OWASP)  
-**Data ultima esecuzione:** 07/10/2026
+**Test totali (questa categoria):** 319 (30 classi, 5 aree OWASP)  
+**Data ultima esecuzione:** 22/10/2026
 
 ---
 
@@ -22,8 +22,8 @@
 - [3. Data Protection — 20 test (A02:2021)](#3-data-protection--20-test-a022021)
     - [3.1 Endpoint e funzionalità testate](#31-endpoint-e-funzionalità-testate)
     - [3.2 Miglioramenti implementati](#32-miglioramenti-implementati)
-    - [3.3 Vulnerabilità documentate](#33-vulnerabilità-documentate)
-- [4. Input Validation — 83 test (A03:2021)](#4-input-validation--83-test-a032021)
+    - [3.3 Vulnerabilità risolte](#33-vulnerabilità-risolte)
+- [4. Input Validation — 96 test (A03:2021)](#4-input-validation--96-test-a032021)
     - [4.1 Endpoint e funzionalità testate](#41-endpoint-e-funzionalità-testate)
     - [4.2 Miglioramenti implementati](#42-miglioramenti-implementati)
     - [4.3 Vulnerabilità documentate](#43-vulnerabilità-documentate)
@@ -40,7 +40,7 @@
     - [6.3 Vulnerabilità documentate (rischio accettato)](#63-vulnerabilità-documentate-rischio-accettato)
     - [6.4 Dettaglio delle vulnerabilità risolte](#64-dettaglio-delle-vulnerabilità-risolte)
 - [7. DAO Security — Analisi statica (A03:2021)](#7-dao-security--analisi-statica-a032021)
-    - [7.1 Analisi statica del sorgente — 49 test](#71-analisi-statica-del-sorgente--49-test)
+    - [7.1 Analisi statica del sorgente — 50 test](#71-analisi-statica-del-sorgente--50-test)
     - [7.2 Miglioramenti implementati](#72-miglioramenti-implementati)
     - [7.3 Finding documentati](#73-finding-documentati)
 - [8. Dettaglio vulnerabilità critiche](#8-dettaglio-vulnerabilità-critiche)
@@ -63,7 +63,7 @@
 
 ## 1. Introduzione
 
-Questo report documenta la suite di **test unitari e di analisi statica** del progetto: **305 test** distribuiti su **29 classi** e organizzati in **5 aree** secondo l'OWASP Testing Guide. I **test funzionali H2** (176 test) sono documentati separatamente in [`functional.md`](functional.md).
+Questo report documenta la suite di **test unitari e di analisi statica** del progetto: **319 test** distribuiti su **30 classi** e organizzati in **5 aree** secondo l'OWASP Testing Guide. I **test funzionali H2** (175 test) sono documentati separatamente in [`functional.md`](functional.md).
 
 Per la panoramica complessiva della strategia di test (perché due categorie, valore aggiunto, finding aggregati) vedi [`security-test.md`](security-test.md).
 
@@ -74,23 +74,23 @@ I test sono organizzati in **5 aree OWASP**, ciascuna mappata sulle categorie de
 | Area OWASP | OWASP Top 10 (2021) | Focus | Test |
 |------------|:-------------------:|-------|:----:|
 | **Data Protection** | A02:2021 — Cryptographic Failures | Hashing, credenziali, dati sensibili | 20 |
-| **Input Validation** | A03:2021 — Injection | Sanitizzazione, XSS, SQL Injection | 83 |
+| **Input Validation** | A03:2021 — Injection | Sanitizzazione, XSS, SQL Injection | 96 |
 | **Authorization & Access Control** | A01:2021 — Broken Access Control | Autenticazione, sessioni, privilegi | 75 |
 | **Business Logic** | A04:2021 — Insecure Design | Logica applicativa, flussi, calcoli | 78 |
 | **DAO Security** | A03:2021 — Injection | Query SQL, PreparedStatement, pattern statici | 49 |
-| **TOTALE** | | | **305** |
+| **TOTALE** | | | **318** |
 
 ### 1.2 Struttura delle directory dei test
 
 ```
 src/test/java/
 └── security/
-    └── unit/                          (29 file — test unitari)
+    └── unit/                          (30 file — test unitari)
         ├── authorization/             (7 file)
         ├── businesslogic/             (6 file)
         ├── daointegration/            (4 file — analisi statica)
         ├── dataprotection/            (3 file)
-        └── inputvalidation/           (9 file)
+        └── inputvalidation/           (10 file)
 ```
 
 ### 1.3 Stack di test
@@ -184,12 +184,12 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 
 | Classe | Test | Endpoint / Funzionalità |
 |--------|:----:|-------------------------|
-| `Utente.java` | 8 | `setPassword()` / `getPassword()` |
+| `Utente.java` | 8 | `setPassword()` / `getPassword()` / `checkPassword()` |
 | `ConPool.java` | 7 | `getConnection()` (connessione DB) |
 | `ServletErrorHelper.java` | 5 | `sendError()` (gestione errori HTTP) |
 
 **File di test:**
-- `PasswordHashingTest.java`
+- `UtenteTest.java`
 - `ConPoolTest.java`
 - `ServletErrorHelperTest.java`
 
@@ -197,19 +197,19 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 
 | Area | Prima | Dopo | Impact |
 |------|-------|------|--------|
-| **Hashing password** | SHA-1 senza salt | Documentato come rischio accettato (CWE-916) | Consapevolezza della vulnerabilità |
+| **Hashing password** | SHA-1 senza salt | **Risolto tramite BCrypt** (salt automatico, cost factor 12) | Risoluzione CWE-916 |
 | **Credenziali DB** | Password hardcoded in `ConPool.java` | Lette da variabili d'ambiente (`System.getenv()`) | Fix GitGuardian |
 | **Fail-fast** | Nessun controllo | `IllegalStateException` se `MYSQL_PASSWORD` non impostata | Prevenzione di avvio con configurazione incompleta |
 | **Error handling** | `System.err.println` | `java.util.logging.Logger` con logging sicuro | No stack trace esposti |
 
-### 3.3 Vulnerabilità documentate
+### 3.3 Vulnerabilità risolte
 
-- **CWE-916** ([Use of Password Hash With Insufficient Computational Effort](https://cwe.mitre.org/data/definitions/916.html)): SHA-1 senza salt per l'hashing delle password in `Utente.java`. **Rischio accettato** [`snyk.md`](https://github.com/DomFalco/PharmatexSESCS/blob/master/docs/Snyk/README.md).
+- **CWE-916** ([Use of Password Hash With Insufficient Computational Effort](https://cwe.mitre.org/data/definitions/916.html)): SHA-1 senza salt per l'hashing delle password in `Utente.java` è stato **risolto** sostituendo l'algoritmo con **BCrypt**. I test (`UtenteTest.java`) verificano che l'hash abbia 60 caratteri, inizi con `$2a$`, che password identiche producano hash diversi (presenza di salt) e che il metodo `checkPassword()` funzioni correttamente.
 - **Fix GitGuardian**: credenziali DB lette da variabili d'ambiente con fail-fast se `MYSQL_PASSWORD` non è impostata.
 
 ---
 
-## 4. Input Validation — 83 test (A03:2021)
+## 4. Input Validation — 96 test (A03:2021)
 
 > **OWASP Top 10 (2021):** [A03:2021 — Injection](https://owasp.org/Top10/A03_2021-Injection/)
 
@@ -220,7 +220,7 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 | Classe | Test | Endpoint / Funzionalità | Fix applicato |
 |--------|:----:|-------------------------|---------------|
 | `FiltraggioServletMateriale.java` | 9 | `/FiltraggioServletMateriale?prodotto=...&materiale=...` | Sanitizzazione `replaceAll` |
-| `InizioServlet.java` | 9 | `/InizioServlet?action=...&valore=...` | Validazione regex |
+| `InizioServlet.java` | 11 | `/InizioServlet?action=...&valore=...` | Validazione regex |
 | `RicercaServlet.java` | 6 | `/RicercaServlet?search=...` | Documenta NPE su input null |
 | `FiltraggioServletPrezzo.java` | 8 | `/FiltraggioServletPrezzo?prezzomin=...&prezzomax=...` | Documenta NumberFormatException |
 | `CarrelloServlet.java` | 9 | `/CarrelloServlet?action=...&quantita=...` | Documenta NPE e doppio forward |
@@ -228,6 +228,7 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 | `ModificaProdottiServletAmministratore.java` | 11 | `/ModificaProdottiServletAmministratore?nuovoPrezzo=...&quantitaTotale=...` | Documenta NPE e validazione assente |
 | `MaterialeServlet.java` | 9 | `/MaterialeServlet` (filtro materiale) | **Fix NPE + doppio forward** |
 | `JspHelper.java` | 9 | Estrazione dati per JSP | Estrazione sicura dati dalla request |
+| `CoverageBoosterTest.java` | 13 | Test dei blocchi catch | Coverage delle Servlet |
 
 ### 4.2 Miglioramenti implementati
 
@@ -298,6 +299,7 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 - **CWE-352** (CSRF token assente)
 - **CWE-307** (Brute-force protection assente in `LoginServlet`)
 - **CWE-384** (Session fixation in `LoginServlet`)
+- **CWE-476** (NPE su `riepilogo` senza utente in `LoginServlet`, gestita con HTTP 500)
 
 ### 5.5 Dettaglio delle vulnerabilità risolte
 
@@ -365,14 +367,14 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 
 > **Nota:** i test funzionali H2 dei DAO (38 test) e delle Servlet (136 test) sono documentati in [`functional.md`](functional.md).
 
-### 7.1 Analisi statica del sorgente — 49 test
+### 7.1 Analisi statica del sorgente — 50 test
 
 **File di test:** `src/test/java/security/unit/daointegration/`
 
 | Classe | Test | Query / Operazioni | Note |
 |--------|:----:|---------------------|------|
 | `ProdottoDAO.java` | 10 | `SELECT`, `INSERT`, `UPDATE`, `DELETE` | Usa PreparedStatement, no SQL Injection |
-| `UtenteDAO.java` | 14 | `SELECT`, `INSERT`, `UPDATE` (login, registrazione) | Documenta SHA1, verifica assenza `SELECT *` |
+| `UtenteDAO.java` | 15 | `SELECT`, `INSERT`, `UPDATE` (login, registrazione) | Verifica assenza `SELECT *`, uso di BCrypt |
 | `AcquistoProdottiDAO.java` | 13 | `SELECT`, `INSERT` (acquisti) | Non estende HttpServlet (buona pratica) |
 | `CartaDAO.java` | 12 | `SELECT`, `INSERT` (carte) | Documenta SELECT senza WHERE, CVV in chiaro |
 
@@ -392,7 +394,7 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 | **Resource leak** | `Connection` non chiusa | `try-with-resources` (esteso a `PreparedStatement` e `ResultSet`) | Resource management |
 | **ID generati** | Nessun recupero | `Statement.RETURN_GENERATED_KEYS` | Corretto recupero ID |
 | **Eccezioni generiche** | `RuntimeException` generica | `DataAccessException` custom | Migliore semantica dell'errore |
-| **SHA-1 nel login** | `SHA1()` nel database | Documentato come rischio accettato (CWE-916) | Consapevolezza |
+| **SHA-1 nel login** | `SHA1()` nel database | **Risolto: ora si usa BCrypt.checkpw() in Java** | Risoluzione CWE-916 |
 | **SELECT senza WHERE** (CartaDAO) | Carica tutte le carte in memoria | Documentato | Consapevolezza |
 | **CVV/numero carta in chiaro** | Salvati in chiaro in `CartaDiCredito` | Documentato | Consapevolezza PCI-DSS |
 | **Design smell** | DAO estendono `HttpServlet` | Documentato | Consapevolezza |
@@ -402,15 +404,11 @@ Questa strategia copre esattamente ciò che Snyk Code e SonarCloud non rilevano 
 | ID | Vulnerabilità | CWE | Classe | Stato |
 |----|---------------|:---:|--------|:-----:|
 | SEC-DAO-02 | Numero carta e CVV salvati in chiaro nella tabella `CartaDiCredito`. Il CVV non dovrebbe **mai** essere persistito (PCI DSS 3.2) | CWE-312 | `CartaDAO` | Documentato |
-| SEC-DAO-03 | Il setter `Utente.setPassword()` applica SHA-1: ogni lettura dal DB produce un doppio hash `SHA1(SHA1(pwd))` | CWE-1064 | `Utente.java` | Documentato |
-| SEC-DAO-04 | `UtenteDAO.doLogin` usa `SHA1()` per confrontare la password nel database | CWE-916 | `UtenteDAO` | Documentato |
 | SEC-DAO-05 | `CartaDAO.aggiuntaCredenzialiPagamento` esegue `SELECT numeroCarta FROM CartaDiCredito` senza WHERE, caricando tutte le carte in memoria | CWE-770 | `CartaDAO` | Documentato |
 | SEC-DAO-06 | I DAO `ProdottoDAO` e `UtenteDAO` estendono `HttpServlet` (design smell: un DAO non è una Servlet) | — | `ProdottoDAO`, `UtenteDAO` | Documentato |
 | SEC-DAO-07 | Eccezioni SQL wrappate in `DataAccessException` custom (miglioramento rispetto a `RuntimeException` generica) | CWE-391 | Tutti i DAO | Risolto |
 
-**Nota su SEC-DAO-03:** il doppio hashing non compromette il login (perché `doLogin` confronta l'hash nel DB con `SHA1(input)` prima del re-hashing del bean), ma è un **design smell** che viola il principio di separazione tra model e hashing. Un setter non dovrebbe mai applicare trasformazioni crittografiche.
-
-**Nota:** il trattino `—` nella colonna CWE indica un **design smell** o problema architetturale che non mappa su un CWE specifico (non è una vulnerabilità di sicurezza ma una violazione di best practice).
+*(Nota: SEC-DAO-03 e SEC-DAO-04 su SHA-1 sono stati rimossi in quanto risolti tramite l'adozione di BCrypt in Java).*
 
 > **Nota:** il finding **SEC-DAO-01** (`doRetriveBySearch` non case-insensitive) è stato scoperto **solo** grazie ai test funzionali H2, ed è documentato in [`functional.md`](functional.md).
 
@@ -429,7 +427,7 @@ Questa sezione documenta in dettaglio le **vulnerabilità critiche risolte** eme
 
 **Vulnerabilità**
 
-Il Servlet recuperava il parametro `prodotto` dalla request e lo confrontava direttamente con `equalsIgnoreCase()` senza verificare che non fosse `null`. Se l'utente accedeva a `/MaterialeServlet` senza inviare il parametro, il server rispondeva con `NullPointerException` → HTTP 500, esponendo inoltre lo stack trace nei log applicativi.
+La Servlet recuperava il parametro `prodotto` dalla request e lo confrontava direttamente con `equalsIgnoreCase()` senza verificare che non fosse `null`. Se l'utente accedeva a `/MaterialeServlet` senza inviare il parametro, il server rispondeva con `NullPointerException` → HTTP 500, esponendo inoltre lo stack trace nei log applicativi.
 
 **Scenario**
 
@@ -441,7 +439,7 @@ Il Servlet recuperava il parametro `prodotto` dalla request e lo confrontava dir
 
 **Patch applicata**
 
-Aggiunto un null check esplicito prima del confronto: se `mat` è `null`, viene impostato a stringa vuota. Il Servlet prosegue con l'elaborazione normale senza sollevare eccezioni.
+Aggiunto un null check esplicito prima del confronto: se `mat` è `null`, viene impostato a stringa vuota. La Servlet prosegue con l'elaborazione normale senza sollevare eccezioni.
 
 ---
 
@@ -454,7 +452,7 @@ Aggiunto un null check esplicito prima del confronto: se `mat` è `null`, viene 
 
 **Vulnerabilità**
 
-Nel ramo in cui la lista `prodottiMateriale` risultava vuota, il Servlet eseguiva un `forward()` verso una JSP di errore e successivamente, **senza un `return`**, continuava l'esecuzione chiamando un secondo `forward()` verso la pagina principale. In un container reale (Tomcat) questo comportamento genera `IllegalStateException: Cannot forward after response has been committed`.
+Nel ramo in cui la lista `prodottiMateriale` risultava vuota, la Servlet eseguiva un `forward()` verso una JSP di errore e successivamente, **senza un `return`**, continuava l'esecuzione chiamando un secondo `forward()` verso la pagina principale. In un container reale (Tomcat) questo comportamento genera `IllegalStateException: Cannot forward after response has been committed`.
 
 **Scenario**
 
@@ -619,9 +617,10 @@ Sostituito `contains(...)` con `startsWith("amministratore")` per richiedere che
 | AUTH-01÷06 | Missing Authorization | CWE-862 | Critica | Risolto |
 | AUTH-07 | Matching permissivo `contains` | CWE-20 | Alta | Risolto |
 | BL-01, BL-02 | Accesso non autorizzato | CWE-862 | Critica | Risolto |
+| SEC-DP-01 | SHA-1 per hashing password | CWE-916 | Alta | **Risolto (BCrypt)** |
 | SEC-DAO-07 | Eccezioni SQL wrappate in `DataAccessException` | CWE-391 | Media | Risolto |
 
-Le vulnerabilità **documentate come rischio accettato** (SHA-1, CSRF, session fixation, violazioni PCI DSS) sono trattate nella sezione 3.3 e 7.3.
+Le vulnerabilità **documentate come rischio accettato** (CSRF, session fixation, violazioni PCI DSS, NPE su login) sono trattate nella sezione 5.4 e 7.3.
 
 ---
 
@@ -631,8 +630,8 @@ Le vulnerabilità **documentate come rischio accettato** (SHA-1, CSRF, session f
 
 | Metrica | Valore |
 |:---|:---:|
-| **Test unitari totali** | **305** |
-| **Classi di test** | **29** |
+| **Test unitari totali** | **319** |
+| **Classi di test** | **30** |
 | **Aree OWASP** | **5** |
 | **Success rate** | **100%** |
 
@@ -641,11 +640,11 @@ Le vulnerabilità **documentate come rischio accettato** (SHA-1, CSRF, session f
 | Area OWASP | OWASP Top 10 (2021) | Classi | Test |
 |------------|:-------------------:|:------:|:----:|
 | Data Protection | A02:2021 — Cryptographic Failures | 3 | 20 |
-| Input Validation | A03:2021 — Injection | 9 | 83 |
+| Input Validation | A03:2021 — Injection | 10 | 96 |
 | Authorization | A01:2021 — Broken Access Control | 7 | 75 |
 | Business Logic | A04:2021 — Insecure Design | 6 | 78 |
-| DAO Security — statici | A03:2021 — Injection | 4 | 49 |
-| **TOTALE** | | **29** | **305** |
+| DAO Security — statici | A03:2021 — Injection | 4 | 50 |
+| **TOTALE** | | **30** | **319** |
 
 ### 9.3 Finding principali
 
@@ -660,22 +659,21 @@ Le vulnerabilità **documentate come rischio accettato** (SHA-1, CSRF, session f
 | AUTH-01 ÷ AUTH-06 | Missing Authorization | CWE-862 | Risolto |
 | AUTH-07 | Matching permissivo | CWE-20 | Risolto |
 | BL-01, BL-02 | Accesso non autorizzato | CWE-862 | Risolto |
+| SEC-DP-01 | Uso di SHA-1 per password| CWE-916 | Risolto (BCrypt) |
 | SEC-DAO-02 | Numero carta/CVV in chiaro | CWE-312 | Documentato |
-| SEC-DAO-03 | Doppio hashing nel setter `Utente.setPassword()` | CWE-1064 | Documentato |
-| SEC-DAO-04 | `doLogin` usa `SHA1()` | CWE-916 | Documentato |
 | SEC-DAO-05 | `CartaDAO` SELECT senza WHERE | CWE-770 | Documentato |
 | SEC-DAO-06 | DAO estendono `HttpServlet` (design smell) | — | Documentato |
 | SEC-DAO-07 | Eccezioni SQL wrappate in `DataAccessException` | CWE-391 | Risolto |
-| ACC-01 | SHA-1 per password (rischio accettato) | CWE-916 | **Accettato** |
-| ACC-02 | CSRF assente (rischio accettato) | CWE-352 | **Accettato** |
-| ACC-03 | Brute-force protection assente (rischio accettato) | CWE-307 | **Accettato** |
-| ACC-04 | Session fixation (rischio accettato) | CWE-384 | **Accettato** |
+| ACC-01 | CSRF assente (rischio accettato) | CWE-352 | **Accettato** |
+| ACC-02 | Brute-force protection assente (rischio accettato) | CWE-307 | **Accettato** |
+| ACC-03 | Session fixation (rischio accettato) | CWE-384 | **Accettato** |
+| ACC-04 | NPE su login senza utente (gestita con 500) | CWE-476 | **Accettato** |
 
 ### 9.4 Nota sul conteggio
 
 Il totale comprende le esecuzioni multiple dei test parametrizzati (`@ParameterizedTest`) in `HomeServletAmministratoreTest`, `CercaProdottoPerModificaServletTest`, `RendiAmministratoreServletTest`, `AggiuntaProdottoServletTest`, `InizioServletTest` e `ModificaProdottiServletAmministratoreTest`.
 
-Il totale include inoltre il test `testNessunSelectStar` aggiunto in `UtenteDAOTest`.
+Il totale include inoltre il test `testNessunSelectStar` aggiunto in `UtenteDAOTest` e i 13 test di `CoverageBoosterTest` per la copertura dei blocchi catch.
 
 ### 9.5 Nota metodologica
 

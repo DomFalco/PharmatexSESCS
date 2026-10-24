@@ -129,7 +129,7 @@ Il progetto segue il pattern **MVC (model-View-controller)**:
 
 **Diagramma delle classi principali (semplificato):**
 
-```
+```text
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
 │    Utente       │      │    Prodotto     │      │     Carta       │
 ├─────────────────┤      ├─────────────────┤      ├─────────────────┤
@@ -178,7 +178,7 @@ L'architettura è **a tre livelli**:
 2. **Business Logic Layer** (Bean + DAO): incapsula la logica di business e l'accesso ai dati
 3. **Data Layer** (MySQL 8): persistenza dei dati
 
-```
+```text
 Browser / Client
      │
      │ :8080 (HTTP)
@@ -220,7 +220,7 @@ Il progetto segue un'architettura **MVC (model-View-controller)** con separazion
 
 #### Struttura delle directory
 
-```
+```text
 PharmatexSESCS/src/
 ├── main/
 │   ├── java/
@@ -390,7 +390,7 @@ Elenco delle Servlet principali con metodo HTTP, endpoint, descrizione e livello
 
 Il progetto ha seguito un **approccio incrementale guidato dagli strumenti di sicurezza**, procedendo per fasi sequenziali. Ogni strumento ha rivelato vulnerabilità specifiche del proprio dominio, che sono state risolte prima di passare allo step successivo.
 
-```
+```text
 FASE 1: GitGuardian       → Segreti hardcoded nel codice
 FASE 2: Snyk              → Vulnerabilità in dipendenze, container e codice
 FASE 3: Test di sicurezza → Identificazione di vulnerabilità logiche
@@ -402,8 +402,8 @@ FASE 5: Pipeline CI/CD    → Orchestrazione automatizzata
 |:----:|:----:|-----------|--------|-----------|
 | 1 | 28/09 | **GitGuardian** | Scansione iniziale + fix credenziali hardcoded | 1 vulnerabilità critica risolta |
 | 2 | 01/10 | **Snyk** | Scansione dipendenze Maven + Dockerfile + SAST | 5 vulnerabilità risolte |
-| 3 | 03-07/10 | **Test Suite** | Scrittura dei test OWASP + fix vulnerabilità logiche | 481 test + 14 vulnerabilità risolte |
-| 4 | 05-07/10 | **SonarCloud** | Analisi qualità + risoluzione issue | Quality Gate PASSED, ~84 issue risolte |
+| 3 | 03-22/10 | **Test Suite** | Scrittura dei test OWASP + fix vulnerabilità logiche | **494 test** + 18 vulnerabilità risolte |
+| 4 | 05-23/10 | **SonarCloud** | Analisi qualità + risoluzione issue | Quality Gate PASSED, **~270 issue risolte** |
 | 5 | 09/10 | **Pipeline CI** | Hub workflow + orchestrazione | Pipeline DevSecOps completa |
 
 **Nota metodologica:** l'ordine sequenziale non è casuale. GitGuardian è stato eseguito per primo perché un segreto committato nella history Git è la vulnerabilità più critica (accesso diretto a credenziali reali). Una volta garantita l'assenza di segreti, si è passati alle dipendenze (Snyk) e poi ai test e alla qualità (SonarCloud).
@@ -412,7 +412,7 @@ FASE 5: Pipeline CI/CD    → Orchestrazione automatizzata
 
 ## 5. Sicurezza
 
-Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test** manuali. Ogni strumento copre un dominio diverso e complementare. I report dettagliati sono nei documenti dedicati.
+Il progetto integra **3 tool di sicurezza automatici** e una **suite di 494 test** manuali. Ogni strumento copre un dominio diverso e complementare. I report dettagliati sono nei documenti dedicati.
 
 ### 5.1 GitGuardian — Secret Scanning
 
@@ -443,24 +443,24 @@ Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test
 | Categoria | Prima | Dopo |
 |:---|:---:|:---:|
 | Vulnerabilità dipendenze Maven | 5 | **0** |
-| CVE sul base image Docker | 103 | **89** (accettate: non fixabili) |
-| Finding SAST (Snyk Code) | 31 LOW | accettate (falsi positivi su test) |
+| CVE sul base image Docker | 103 | **112** (accettate: non fixabili) |
+| Finding SAST (Snyk Code) | 37 | **0** |
 
 **Vulnerabilità risolte:** 5 CVE High/Medium aggiornando `mysql-connector-java` da 8.0.18 a `com.mysql:mysql-connector-j:9.3.0` (cambio coordinate Maven).
 
-**Finding accettati:** 89 CVE Medium/Low sul base image `tomcat:10.1-jre17-temurin-jammy` (Snyk conferma che è la versione più sicura disponibile) + 2 SHA-1 weak hash + 29 falsi positivi "Hardcoded Passwords" nei test.
+**Finding accettati:** 112 CVE Medium/Low sul base image `tomcat:10.1-jre17-temurin-jammy` (Snyk conferma che è la versione più sicura disponibile) + falsi positivi su SHA-1 e test.
 
 > 📄 **Report dettagliato:** [`docs/Snyk/README.md`](docs/Snyk/README.md)
 
 ### 5.3 Test di Sicurezza
 
-**Suite:** 481 test su 50 classi, organizzati in 5 aree OWASP.
+**Suite:** 494 test su 51 classi, organizzati in 5 aree OWASP.
 
 | Categoria | Approccio | Classi | Test |
 |-----------|-----------|:------:|:----:|
-| **Test Unitari + Analisi Statica** | Mockito + lettura sorgente | 29 | 305 |
-| **Test Funzionali H2** | Esecuzione contro H2 in-memory | 21 | 176 |
-| **TOTALE** | | **50** | **481** |
+| **Test Unitari + Analisi Statica** | Mockito + lettura sorgente | 30 | 319 |
+| **Test Funzionali H2** | Esecuzione contro H2 in-memory | 21 | 175 |
+| **TOTALE** | | **51** | **494** |
 
 **Copertura per area OWASP:**
 
@@ -468,14 +468,14 @@ Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test
 |:---|:---:|:---:|
 | **A01 — Broken Access Control** | 129 | 7 |
 | **A02 — Cryptographic Failures** | 20 | 0 (rischio accettato) |
-| **A03 — Injection** | 233 | 2 |
+| **A03 — Injection** | 246 | 2 |
 | **A04 — Insecure Design** | 97 | 3 |
 | **DAO Security** | 86 | 1 |
 
 **Risultati:**
-- **14 vulnerabilità risolte** — principalmente CWE-862 (Missing Authorization), CWE-20 (Input Validation), CWE-79 (XSS), CWE-178 (Case Sensitivity)
-- **~15 finding documentati** come rischio accettato (SHA-1, CSRF, brute-force, session fixation, PCI DSS)
-- **Il valore aggiunto dei test H2:** ha scoperto SEC-DAO-01 (ricerca case-insensitive), invisibile all'analisi statica e a SonarQube
+- **18 vulnerabilità risolte** — principalmente CWE-862 (Missing Authorization), CWE-20 (Input Validation), CWE-79 (XSS), CWE-178 (Case Sensitivity), CWE-916.
+- **~14 finding documentati** come rischio accettato.
+- **Il valore aggiunto dei test H2:** ha scoperto SEC-DAO-01 (ricerca case-insensitive), SEC-IV-03 e FUNC-IV-03, invisibili all'analisi statica e a SonarQube.
 
 > 📄 **Report dettagliati:**
 > - **Test unitari e analisi statica:** [`docs/TestCase/unit.md`](docs/TestCase/unit.md)
@@ -489,7 +489,7 @@ Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test
 
 **Quality Gate "Sonar way":** valuta **solo il New Code** (ultimi 7 giorni).
 
-**Baseline iniziale (05/10/2026):** Quality Gate **FAILED** con 46 issue — Security Rating B.
+**Baseline iniziale:** Quality Gate **FAILED** con 46 issue — Security Rating B.
 
 **Risultato finale (New Code):**
 
@@ -497,8 +497,8 @@ Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test
 |:---|:---:|:---:|
 | Quality Gate | **PASSED** | — |
 | New Issues | **0** | 0 |
-| Coverage | **84.76%** | ≥ 80% |
-| Duplications | **0.64%** | ≤ 3% |
+| Coverage | **83.01%** | ≥ 80% |
+| Duplications | **1.55%** | ≤ 3% |
 | Security Rating | **A** | A |
 | Reliability Rating | **A** | A |
 | Maintainability Rating | **A** | A |
@@ -507,17 +507,12 @@ Il progetto integra **3 tool di sicurezza automatici** e una **suite di 481 test
 
 | Categoria | Prima | Dopo | Δ | Rating |
 |-----------|:-----:|:----:|:---:|:------:|
-| Security | 93 | 59 | **-34** | D → D |
-| Reliability | 103 | 85 | **-18** | **E → C** |
-| Maintainability | 74 | 42 | **-32** | A → A |
-| **Totale** | **270** | **186** | **-84** | — |
+| Security | 93 | **0** | **-93** | D → **A** |
+| Reliability | 103 | **0** | **-103** | **E → A** |
+| Maintainability | 74 | **0** | **-74** | A → A |
+| **Totale** | **270** | **0** | **-270** | — |
 
-**Interventi principali:**
-- **14 Blocker risolte** — try-with-resources su tutti i DAO
-- **16 High risolte** — costanti duplicate, cognitive complexity, `Random`, eccezioni generiche
-- **15 Medium risolte** — `DataAccessException` custom, rimozione `SELECT *`
-- **23 Low risolte** — import inutilizzati, `throws`, `eq()`, join assertions
-- **~16 Altri fix collaterali** — ulteriori regole Medium/Low
+**Interventi principali:** azzeramento totale delle issue su file `.java`, `.jsp`, `.html` e `.css`.
 
 > 📄 **Report dettagliato:** [`docs/SonarCloud/README.md`](docs/SonarCloud/README.md)
 
@@ -529,14 +524,14 @@ La pipeline è orchestrata da un **workflow hub** (`ci.yml`) che chiama 4 workfl
 
 ### 6.1 Ordine di Esecuzione
 
-```
+```text
 git push
    │
    ▼
 1. Secret Scanning (GitGuardian)  ─── se trova segreti → STOP
    │
    ▼
-2. Test Suite (481 test)         ─── se falliscono → STOP
+2. Test Suite (494 test)         ─── se falliscono → STOP
    │
    ├──────────────────┐
    ▼                  ▼
@@ -586,18 +581,34 @@ Il `Dockerfile` è di tipo **multi-stage** per ridurre la dimensione dell'immagi
 ```dockerfile
 # Stage 1: Builder (Maven + JDK)
 FROM maven:3.9.6-eclipse-temurin-17 AS builder
+
+# Aggiorna i pacchetti di sistema per ridurre le vulnerabilità (Snyk)
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
 # Stage 2: Runtime (Tomcat + JRE)
 FROM tomcat:10.1-jre17-temurin-jammy
+
+# Aggiorna i pacchetti di sistema per ridurre le vulnerabilità (Snyk)
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
+# Rimuove le app predefinite di Tomcat (opzionale)
 RUN rm -rf /usr/local/tomcat/webapps/*
+
+# Copia il WAR generato nella cartella webapps di Tomcat
 COPY --from=builder /app/target/Progetto-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
+
+# Espone la porta per accedere all'app (default Tomcat)
 EXPOSE 8080
+
+# Imposta variabili per la connessione al DB
 ENV MYSQL_HOST=db
 ENV MYSQL_PORT=3306
+
+# Avvia Tomcat
 CMD ["catalina.sh","run"]
 ```
 
@@ -607,8 +618,9 @@ CMD ["catalina.sh","run"]
 |--------|-------------|
 | **Multi-stage build** | JDK e Maven restano nello stage builder, non nell'immagine finale |
 | **JRE invece di JDK** | Riduce la superficie d'attacco (-15 CVE Medium) |
-| **`apt-get upgrade`** | Applica le patch di sicurezza disponibili in Ubuntu 22.04 |
-| **Nessun segreto nell'immagine** | Credenziali lette da variabili d'ambiente a runtime |
+| **`apt-get upgrade` (Builder)** | Applica le patch di sicurezza nello stage di build. Sebbene questo stage venga scartato, garantisce che eventuali tool utilizzati durante la compilazione non introducano vulnerabilità. |
+| **`apt-get upgrade` (Runtime)** | Applica le patch di sicurezza sull'immagine finale (Ubuntu 22.04) che verrà pubblicata e scansionata da Snyk. |
+| **Nessun segreto nell'immagine** | Credenziali lette da variabili d'ambiente a runtime ||
 
 ### 7.2 Docker Compose
 
@@ -618,6 +630,8 @@ Il file `docker-compose.yml` orchestra 2 container: l'applicazione (Tomcat) e il
 services:
   app:
     image: domfalco/pharmatex:latest
+    container_name: pharmatex-app
+    restart: unless-stopped
     ports:
       - "8080:8080"
     depends_on:
@@ -634,6 +648,10 @@ services:
 
   db:
     image: mysql:8
+    container_name: mysql-pharmatex
+    restart: unless-stopped
+    # FIX ENCODING: Forza MySQL a usare UTF-8
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-Password}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-Pharmatex}
@@ -657,6 +675,16 @@ networks:
 volumes:
   db_data:
 ```
+
+**Configurazioni chiave del Docker Compose:**
+
+| Configurazione | Motivazione |
+|--------|-------------|
+| **`container_name`** | Assegna nomi fissi e leggibili ai container (`pharmatex-app` e `mysql-pharmatex`), facilitando i comandi di monitoraggio e debug. |
+| **`restart: unless-stopped`** | Garantisce l'alta disponibilità: i container si riavviano automaticamente in caso di crash o riavvio della macchina host. |
+| **`command` (Encoding)** | Forza MySQL a utilizzare il set di caratteri `utf8mb4` e la collation `utf8mb4_unicode_ci`, prevenendo problemi di encoding con caratteri speciali e accenti. |
+| **`healthcheck`** | Assicura che il container dell'applicazione (Tomcat) parta solo dopo che il database MySQL è completamente pronto ad accettare connessioni. |
+| **`volumes`** | Utilizza un volume nominato (`db_data`) per la persistenza dei dati e monta `Pharmatex.sql` per l'inizializzazione automatica del database al primo avvio. |
 
 **Come avviare:**
 
@@ -696,8 +724,8 @@ docker compose up -d
 | Categoria OWASP Top 10 (2021) | Stato | Test | Note |
 |-------------------------------|:-----:|:----:|------|
 | **A01 — Broken Access Control** | Risolto | 129 | 7 vulnerabilità CWE-862 risolte |
-| **A02 — Cryptographic Failures** | Rischio accettato | 20 | SHA-1 documentato (CWE-916) |
-| **A03 — Injection** | Risolto | 233 | SQL Injection neutralizzata (PreparedStatement) |
+| **A02 — Cryptographic Failures** | Risolto | 20 | SHA-1 sostituito con BCrypt |
+| **A03 — Injection** | Risolto | 246 | SQL Injection neutralizzata (PreparedStatement) |
 | **A04 — Insecure Design** | Risolto | 97 | 3 vulnerabilità CWE-862 risolte |
 | **A05 — Security Misconfiguration** | Risolto | — | Configurazione sicura Docker |
 | **A07 — Authentication Failures** | Risolto | — | Sessioni e autorizzazione |
@@ -709,22 +737,22 @@ docker compose up -d
 
 | Metrica | Valore |
 |---------|:------:|
-| **Test totali** | **481** (305 unitari + 176 funzionali H2) |
-| **Classi di test** | **50** |
+| **Test totali** | **494** (319 unitari + 175 funzionali H2) |
+| **Classi di test** | **51** |
 | **Aree OWASP coperte** | **5** |
-| **Vulnerabilità risolte** | **20** (1 GitGuardian + 5 Snyk + 14 Test) |
-| **Finding documentati (rischio accettato)** | **~15** |
-| **Issue SonarCloud risolte** | **~108 (New Code) + ~84 (Overall Code)** |
+| **Vulnerabilità risolte** | **22** (1 GitGuardian + 5 Snyk + 16 Test) |
+| **Finding documentati (rischio accettato)** | **~14** |
+| **Issue SonarCloud risolte** | **~109 (New Code) + 270 (Overall Code)** |
 | **Quality Gate SonarCloud** | **PASSED** |
-| **Coverage New Code** | **84.76%** |
-| **Duplicazioni New Code** | **0.64%** |
-| **Reliability Rating Overall** | **E → C** |
+| **Coverage New Code** | **83.01%** |
+| **Duplicazioni New Code** | **1.55%** |
+| **Reliability Rating Overall** | **E → A** |
 | **Immagine Docker Hub** | Pubblica |
 | **Pipeline CI/CD** | Completa (5 workflow) |
 
 ### Flusso Complessivo
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────┐
 │  FASE 1 — GitGuardian (28/09)                                    │
 │  Secret scanning + fix credenziali hardcoded                     │
@@ -738,15 +766,15 @@ docker compose up -d
 └──────────────────────────────────────────────────────────────────┘
                               ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│  FASE 3 — Test Suite (03-07/10)                                  │
-│  Suite di 481 test OWASP                                         │
-│  → 14 vulnerabilità risolte                                      │
+│  FASE 3 — Test Suite (03-22/10)                                  │
+│  Suite di 494 test OWASP                                         │
+│  → 18 vulnerabilità risolte                                      │
 └──────────────────────────────────────────────────────────────────┘
                               ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│  FASE 4 — SonarCloud (05-07/10)                                  │
+│  FASE 4 — SonarCloud (05-23/10)                                  │
 │  Quality + Coverage + SAST                                       │
-│  → Quality Gate PASSED, Reliability E → C                        │
+│  → Quality Gate PASSED, Reliability E → A                        │
 └──────────────────────────────────────────────────────────────────┘
                               ↓
 ┌──────────────────────────────────────────────────────────────────┐

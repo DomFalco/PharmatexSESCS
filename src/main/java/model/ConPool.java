@@ -8,7 +8,6 @@ import java.util.TimeZone;
 
 public class ConPool {
 
-    // Costruttore privato per nascondere quello pubblico implicito
     private ConPool() {
     }
 

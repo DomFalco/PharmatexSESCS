@@ -2,8 +2,8 @@
 
 **Strategia:** [OWASP Testing Guide](https://owasp.org/www-project-web-security-testing-guide/)  
 **Framework:** JUnit 5 + Mockito 4.11.0 + AssertJ 3.27.7 + H2 2.2.224  
-**Test funzionali totali (questa categoria):** 176 (21 classi, 16 Servlet + 4 DAO + 1 Eccezione)  
-**Data ultima esecuzione:** 07/10/2026
+**Test funzionali totali (questa categoria):** 175 
+**Data ultima esecuzione:** 22/10/2026
 
 ---
 
@@ -17,20 +17,19 @@
     - [2.1 Architettura](#21-architettura)
     - [2.2 File di supporto](#22-file-di-supporto)
     - [2.3 Modifiche al codice di produzione](#23-modifiche-al-codice-di-produzione)
-    - [2.4 Registrazione della funzione SHA1](#24-registrazione-della-funzione-sha1)
 - [3. Test funzionali DAO — 38 test](#3-test-funzionali-dao--38-test)
     - [3.1 ProdottoDAOH2Test (14 test)](#31-prodottodaoh2test-14-test)
     - [3.2 UtenteDAOH2Test (13 test)](#32-utentedaoh2test-13-test)
     - [3.3 CartaDAOH2Test (4 test)](#33-cartadaoh2test-4-test)
     - [3.4 AcquistoProdottiDAOH2Test (7 test)](#34-acquistoprodottidaoh2test-7-test)
     - [3.5 DataAccessExceptionTest (2 test)](#35-dataaccessexceptiontest-2-test)
-- [4. Test funzionali Servlet — 136 test](#4-test-funzionali-servlet--136-test)
+- [4. Test funzionali Servlet — 135 test](#4-test-funzionali-servlet--135-test)
     - [4.1 Authorization — 54 test](#41-authorization--54-test)
     - [4.2 Business Logic — 19 test](#42-business-logic--19-test)
-    - [4.3 Input Validation — 63 test](#43-input-validation--63-test)
+    - [4.3 Input Validation — 62 test](#43-input-validation--62-test)
 - [5. Finding scoperti](#5-finding-scoperti)
     - [5.1 SEC-DAO-01 — doRetriveBySearch non case-insensitive](#51-sec-dao-01--doretrivebysearch-non-case-insensitive)
-    - [5.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo](#52-sec-iv-03--doppio-forward-in-filtraggioservletprezzo)
+    - [5.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo (Risolto)](#52-sec-iv-03--doppio-forward-in-filtraggioservletprezzo-risolto)
     - [5.3 Altri finding documentati](#53-altri-finding-documentati)
 - [6. Metriche finali](#6-metriche-finali)
     - [6.1 Test funzionali per area](#61-test-funzionali-per-area)
@@ -38,11 +37,11 @@
     - [6.3 Finding scoperti da questa categoria](#63-finding-scoperti-da-questa-categoria)
 - [7. Dettaglio vulnerabilità critiche](#7-dettaglio-vulnerabilità-critiche)
     - [7.1 SEC-DAO-01 — doRetriveBySearch non case-insensitive](#71-sec-dao-01--doretrivebysearch-non-case-insensitive)
-    - [7.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo](#72-sec-iv-03--doppio-forward-in-filtraggioservletprezzo)
+    - [7.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo (Risolto)](#72-sec-iv-03--doppio-forward-in-filtraggioservletprezzo-risolto)
     - [7.3 FUNC-AUTH-01 — Missing Authorization in 2 Servlet](#73-func-auth-01--missing-authorization-in-2-servlet)
-    - [7.4 FUNC-IV-01 — NPE su parametri null in 3 Servlet](#74-func-iv-01--npe-su-parametri-null-in-3-servlet)
+    - [7.4 FUNC-IV-01 — NPE su parametri null in 2 Servlet](#74-func-iv-01--npe-su-parametri-null-in-2-servlet)
     - [7.5 FUNC-IV-02 — NumberFormatException su input non numerici](#75-func-iv-02--numberformatexception-su-input-non-numerici)
-    - [7.6 FUNC-IV-03 — Silent drop in ModificaProdottiServletAmministratore](#76-func-iv-03--silent-drop-in-modificaprodottiservletamministratore)
+    - [7.6 FUNC-IV-03 — Silent drop in ModificaProdottiServletAmministratore (Risolto)](#76-func-iv-03--silent-drop-in-modificaprodottiservletamministratore-risolto)
     - [7.7 FUNC-BL-01 — IndexOutOfBoundsException in DatiPagamentoServlet](#77-func-bl-01--indexoutofboundsexception-in-datipagamentoservlet)
     - [7.8 FUNC-BL-02 — Doppio forward in RimuoviProdottoServlet](#78-func-bl-02--doppio-forward-in-rimuoviprodottoservlet)
     - [7.9 Riepilogo vulnerabilità critiche](#79-riepilogo-vulnerabilità-critiche)
@@ -83,7 +82,7 @@ I test unitari con Mockito verificano:
 | **Interazione Servlet-DAO** | La Servlet passa i parametri giusti al DAO |
 | **Gestione eccezioni DB** | NumberFormatException, NPE, DataAccessException |
 | **Violazioni vincoli** | Foreign key, PRIMARY KEY, NOT NULL |
-| **Hashing SHA-1** | Verifica del doppio hash nel bean `Utente` |
+| **Hashing BCrypt** | Verifica del corretto hashing e verifica nel login |
 
 ### 1.3 Cosa NON coprono i test funzionali
 
@@ -108,7 +107,6 @@ src/test/
 ├── java/security/functional/
 │   ├── BaseH2Test.java              ← infrastruttura DAO
 │   ├── BaseServletH2Test.java       ← infrastruttura Servlet (estende BaseH2Test)
-│   ├── TestFunctions.java           ← SHA1 in Java per alias H2
 │   ├── dao/                         ← test funzionali DAO
 │   ├── exceptions/                  ← test DataAccessException
 │   ├── authorization/               ← test Servlet A01
@@ -123,7 +121,6 @@ src/test/
 | File | Ruolo |
 |---|---|
 | `schema-h2.sql` | Schema DB (adattato da `Pharmatex.sql`) compatibile con H2 `MODE=MySQL` |
-| `TestFunctions.java` | Implementazione Java di `SHA1()`, registrata come alias di funzione in H2 |
 | `BaseH2Test.java` | Classe base astratta: attiva il test mode, esegue lo schema, pulisce il DB prima di ogni test |
 | `BaseServletH2Test.java` | Estende `BaseH2Test` e aggiunge i mock di `HttpServletRequest`, `HttpServletResponse`, `HttpSession`, `RequestDispatcher` |
 
@@ -140,16 +137,6 @@ public static void disableTestMode() { /* ripristina MySQL */ }
 ```
 
 Il branch `if (testMode)` in `getConnection()` è **irraggiungibile in produzione** (nessuno chiama `enableTestMode()` fuori dai test).
-
-### 2.4 Registrazione della funzione SHA1
-
-Poiché `UtenteDAO.doLogin` usa `SHA1(?)` (funzione MySQL-specifica), in H2 è stato registrato un alias:
-
-```sql
-CREATE ALIAS IF NOT EXISTS SHA1 FOR "security.functional.TestFunctions.sha1"
-```
-
-Da quel momento, ogni chiamata a `SHA1(x)` in H2 viene tradotta nella chiamata al metodo Java `TestFunctions.sha1(x)`, che usa `MessageDigest.getInstance("SHA-1")` — la stessa implementazione del bean `Utente`.
 
 ---
 
@@ -182,7 +169,7 @@ Da quel momento, ogni chiamata a `SHA1(x)` in H2 viene tradotta nella chiamata a
 
 | # | Test | Cosa verifica |
 |:---:|---|---|
-| 1 | `testDoLoginCorretto` | Login con SHA1 |
+| 1 | `testDoLoginCorretto` | Login con BCrypt |
 | 2 | `testDoLoginPasswordErrata` | Password errata → null |
 | 3 | `testDoLoginEmailInesistente` | Email inesistente → null |
 | 4 | `testDoLoginAdmin` | Login admin |
@@ -230,11 +217,9 @@ Da quel momento, ogni chiamata a `SHA1(x)` in H2 viene tradotta nella chiamata a
 | 1 | `testCostruttoreConMessage` | Costruttore `DataAccessException(String)` imposta il messaggio, `cause` = null |
 | 2 | `testCostruttoreConMessageECause` | Costruttore `DataAccessException(String, Throwable)` imposta messaggio + causa |
 
-**Nota:** l'eccezione `DataAccessException` è stata introdotta come fix di SonarQube (regola S112) per sostituire `RuntimeException` generica nei DAO. È testata separatamente perché non dipende dal DB.
-
 ---
 
-## 4. Test funzionali Servlet — 136 test
+## 4. Test funzionali Servlet — 135 test
 
 ### 4.1 Authorization — 54 test
 
@@ -253,6 +238,7 @@ Da quel momento, ogni chiamata a `SHA1(x)` in H2 viene tradotta nella chiamata a
 **Finding documentati:**
 - `AggiuntaProdottoServlet` e `ModificaProdottiServletAmministratore`: **CWE-862 Missing Authorization**
 - `RimuoviProdottoServlet`: prodotto in sessione ma non nel DB → RuntimeException (500)
+- `PagamentoServlet`: admin non può pagare perché cerca solo l'attributo "Utente"
 
 ### 4.2 Business Logic — 19 test
 
@@ -267,7 +253,7 @@ Da quel momento, ogni chiamata a `SHA1(x)` in H2 viene tradotta nella chiamata a
 - `DatiPagamentoServlet`: `qList.size() < cart_list.size()` → IndexOutOfBoundsException
 - `DatiPagamentoServlet`: mancanza di transazione atomica (carrello svuotato anche se INSERT fallisce)
 
-### 4.3 Input Validation — 63 test
+### 4.3 Input Validation — 62 test
 
 **Cartella:** `src/test/java/security/functional/inputvalidation/`
 
@@ -279,13 +265,12 @@ Da quel momento, ogni chiamata a `SHA1(x)` in H2 viene tradotta nella chiamata a
 | `FiltraggioServletMateriale` | 10 | `FiltraggioServletMaterialeH2Test.java` |
 | `FiltraggioServletPrezzo` | 10 | `FiltraggioServletPrezzoH2Test.java` |
 | `ModificaProdottiServletAmministratore` | 10 | `ModificaProdottiServletAmministratoreH2Test.java` |
-| `InizioServlet` | 9 | `InizioServletH2Test.java` |
+| `InizioServlet` | 8 | `InizioServletH2Test.java` |
 
 **Finding documentati:**
 - `RicercaServlet`: NPE su input null, doppio upper ridondante
-- `FiltraggioServletPrezzo`: **SEC-IV-03** doppio forward, NPE su categoria null, NumberFormatException
-- `ModificaProdottiServletAmministratore`: CWE-862, NPE su nuovoPrezzo/idModificaPrezzo null, NumberFormatException, silent drop
-- `AggiuntaProdottoServlet`: CWE-862, NumberFormatException, idProdotto null
+- `FiltraggioServletPrezzo`: NPE su categoria null
+- `ModificaProdottiServletAmministratore`: CWE-862
 
 ---
 
@@ -297,34 +282,28 @@ I test funzionali H2 hanno scoperto **bug reali** che i test unitari e l'analisi
 
 | ID | Vulnerabilità | CWE | Classe | Test | Stato |
 |----|---------------|:---:|--------|------|:-----:|
-| SEC-DAO-01 | `doRetriveBySearch` non case-insensitive: la query usava `upper(nomeProd) LIKE ?` senza uppercasare il pattern | CWE-178 | `ProdottoDAO` | `testDoRetriveBySearch_CaseInsensitive` | Risolto |
+| SEC-DAO-01 | `doRetriveBySearch` non case-insensitive | CWE-178 | `ProdottoDAO` | `testDoRetriveBySearch_CaseInsensitive` | Risolto |
 
 **Patch applicata:** modificata la query in `upper(nomeProd) LIKE upper(?)` per rendere la ricerca case-insensitive anche sui pattern in input.
 
-**Nota metodologica:** il bug è stato scoperto **solo** grazie al test funzionale su H2. Né SonarQube né l'analisi statica potevano rilevarlo, poiché si tratta di un bug di comportamento a runtime e non di un pattern statico rilevabile. Questo conferma il valore aggiunto dell'approccio funzionale nel colmare il gap tra analisi statica e verifica comportamentale.
+**Nota metodologica:** il bug è stato scoperto **solo** grazie al test funzionale su H2. Né SonarQube né l'analisi statica potevano rilevarlo.
 
-### 5.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo
+### 5.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo (Risolto)
 
 | ID | Finding | CWE | Classe | Test | Stato |
 |----|---------|:---:|--------|------|:-----:|
-| SEC-IV-03 | Doppio forward quando entrambi i prezzi sono vuoti | CWE-754 | `FiltraggioServletPrezzo` | `testDoppioForward_BugDocumentato` | Documentato |
+| SEC-IV-03 | Doppio forward quando entrambi i prezzi sono vuoti | CWE-754 | `FiltraggioServletPrezzo` | `testDoppioForward_BugDocumentato` | **Risolto** |
 
-**Descrizione:** nel ramo "prezzomin == '' AND prezzomax == ''", la Servlet esegue il forward a `RicercaErrata.jsp` ma **non ha un `return`**, quindi prosegue e chiama un secondo forward a `Prodotti.jsp` con `filterList = null`.
-
-**Nota importante:** questo è **l'ennesimo bug trovato grazie ai test funzionali** (come SEC-DAO-01). In un container reale (Tomcat) causerebbe `IllegalStateException: Cannot forward after response has been committed`.
-
-**Patch suggerita (non applicata):** aggiungere `return;` dopo il primo forward, come già fatto in `MaterialeServlet` (fix SEC-IV-02).
+**Patch applicata:** è stato aggiunto il `return;` dopo il primo forward. Il test ora verifica `times(1).forward`.
 
 ### 5.3 Altri finding documentati
 
 | ID | Finding | CWE | Classe | Stato |
 |----|---------|:---:|--------|:-----:|
 | SEC-DAO-02 | Numero carta e CVV salvati in chiaro (PCI DSS 3.2) | CWE-312 | `CartaDAO` | Documentato |
-| SEC-DAO-03 | Doppio hashing nel setter `Utente.setPassword()` | CWE-1064 | `Utente.java` | Documentato |
 | FUNC-AUTH-01 | Nessun controllo autorizzazione in `AggiuntaProdottoServlet` e `ModificaProdottiServletAmministratore` | CWE-862 | 2 Servlet | Documentato |
-| FUNC-IV-01 | NPE su parametri null in `RicercaServlet`, `FiltraggioServletPrezzo`, `ModificaProdottiServletAmministratore` | CWE-476 | 3 Servlet | Documentato |
+| FUNC-IV-01 | NPE su parametri null in `RicercaServlet`, `FiltraggioServletPrezzo` (categoria null) | CWE-476 | 2 Servlet | Documentato |
 | FUNC-IV-02 | NumberFormatException su input non numerici | CWE-20 | 3 Servlet | Documentato |
-| FUNC-IV-03 | Silent drop quando nessun ramo viene eseguito | — | `ModificaProdottiServletAmministratore` | Documentato |
 | FUNC-BL-01 | IndexOutOfBoundsException se `qList.size() < cart_list.size()` | — | `DatiPagamentoServlet` | Documentato |
 | FUNC-BL-02 | Doppio forward in `RimuoviProdottoServlet` | CWE-754 | `RimuoviProdottoServlet` | Documentato |
 
@@ -338,16 +317,16 @@ I test funzionali H2 hanno scoperto **bug reali** che i test unitari e l'analisi
 |---|:---:|:---:|:---:|:---:|
 | Authorization | — | 54 | — | **54** |
 | Business Logic | — | 19 | — | **19** |
-| Input Validation | — | 63 | — | **63** |
+| Input Validation | — | 62 | — | **62** |
 | DAO (tutte le operazioni) | 38 | — | — | **38** |
 | Eccezioni custom | — | — | 2 | **2** |
-| **TOTALE** | **38** | **136** | **2** | **176** |
+| **TOTALE** | **38** | **135** | **2** | **175** |
 
 ### 6.2 Metriche di questa categoria
 
 | Metrica | Valore |
 |:---|:---:|
-| **Test funzionali totali** | **176** |
+| **Test funzionali totali** | **175** |
 | **Classi di test** | **21** |
 | **Contributo coverage** | **~85%** |
 | **Success rate** | **100%** |
@@ -357,8 +336,8 @@ I test funzionali H2 hanno scoperto **bug reali** che i test unitari e l'analisi
 
 | Categoria | Finding |
 |---|:---:|
-| Bug risolti | 1 (SEC-DAO-01) |
-| Bug documentati | 9 |
+| Bug risolti | 3 (SEC-DAO-01, SEC-IV-03, FUNC-IV-03) |
+| Bug documentati | 7 |
 | **TOTALE** | **10** |
 
 ---
@@ -395,17 +374,17 @@ Modificata la query in `upper(nomeProd) LIKE upper(?)` per uppercasare anche il 
 
 ---
 
-### 7.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo
+### 7.2 SEC-IV-03 — Doppio forward in FiltraggioServletPrezzo (Risolto)
 
 - **File:** `controller`
 - **Test:** `testDoppioForward_BugDocumentato` (`FiltraggioServletPrezzoH2Test`)
 - **CWE:** [CWE-754](https://cwe.mitre.org/data/definitions/754.html) (Improper Check for Unusual or Exceptional Conditions)
 - **Severità:** Critica
-- **Stato:** Documentato
+- **Stato:** **Risolto**
 
 **Vulnerabilità**
 
-Nel ramo "prezzomin == '' AND prezzomax == ''", la Servlet esegue il forward a `RicercaErrata.jsp` ma **non ha un `return`**, quindi prosegue e chiama un secondo forward a `Prodotti.jsp` con `filterList = null`. In un container reale (Tomcat) questo comportamento genera `IllegalStateException: Cannot forward after response has been committed`.
+Nel ramo "prezzomin == '' AND prezzomax == ''", la Servlet eseguiva il forward a `RicercaErrata.jsp` ma **non aveva un `return`**, quindi proseguiva e chiamava un secondo forward a `Prodotti.jsp` con `filterList = null`. In un container reale (Tomcat) questo comportamento genererebbe `IllegalStateException: Cannot forward after response has been committed`.
 
 **Scenario**
 
@@ -415,9 +394,9 @@ Nel ramo "prezzomin == '' AND prezzomax == ''", la Servlet esegue il forward a `
 | Entrambi i prezzi vuoti | Doppio forward → **IllegalStateException** |
 | Con patch applicata | `return` dopo il primo forward → OK |
 
-**Patch suggerita (non applicata)**
+**Patch applicata**
 
-Aggiungere `return;` dopo il primo `forward()` nel ramo "entrambi vuoti", replicando il fix già applicato in `MaterialeServlet` (SEC-IV-02). Il bug è **documentato** dal test `testDoppioForward_BugDocumentato` che funge da regression protection.
+Aggiunto `return;` dopo il primo `forward()` nel ramo "entrambi vuoti". Il test `testDoppioForward_BugDocumentato` ora verifica che il forward venga chiamato esattamente una volta (`times(1)`).
 
 ---
 
@@ -450,51 +429,39 @@ Aggiungere in testa al metodo `doPost` un controllo di autorizzazione:
 ```java
 Utente admin = (Utente) session.getAttribute("Amministratore");
 if (admin == null || !admin.isAmministratore()) {
-    ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato");
+        ServletErrorHelper.sendError(response, HttpServletResponse.SC_FORBIDDEN, "Accesso negato");
     return;
-}
+            }
 ```
 
-Il controllo va replicato in entrambe le Servlet. I test funzionali H2 fungono da regression protection per verificare che l'autorizzazione venga effettivamente applicata.
+Il controllo va replicato in entrambe le Servlet. I test funzionali H2 fungono da regression protection.
 
 ---
 
-### 7.4 FUNC-IV-01 — NPE su parametri null in 3 Servlet
+### 7.4 FUNC-IV-01 — NPE su parametri null in 2 Servlet
 
 - **File:**
     - `controller`
     - `controller`
-    - `controller`
-- **Test:** vari test nelle classi `RicercaServletH2Test`, `FiltraggioServletPrezzoH2Test`, `ModificaProdottiServletAmministratoreH2Test`
+- **Test:** vari test nelle classi `RicercaServletH2Test`, `FiltraggioServletPrezzoH2Test`
 - **CWE:** [CWE-476](https://cwe.mitre.org/data/definitions/476.html) (NULL Pointer Dereference)
 - **Severità:** Alta
 - **Stato:** Documentato
 
 **Vulnerabilità**
 
-Tre Servlet accedono a parametri della request chiamando metodi come `equals("")`, `equalsIgnoreCase()`, `parseDouble()` **senza verificare che il parametro non sia `null`**. Un attaccante che invia la richiesta omettendo il parametro causa un `NullPointerException` → HTTP 500, con esposizione dello stack trace nei log applicativi.
+La `RicercaServlet` accede a parametri della request chiamando metodi come `equals("")`, `equalsIgnoreCase()` **senza verificare che il parametro non sia `null`**. La `FiltraggioServletPrezzo` va in NPE se la categoria in sessione (`filtri`) è null.
 
 **Scenario**
 
 | Servlet | Scenario | Comportamento |
 |---|---|---|
 | `RicercaServlet` | Richiesta senza `search` | NPE → 500 |
-| `FiltraggioServletPrezzo` | Richiesta senza `prezzomin` | NPE → 500 |
-| `ModificaProdottiServletAmministratore` | Richiesta senza `nuovoPrezzo` | NPE → 500 |
+| `FiltraggioServletPrezzo` | Categoria in sessione `null` | NPE → 500 |
 
 **Patch raccomandata**
 
-Aggiungere un null check per ogni parametro subito dopo `request.getParameter()`:
-
-```java
-String search = request.getParameter("search");
-if (search == null) {
-    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Parametro mancante");
-    return;
-}
-```
-
-Il pattern va replicato per ogni parametro critico. I test funzionali H2 documentano il comportamento attuale e fungono da regression protection.
+Aggiungere un null check per ogni parametro subito dopo `request.getParameter()` (es. `if (search == null) { ... }`).
 
 ---
 
@@ -523,31 +490,21 @@ Le Servlet chiamano `Double.parseDouble()` e `Integer.parseInt()` sui parametri 
 
 **Patch raccomandata**
 
-Avvolgere il parsing in un `try/catch` esplicito oppure pre-validare con espressione regolare prima del parsing:
-
-```java
-try {
-    double valore = Double.parseDouble(prezzo);
-    // ... logica
-} catch (NumberFormatException e) {
-    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Formato non valido");
-    return;
-}
-```
+Avvolgere il parsing in un `try/catch` esplicito oppure pre-validare con espressione regolare prima del parsing, restituendo `400 Bad Request`.
 
 ---
 
-### 7.6 FUNC-IV-03 — Silent drop in ModificaProdottiServletAmministratore
+### 7.6 FUNC-IV-03 — Silent drop in ModificaProdottiServletAmministratore (Risolto)
 
 - **File:** `controller`
-- **Test:** `testNessunRamoEseguitoConParametriVuoti` (`ModificaProdottiServletAmministratoreH2Test`)
+- **Test:** `testSilentDrop` (`ModificaProdottiServletAmministratoreH2Test`)
 - **CWE:** — (design smell)
 - **Severità:** Media
-- **Stato:** Documentato
+- **Stato:** **Risolto**
 
 **Vulnerabilità**
 
-Quando `nuovoPrezzo=""` e `quantitaTotale=null`, nessuno dei tre rami della Servlet viene eseguito e la Servlet **non fa nulla silenziosamente**. L'utente che invia una form malformata non riceve alcun feedback né un redirect, causando una pagina vuota o un errore opaco.
+Quando `nuovoPrezzo=""` e `quantitaTotale=null`, nessuno dei tre rami della Servlet veniva eseguito e la Servlet **non faceva nulla silenziosamente**. L'utente che inviava una form malformata non riceveva alcun feedback.
 
 **Scenario**
 
@@ -555,17 +512,11 @@ Quando `nuovoPrezzo=""` e `quantitaTotale=null`, nessuno dei tre rami della Serv
 |---|---|
 | `nuovoPrezzo=99&quantitaTotale=5` | Aggiorna prezzo e quantità |
 | `nuovoPrezzo=""` e `quantitaTotale=null` | **Nessun effetto, nessun feedback** |
-| Con patch | Redirect a HomeServletAmministratore |
+| Con patch applicata | Restituisce `400 Bad Request` |
 
-**Patch raccomandata**
+**Patch applicata**
 
-Aggiungere un `else` finale che redirige esplicitamente o mostra un errore:
-
-```java
-} else {
-    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Nessun parametro fornito");
-}
-```
+Aggiunto un `else` finale che restituisce esplicitamente un errore `400 Bad Request`. Il test `testSilentDrop` verifica che la Servlet risponda con `SC_BAD_REQUEST`.
 
 ---
 
@@ -579,7 +530,7 @@ Aggiungere un `else` finale che redirige esplicitamente o mostra un errore:
 
 **Vulnerabilità**
 
-La Servlet itera su `cart_list` accedendo a `qList` per indice, senza verificare che `qList.size() >= cart_list.size()`. Se la sessione contiene uno stato inconsistente (es. dopo un'aggiunta parziale al carrello), la Servlet lancia `IndexOutOfBoundsException` → HTTP 500.
+La Servlet itera su `cart_list` accedendo a `qList` per indice, senza verificare che `qList.size() >= cart_list.size()`. Se la sessione contiene uno stato inconsistente, la Servlet lancia `IndexOutOfBoundsException` → HTTP 500.
 
 **Scenario**
 
@@ -594,9 +545,9 @@ Verificare la coerenza delle due liste prima dell'iterazione:
 
 ```java
 if (qList.size() != cart_list.size()) {
-    ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Stato carrello inconsistente");
+        ServletErrorHelper.sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Stato carrello inconsistente");
     return;
-}
+            }
 ```
 
 ---
@@ -631,15 +582,13 @@ Aggiungere `return;` dopo ogni `forward()`, come già fatto in `MaterialeServlet
 | ID | Vulnerabilità | CWE | Severità | Stato |
 |----|---------------|:---:|:--------:|:-----:|
 | SEC-DAO-01 | `doRetriveBySearch` non case-insensitive | CWE-178 | Critica | Risolto |
-| SEC-IV-03 | Doppio forward in `FiltraggioServletPrezzo` | CWE-754 | Critica | Documentato |
+| SEC-IV-03 | Doppio forward in `FiltraggioServletPrezzo` | CWE-754 | Critica | **Risolto** |
 | FUNC-AUTH-01 | Missing Authorization in 2 Servlet | CWE-862 | Critica | Documentato |
-| FUNC-IV-01 | NPE su parametri null in 3 Servlet | CWE-476 | Alta | Documentato |
+| FUNC-IV-01 | NPE su parametri null in 2 Servlet | CWE-476 | Alta | Documentato |
 | FUNC-IV-02 | NumberFormatException su input non numerici | CWE-20 | Alta | Documentato |
-| FUNC-IV-03 | Silent drop | — | Media | Documentato |
+| FUNC-IV-03 | Silent drop in `ModificaProdottiServletAmministratore` | — | Media | **Risolto** |
 | FUNC-BL-01 | IndexOutOfBoundsException in `DatiPagamentoServlet` | — | Alta | Documentato |
 | FUNC-BL-02 | Doppio forward in `RimuoviProdottoServlet` | CWE-754 | Media | Documentato |
-
-**Nota:** per i finding **SEC-DAO-02** (CVV in chiaro) e **SEC-DAO-03** (doppio hashing), già documentati nel report complementare [`unit.md`](unit.md), si rimanda alle sezioni 3.3 e 7.3 di quel documento.
 
 ---
 
@@ -661,7 +610,7 @@ La scelta di usare **H2 in-memory** invece di un DB reale (MySQL in Docker, Test
 
 **H2 non è MySQL al 100%.** Alcune differenze:
 
-- Funzioni specifiche (`SHA1()`) → risolte con `CREATE ALIAS`
+- Funzioni specifiche (`SHA1()`) → risolte con `CREATE ALIAS` (ora rimosso, si usa BCrypt)
 - Sintassi `RESTART IDENTITY` → supportata in `MODE=MySQL`
 - Alcune ottimizzazioni del query planner → diverse
 
