@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://www.unisa.it">
-    <img src="https://www.unisa.it/rescue/img/logo_standard.png" alt="Unisa" width="180">
+    <img src="logo_unisa.png" alt="Unisa">
   </a>
 </p>
 
@@ -16,21 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/DomFalco/PharmatexSESCS/actions/workflows/ci.yml">
-    <img src="https://github.com/DomFalco/PharmatexSESCS/actions/workflows/ci.yml/badge.svg?branch=master" alt="CI Pipeline">
-  </a>
-  <a href="https://hub.docker.com/r/domfalco/pharmatex">
-    <img src="https://img.shields.io/badge/Docker%20Hub-domfalco%2Fpharmatex-2496ED?logo=docker&logoColor=white" alt="Docker Hub">
-  </a>
-  <a href="https://sonarcloud.io/project/overview?id=DomFalco_PharmatexSESCS">
-    <img src="https://sonarcloud.io/api/project_badges/measure?project=DomFalco_PharmatexSESCS&metric=alert_status" alt="Quality Gate">
-  </a>
-  <a href="https://app.snyk.io">
-    <img src="https://img.shields.io/badge/Snyk-0%20High%20Vulnerabilities-4C4A73?logo=snyk&logoColor=white" alt="Snyk">
-  </a>
-  <a href="https://dashboard.gitguardian.com">
-    <img src="https://img.shields.io/badge/GitGuardian-0%20Secrets%20Leaked-FF6B6B?logo=gitguardian&logoColor=white" alt="GitGuardian">
-  </a>
+  <a href="https://github.com/DomFalco/PharmatexSESCS/actions/workflows/ci.yml"><img src="https://github.com/DomFalco/PharmatexSESCS/actions/workflows/ci.yml/badge.svg?branch=master" alt="CI Pipeline"></a> <a href="https://hub.docker.com/r/domfalco/pharmatex"><img src="https://img.shields.io/badge/Docker%20Hub-domfalco%2Fpharmatex-2496ED?logo=docker&logoColor=white" alt="Docker Hub"></a> <a href="https://sonarcloud.io/project/overview?id=DomFalco_PharmatexSESCS"><img src="https://sonarcloud.io/api/project_badges/measure?project=DomFalco_PharmatexSESCS&metric=alert_status" alt="Quality Gate"></a> <a href="https://app.snyk.io"><img src="https://img.shields.io/badge/Snyk-0%20High%20Vulnerabilities-4C4A73?logo=snyk&logoColor=white" alt="Snyk"></a> <a href="https://dashboard.gitguardian.com"><img src="https://img.shields.io/badge/GitGuardian-0%20Secrets%20Leaked-FF6B6B?logo=gitguardian&logoColor=white" alt="GitGuardian"></a>
 </p>
 
 | Risorsa | Link |
